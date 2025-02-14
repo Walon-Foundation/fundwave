@@ -105,7 +105,7 @@ const FeaturedCampaign = () => {
               </div>
               <div className="bg-gray-50 px-6 py-4">
                 <Link 
-                  href="/campaigndetails" 
+                  href="/campaign/1/details" 
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
                   <button>

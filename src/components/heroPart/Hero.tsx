@@ -23,7 +23,7 @@ function Hero() {
           </Link>
           
           
-            <Link href='/explore'><button className="border-2 mx-2 border-white bg-white shadow-xl py-2 px-4 rounded-md md:text-xl font-bold">
+            <Link href='/campaign'><button className="border-2 mx-2 border-white bg-white shadow-xl py-2 px-4 rounded-md md:text-xl font-bold">
               Explore Projects
             </button></Link>
           

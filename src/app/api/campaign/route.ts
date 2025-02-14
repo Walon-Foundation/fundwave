@@ -75,12 +75,14 @@ export async function POST(req: NextRequest) {
       expectedImpact,
       creator: user._id,
     });
-    //saving campaign to the database
-    await newCampaign.save();
 
     // Add campaign to user's campaigns
     user.campaigns.push(campaign._id);
     await user.save();
+
+
+    //saving campaign to the database
+    await newCampaign.save();
 
     return NextResponse.json(
         {message:"campiagn created",newCampaign},
