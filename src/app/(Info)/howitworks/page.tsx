@@ -55,13 +55,13 @@ const HowItWorks = () => {
           <h2 className="text-3xl font-bold mb-6 text-gray-900">Ready to make a difference?</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <div className="w-full sm:w-auto">
-             <Link href='/createcampaign'><button className="w-full sm:w-auto bg-blue-600 text-white py-3 px-8 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center text-lg font-semibold">
+             <Link href='/campaign/create'><button className="w-full sm:w-auto bg-blue-600 text-white py-3 px-8 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center text-lg font-semibold">
                 Start a Campaign
                 <ArrowRight className="ml-2 h-5 w-5" />
               </button></Link>
             </div>
             <div className="w-full sm:w-auto">
-              <Link href='/explore'><button className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 py-3 px-8 rounded-full hover:bg-blue-50 transition duration-300 text-lg font-semibold">
+              <Link href='/campaign'><button className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 py-3 px-8 rounded-full hover:bg-blue-50 transition duration-300 text-lg font-semibold">
                 Explore Campaigns
               </button>
               </Link>

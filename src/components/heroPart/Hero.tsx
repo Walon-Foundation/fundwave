@@ -14,7 +14,7 @@ function Hero() {
           Join the movement to support innovative projects, local businesses, and community initiatives throughout Sierra Leone.
         </p>
         <div className="flex gap-4 my-16">
-          <Link href='/createcampaign'>
+          <Link href='/campaign/create'>
           <button
             className="border-2 border-blue-500 shadow-2xl bg-blue-500 text-white px-4 py-2 rounded-md md:text-xl font-bold"
           >
