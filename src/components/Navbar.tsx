@@ -10,7 +10,7 @@ import Image from "next/image";
 
 function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
-    const isAuthenticated = false
+    const isAuthenticated = true
   
 
     function hanldeopen() {

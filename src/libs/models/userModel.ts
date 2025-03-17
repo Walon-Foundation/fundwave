@@ -1,11 +1,28 @@
-import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import {model, Schema, Document,models} from "mongoose";
 
-const userSchema = new Schema(
+interface User extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username:string
+  password: string;
+  country?: string;
+  capitalCity?: string;
+  phoneNumber?: string;
+  sex?: string;
+  qualification?: string;
+  campaigns?: string[];
+}
+
+const userSchema = new Schema<User>(
   {
     firstName: {
       type: String,
       required: true
+    },
+    username: {
+      type:String,
+      required:true
     },
     lastName: {
       type: String,
@@ -21,20 +38,23 @@ const userSchema = new Schema(
     },
     country: {
       type: String,
-      required: true
     },
 
     capitalCity: {
       type: String,
-      required: true
     },
     phoneNumber: {
       type: String,
-      required: true
     },
-
+    sex:{
+      type:String,
+      enum:["Male","Female"],
+    },
+    qualification: {
+      type:String,
+    },
     campaigns: [{
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Campaign'
     }]
   },
@@ -44,6 +64,6 @@ const userSchema = new Schema(
 );
 
 
-const User = mongoose.models.users || mongoose.model('users', userSchema);
+const User = models.users || model('users', userSchema);
 
 export default User;

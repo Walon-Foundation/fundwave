@@ -1,6 +1,15 @@
-import mongoose, { Schema } from "mongoose";
+import{ Schema,models, model } from "mongoose";
 
-const commentSchema = new Schema({
+interface Comment extends Document{
+    description:string,
+    likeCount:number,
+    dislikeCount:number,
+    campaignId:string | undefined,
+    username:string,
+    userId:string | undefined
+}
+
+const commentSchema = new Schema<Comment>({
     description:{
         type:String,
         required:true,
@@ -14,12 +23,21 @@ const commentSchema = new Schema({
         default: 0, 
     },
     campaignId: {
-        type:mongoose.Schema.Types.ObjectId,
+        type:Schema.Types.ObjectId,
         ref:"Campaign",
+        required:true
+    },
+    username:{
+        type:String,
+        required: true,
+    },
+    userId: {
+        type:Schema.Types.ObjectId,
+        ref:"User",
         required:true
     }
 })
 
-const Comment = mongoose.models.comments || mongoose.model("comments",commentSchema);
+const Comment = models.comments || model("comments",commentSchema);
 
 export default Comment;
