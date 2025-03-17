@@ -27,7 +27,7 @@ export async function POST(req:NextRequest){
         if(!passwordMatch){
             return errorHandler(401,"Invalid password",null)
         }
-        const accessToken = jwt.sign({id:user._id},process.env.JWT_SECRET_KEY!,{expiresIn:"1d"})
+        const accessToken = jwt.sign({id:user._id,username:user.username},process.env.ACCESS_TOKEN_SECRET!,{expiresIn:"1d"})
         const userToken = jwt.sign({
             id:user._id,
             username:user.username, 

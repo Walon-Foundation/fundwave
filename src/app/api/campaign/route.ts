@@ -1,71 +1,59 @@
 import Campaign from "@/libs/models/campaignModel";
 import User from "@/libs/models/userModel";
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { ConnectDB } from "@/libs/configs/mongoDB";
+import jwt from "jsonwebtoken";
+import { apiResponse } from "@/libs/helpers/apiResponse";
+import { errorHandler } from "@/libs/helpers/errorHandler";
+import { campaignCreateSchema } from "@/libs/zod/campaign.schema";
 
 export async function POST(req: NextRequest) {
   try {
     //connecting to the database
     await ConnectDB();
 
+    const authHeader = req.headers.get("authorization");
+    if(!authHeader || !authHeader.startsWith("Bearer ")){
+      return errorHandler(401,"Unauthorized",null)
+    }
+    const token = authHeader.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
+
+    const userId = decodedToken;
     //getting data from the request body
     const reqBody = await req.json()
+    const result = campaignCreateSchema.safeParse(reqBody)
+    if(!result.success){
+        return errorHandler(400,result.error.issues[0].message,null)
+    }
     const {
       campaignDescription,
       campaignName,
-      fundingGoal,
       amountNeeded,
       completionDate,
       risksAndChallenges,
       milestoneTitle,
       category,
-      userId,
       teamInformation,
       expectedImpact,
-    } = reqBody;
-
-    if (
-      !campaignDescription ||
-      !campaignName ||
-      !fundingGoal ||
-      !amountNeeded ||
-      !completionDate ||
-      !risksAndChallenges ||
-      !milestoneTitle ||
-      !category ||
-      !userId ||
-      !teamInformation ||
-      !expectedImpact
-    ) {
-      return NextResponse.json(
-        { message: "All fields are required"},
-        {status:400},
-        )
-    }
+    } = result.data;
 
     //checking if the userId is correct
-    const user = await User.findOne({ _id:userId });
+    const user = await User.findOne({ _id:userId.id });
     if (!user) {
-        return NextResponse.json(
-            {message:"Invalid userID"},
-            {status:401}
-        )
+        return errorHandler(401,"User not found",null)
     }
 
     //checking if a campaign exist with that name
     const campaign = await Campaign.findOne({campaignName})
     if(campaign){
-        return NextResponse.json(
-            {message:"campaign already exist"},
-            {status:401}
-        )
+        return errorHandler(400,"Campaign already exist",null)
     }
 
     //creating the new campaign
     const newCampaign = await new Campaign({
       campaignDescription,
       campaignName,
-      fundingGoal,
       amountNeeded,
       completionDate,
       risksAndChallenges,
@@ -73,7 +61,8 @@ export async function POST(req: NextRequest) {
       category,
       teamInformation,
       expectedImpact,
-      creator: user._id,
+      creatorName: user.username,
+      creatorId: user._id,
     });
 
     // Add campaign to user's campaigns
@@ -84,14 +73,20 @@ export async function POST(req: NextRequest) {
     //saving campaign to the database
     await newCampaign.save();
 
-    return NextResponse.json(
-        {message:"campiagn created",newCampaign},
-        {status:201}
-    );
+    return apiResponse("Campaign created successfully",200, newCampaign);
   } catch (error: unknown) {
-    return NextResponse.json(
-      { message: "Internal Server error", error },
-      { status: 500 }
-    );
+    return errorHandler(500, "Internal Server Error", error);
+  }
+}
+
+export async function GET() {
+  try{
+    const campaigns = await Campaign.find({})
+    if(campaigns.length === 0){
+      return apiResponse("No campaigns found",200, undefined)
+    }
+    return apiResponse("Campaigns found",200, campaigns)
+  }catch(error){
+    return errorHandler(500,"Internal server error",error)
   }
 }
