@@ -1,26 +1,17 @@
-import{ Schema,models, model } from "mongoose";
+import{ Schema,models, model, Document } from "mongoose";
 
 interface Comment extends Document{
     description:string,
-    likeCount:number,
-    dislikeCount:number,
     campaignId:string | undefined,
     username:string,
     userId:string | undefined
+    reaction:string[] | undefined[]
 }
 
 const commentSchema = new Schema<Comment>({
     description:{
         type:String,
         required:true,
-    },
-    likeCount: {
-        type:Number,
-        default:0
-    },
-    dislikeCount: {
-        type:Number,
-        default: 0, 
     },
     campaignId: {
         type:Schema.Types.ObjectId,
@@ -31,6 +22,10 @@ const commentSchema = new Schema<Comment>({
         type:String,
         required: true,
     },
+    reaction:[{
+        type:Schema.Types.ObjectId,
+        ref:"Reaction"
+    }],
     userId: {
         type:Schema.Types.ObjectId,
         ref:"User",

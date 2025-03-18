@@ -41,6 +41,7 @@ export async function PATCH(req:NextRequest){
         user.capitalCity  = capitalCity;
         user.DOB  = DOB;
         user.qualification = qualificaton
+        user.isCampaign = true;
 
         //saving the user
         await user.save()

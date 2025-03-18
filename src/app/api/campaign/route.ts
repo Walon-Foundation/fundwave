@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
     const reqBody = await req.json()
     const result = campaignCreateSchema.safeParse(reqBody)
     if(!result.success){
-        return errorHandler(400,result.error.issues[0].message,null)
+      return errorHandler(400,result.error.issues[0].message,null)
     }
+    
     const {
       campaignDescription,
       campaignName,

@@ -1,6 +1,11 @@
-import { NextResponse,NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import Comment from "@/core/models/commentModel";
 import Campaign from "@/core/models/campaignModel";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { addCommentSchema } from "@/core/validators/comment.schema";
+import jwt from "jsonwebtoken"
+
 import { ConnectDB } from "@/core/configs/mongoDB";
 
 export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}){
@@ -8,32 +13,38 @@ export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}
         //connect to the database
         await ConnectDB();
 
+        //getting userId and username from the sent token in the header
+        const authHeader = req.headers.get("authorization");
+        if(!authHeader || !authHeader.startsWith("Bearer ")){
+            return errorHandler(401,"Unauthorized",null)
+        }
+        const token = authHeader.split(" ")[1];
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
+        const userId = decodedToken;
+    
         //getting the params and  data from the request
         const { campaignId } = params
-        const reqBody = await req.json()
-        const { description } = reqBody
 
-        //validating the data 
-        if(!description || !campaignId){
-            return NextResponse.json(
-                {message:"All field required"},
-                {status:500}
-            )
-        };
+        const reqBody = await req.json()
+        const result = addCommentSchema.safeParse(reqBody)
+        if(!result.success){
+            return errorHandler(400, "invalid description",result.error)
+        }
+        const { description } = result.data 
+
 
         //finding a campaign with the given ID
         const campaign = await Campaign.findById({_id:campaignId})
         if(!campaign){
-            return NextResponse.json(
-                {message:"Invalid campaignId"},
-                {status: 401}
-            )
+            return errorHandler(400, "invalid campaign id", "error in finding the campaign")
         }
 
         //creating the comments
         const newComment = await new Comment({
             campaignId,
-            description
+            description,
+            userId:userId.id,
+            username: userId.username
         })
 
         campaign.comments.push(newComment._id)
@@ -41,16 +52,10 @@ export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}
 
         await newComment.save()
 
-        return NextResponse.json(
-            {message:"comment successfull",newComment},
-            {status: 201}
-        )
+        return apiResponse("comment created", 201, newComment);
 
-    }catch(error:unknown){
-        return NextResponse.json(
-            {message:"Internal server error",error},
-            {status: 500}
-        )
+    }catch(error){
+        return errorHandler(500, "server error", error)
     }
 }
 
@@ -64,23 +69,14 @@ export async function GET(req:NextRequest,{params}:{params:{campaignId:string}})
         
         //get the comments
         const comments = await Comment.find({campaignId})
-        if(!comments){
-            return NextResponse.json(
-                {message:"Invalid campaignId"},
-                {status: 401}
-            )
+        if(comments.length === 0){
+            return apiResponse("no comment yet",200, null)
         };
 
         //sending response to the user
-        return NextResponse.json(
-            {comments},
-            {status: 200}
-        )
+        return apiResponse("all comment for this  campaign", 200, comments)
 
-    }catch(error:unknown){
-        return NextResponse.json(
-            {message:"Internal server error",error},
-            {status: 500}
-        )
+    }catch(error){
+        return errorHandler(500, "server error",error)
     }
 };

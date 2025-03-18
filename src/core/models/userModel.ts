@@ -13,6 +13,7 @@ interface User extends Document {
   DOB:string;
   qualification?: string;
   campaigns?: string[];
+  isCampaign:boolean;
   roles:string
 };
 
@@ -62,6 +63,10 @@ const userSchema = new Schema<User>(
     },
     qualification: {
       type:String,
+    },
+    isCampaign:{
+      type:Boolean,
+      default:false,
     },
     campaigns: [{
       type: Schema.Types.ObjectId,

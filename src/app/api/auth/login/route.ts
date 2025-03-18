@@ -40,7 +40,8 @@ export async function POST(req:NextRequest){
             sex:user.sex,
             qualification:user.qualification,
             DOE:user.DOB,
-            roles:user.roles
+            roles:user.roles,
+            isCampaign:user.isCampaign
         },process.env.USER_TOKEN_SECRET_KEY!,{expiresIn:"1d"})
 
         return apiResponse("Login successful",200,{accessToken,userToken});
