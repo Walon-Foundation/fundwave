@@ -1,6 +1,6 @@
 import { NextResponse,NextRequest } from "next/server";
-import Campaign from "@/libs/models/campaignModel";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import Campaign from "@/core/models/campaignModel";
+import { ConnectDB } from "@/core/configs/mongoDB";
 
 export async function GET(req:NextRequest,{params}:{params:{campaignId:string}}){
     try{

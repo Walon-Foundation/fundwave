@@ -1,8 +1,8 @@
-import User from "@/libs/models/userModel";
-import { errorHandler } from "@/libs/helpers/errorHandler";
-import { apiResponse } from "@/libs/helpers/apiResponse";
-import { updateUserSchema } from "@/libs/zod/user.schema";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import User from "@/core/models/userModel";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { updateUserSchema } from "@/core/validators/user.schema";
+import { ConnectDB } from "@/core/configs/mongoDB";
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken"
 

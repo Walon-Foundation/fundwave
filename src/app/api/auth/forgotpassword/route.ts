@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
-import User from "@/libs/models/userModel";
-import { errorHandler } from "@/libs/helpers/errorHandler";
-import { apiResponse } from "@/libs/helpers/apiResponse";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import User from "@/core/models/userModel";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { ConnectDB } from "@/core/configs/mongoDB";
 import { NextRequest } from "next/server";
-import { forgotPasswordSchema } from "@/libs/zod/user.schema";
+import { forgotPasswordSchema } from "@/core/validators/user.schema";
 
 export async function PATCH(req:NextRequest){
     try{

@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import User from "@/libs/models/userModel";
+import User from "@/core/models/userModel";
 import bcrypt from "bcryptjs";
 import jwt  from "jsonwebtoken"
-import { loginSchema } from "@/libs/zod/user.schema";
-import { errorHandler } from "@/libs/helpers/errorHandler";
-import { apiResponse } from "@/libs/helpers/apiResponse";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import { loginSchema } from "@/core/validators/user.schema";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { ConnectDB } from "@/core/configs/mongoDB";
 
 
 ConnectDB()

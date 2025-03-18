@@ -1,10 +1,10 @@
-import User from "@/libs/models/userModel";
+import User from "@/core/models/userModel";
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { registerSchema } from "@/libs/zod/user.schema";
-import { apiResponse } from "@/libs/helpers/apiResponse";
-import { errorHandler } from "@/libs/helpers/errorHandler";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import { registerSchema } from "@/core/validators/user.schema";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { ConnectDB } from "@/core/configs/mongoDB";
 
 ConnectDB()
 

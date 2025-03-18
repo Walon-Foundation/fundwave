@@ -1,11 +1,11 @@
-import Campaign from "@/libs/models/campaignModel";
-import User from "@/libs/models/userModel";
+import Campaign from "@/core/models/campaignModel";
+import User from "@/core/models/userModel";
 import { NextRequest } from "next/server";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import { ConnectDB } from "@/core/configs/mongoDB";
 import jwt from "jsonwebtoken";
-import { apiResponse } from "@/libs/helpers/apiResponse";
-import { errorHandler } from "@/libs/helpers/errorHandler";
-import { campaignCreateSchema } from "@/libs/zod/campaign.schema";
+import { apiResponse } from "@/core/helpers/apiResponse";
+import { errorHandler } from "@/core/helpers/errorHandler";
+import { campaignCreateSchema } from "@/core/validators/campaign.schema";
 
 export async function POST(req: NextRequest) {
   try {

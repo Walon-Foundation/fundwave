@@ -1,7 +1,7 @@
 import { NextResponse,NextRequest } from "next/server";
-import Comment from "@/libs/models/commentModel";
-import Campaign from "@/libs/models/campaignModel";
-import { ConnectDB } from "@/libs/configs/mongoDB";
+import Comment from "@/core/models/commentModel";
+import Campaign from "@/core/models/campaignModel";
+import { ConnectDB } from "@/core/configs/mongoDB";
 
 export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}){
     try{
