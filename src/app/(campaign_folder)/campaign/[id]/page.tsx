@@ -175,7 +175,7 @@ const CampaignDetails = () => {
           {/* Campaign Header */}
           <div className="mb-8">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Link href="/campaigns" className="text-blue-600 hover:underline text-sm flex items-center">
+              <Link href="/campaign" className="text-blue-600 hover:underline text-sm flex items-center">
                 All Campaigns <ChevronRight className="h-3 w-3" />
               </Link>
               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">{campaign.category}</Badge>

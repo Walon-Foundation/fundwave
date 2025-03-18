@@ -573,7 +573,7 @@ export default function ExploreCampaigns() {
                             </div>
                           </div>
 
-                          <Link href={`/campaign/${campaign._id}/details`} className="block mt-4">
+                          <Link href={`/campaign/${campaign._id}`} className="block mt-4">
                             <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700">View Campaign</Button>
                           </Link>
                         </CardContent>
