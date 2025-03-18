@@ -13,6 +13,7 @@ interface User extends Document {
   DOB:string;
   qualification?: string;
   campaigns?: string[];
+  roles:string
 };
 
 const userSchema = new Schema<User>(
@@ -50,6 +51,11 @@ const userSchema = new Schema<User>(
     sex:{
       type:String,
       enum:["Male","Female"],
+    },
+    roles:{
+      type:String,
+      enum:["Admin", "User"],
+      default:"User"
     },
     DOB:{
       type:String,

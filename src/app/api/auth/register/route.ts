@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         if(!result.success){
             return errorHandler(400,result.error.issues[0].message,null)
         }
-        const { firstName, lastName, username, email, password } = result.data
+        const { firstName, lastName, username, email, password,roles } = result.data
         const user = await User.findOne({email})
         if(user){
             return errorHandler(400,"User already exists",null)
@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
             lastName,
             username,
             email,
-            password:passwordHash
+            password:passwordHash,
+            roles
         })
 
         await newUser.save()
