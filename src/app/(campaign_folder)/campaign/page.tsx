@@ -1,148 +1,630 @@
-import Link from "next/link";
-import { Calendar, Search, Users } from "lucide-react";
-import { holder } from "@/assets/assets";
-import Image from "next/image";
+"use client"
 
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { Calendar, Filter, Search, Users } from "lucide-react"
+
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+// This would normally come from your assets
+const holder = "/placeholder.svg?height=300&width=500"
+
+// Category color mapping
+const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
+  "Renewable Energy": {
+    bg: "bg-green-100",
+    text: "text-green-800",
+    border: "border-green-200",
+  },
+  Education: {
+    bg: "bg-blue-100",
+    text: "text-blue-800",
+    border: "border-blue-200",
+  },
+  Environment: {
+    bg: "bg-emerald-100",
+    text: "text-emerald-800",
+    border: "border-emerald-200",
+  },
+  Healthcare: {
+    bg: "bg-red-100",
+    text: "text-red-800",
+    border: "border-red-200",
+  },
+  Technology: {
+    bg: "bg-purple-100",
+    text: "text-purple-800",
+    border: "border-purple-200",
+  },
+  Community: {
+    bg: "bg-amber-100",
+    text: "text-amber-800",
+    border: "border-amber-200",
+  },
+  Arts: {
+    bg: "bg-pink-100",
+    text: "text-pink-800",
+    border: "border-pink-200",
+  },
+  Sports: {
+    bg: "bg-indigo-100",
+    text: "text-indigo-800",
+    border: "border-indigo-200",
+  },
+}
+
+// Default color for categories not in the mapping
+const defaultCategoryColor = {
+  bg: "bg-gray-100",
+  text: "text-gray-800",
+  border: "border-gray-200",
+}
+
+// Campaign type definition
+interface Campaign {
+  _id: string
+  campaignName: string
+  campaignDescription: string
+  fundingGoal: number
+  category: string
+  milestoneTitle: string
+  amountNeeded: number
+  completionDate: string
+  teamInformation: string
+  expectedImpact: string
+  risksAndChallenges: string
+  creator: string
+  moneyReceived: number
+  backers: number
+  createdAt?: string // Optional for sorting by newest
+}
 
 export default function ExploreCampaigns() {
-  const campaignList = [
+  // Original campaign data
+  const originalCampaignList: Campaign[] = [
     {
-      "_id": "65a4b6cde789f01234567890",
-      "campaignName": "Solar Power for Rural Homes",
-      "campaignDescription": "Providing affordable and sustainable solar energy to off-grid communities.",
-      "fundingGoal": "50000",
-      "category": "Renewable Energy",
-      "milestoneTitle": "Install Solar Panels in 100 Homes",
-      "amountNeeded": "25000",
-      "completionDate": "2025-06-30",
-      "teamInformation": "Led by a group of renewable energy experts and local engineers.",
-      "expectedImpact": "Reduce reliance on fossil fuels and improve living conditions for 500 people.",
-      "risksAndChallenges": "Potential delays in equipment delivery and installation due to supply chain issues.",
-      "creator": "65d8e9f01234567890abcdef",
-      "moneyRecieved": 12000
+      _id: "65a4b6cde789f01234567890",
+      campaignName: "Solar Power for Rural Homes",
+      campaignDescription: "Providing affordable and sustainable solar energy to off-grid communities.",
+      fundingGoal: 50000,
+      category: "Renewable Energy",
+      milestoneTitle: "Install Solar Panels in 100 Homes",
+      amountNeeded: 25000,
+      completionDate: "2025-06-30",
+      teamInformation: "Led by a group of renewable energy experts and local engineers.",
+      expectedImpact: "Reduce reliance on fossil fuels and improve living conditions for 500 people.",
+      risksAndChallenges: "Potential delays in equipment delivery and installation due to supply chain issues.",
+      creator: "65d8e9f01234567890abcdef",
+      moneyReceived: 12000,
+      backers: 78,
+      createdAt: "2023-11-15T08:30:00Z",
     },
     {
-      "_id": "65b6c7def01234567890abcd",
-      "campaignName": "AI Education for Underserved Students",
-      "campaignDescription": "Providing AI and coding training to high school students in low-income areas.",
-      "fundingGoal": "30000",
-      "category": "Education",
-      "milestoneTitle": "Launch AI Training Bootcamp",
-      "amountNeeded": "15000",
-      "completionDate": "2025-08-15",
-      "teamInformation": "Composed of experienced AI researchers and teachers from top universities.",
-      "expectedImpact": "Train 200 students in AI and equip them with job-ready skills.",
-      "risksAndChallenges": "Limited access to computers and internet connectivity in some areas.",
-      "creator": "65e9f01234567890abcdef12",
-      "moneyRecieved": 8000
+      _id: "65b6c7def01234567890abcd",
+      campaignName: "AI Education for Underserved Students",
+      campaignDescription: "Providing AI and coding training to high school students in low-income areas.",
+      fundingGoal: 30000,
+      category: "Education",
+      milestoneTitle: "Launch AI Training Bootcamp",
+      amountNeeded: 15000,
+      completionDate: "2025-08-15",
+      teamInformation: "Composed of experienced AI researchers and teachers from top universities.",
+      expectedImpact: "Train 200 students in AI and equip them with job-ready skills.",
+      risksAndChallenges: "Limited access to computers and internet connectivity in some areas.",
+      creator: "65e9f01234567890abcdef12",
+      moneyReceived: 8000,
+      backers: 42,
+      createdAt: "2024-01-20T14:45:00Z",
     },
     {
-      "_id": "65c7def01234567890abcde",
-      "campaignName": "Reforest the Amazon",
-      "campaignDescription": "A community-led initiative to plant trees and restore deforested lands in the Amazon rainforest.",
-      "fundingGoal": "100000",
-      "category": "Environment",
-      "milestoneTitle": "Plant 10,000 Trees in the Amazon",
-      "amountNeeded": "50000",
-      "completionDate": "2025-12-01",
-      "teamInformation": "Collaboration between environmental activists, local communities, and NGOs.",
-      "expectedImpact": "Restore habitats, combat climate change, and support biodiversity.",
-      "risksAndChallenges": "Illegal deforestation activities and challenging weather conditions.",
-      "creator": "65f01234567890abcdef1234",
-      "moneyRecieved": 45000
-    }
+      _id: "65c7def01234567890abcde",
+      campaignName: "Reforest the Amazon",
+      campaignDescription:
+        "A community-led initiative to plant trees and restore deforested lands in the Amazon rainforest.",
+      fundingGoal: 100000,
+      category: "Environment",
+      milestoneTitle: "Plant 10,000 Trees in the Amazon",
+      amountNeeded: 50000,
+      completionDate: "2025-12-01",
+      teamInformation: "Collaboration between environmental activists, local communities, and NGOs.",
+      expectedImpact: "Restore habitats, combat climate change, and support biodiversity.",
+      risksAndChallenges: "Illegal deforestation activities and challenging weather conditions.",
+      creator: "65f01234567890abcdef1234",
+      moneyReceived: 45000,
+      backers: 215,
+      createdAt: "2023-09-05T10:15:00Z",
+    },
+    {
+      _id: "65d8e9f01234567890abcdef",
+      campaignName: "Mobile Health Clinics",
+      campaignDescription: "Bringing healthcare services to remote and underserved communities through mobile clinics.",
+      fundingGoal: 75000,
+      category: "Healthcare",
+      milestoneTitle: "Launch First Mobile Clinic",
+      amountNeeded: 35000,
+      completionDate: "2025-05-15",
+      teamInformation: "Team of doctors, nurses, and healthcare administrators.",
+      expectedImpact: "Provide basic healthcare to over 5,000 people in remote areas.",
+      risksAndChallenges: "Road conditions and equipment maintenance in remote locations.",
+      creator: "65f01234567890abcdef1235",
+      moneyReceived: 28000,
+      backers: 120,
+      createdAt: "2024-02-10T09:20:00Z",
+    },
+    {
+      _id: "65e9f01234567890abcdef12",
+      campaignName: "Community Art Center",
+      campaignDescription:
+        "Creating a space for local artists to showcase their work and offer art education to the community.",
+      fundingGoal: 40000,
+      category: "Arts",
+      milestoneTitle: "Renovate Building for Art Center",
+      amountNeeded: 20000,
+      completionDate: "2025-04-01",
+      teamInformation: "Local artists, architects, and community organizers.",
+      expectedImpact: "Provide art education to 300+ children and showcase work from 50+ local artists.",
+      risksAndChallenges: "Building renovation delays and permit approvals.",
+      creator: "65f01234567890abcdef1236",
+      moneyReceived: 15000,
+      backers: 85,
+      createdAt: "2024-03-01T16:40:00Z",
+    },
+    {
+      _id: "65f01234567890abcdef1237",
+      campaignName: "Clean Water Initiative",
+      campaignDescription:
+        "Installing water purification systems in communities with limited access to clean drinking water.",
+      fundingGoal: 60000,
+      category: "Community",
+      milestoneTitle: "Install 50 Water Purification Systems",
+      amountNeeded: 30000,
+      completionDate: "2025-07-20",
+      teamInformation: "Water engineers, public health specialists, and community volunteers.",
+      expectedImpact: "Provide clean drinking water to over 10,000 people.",
+      risksAndChallenges: "Logistical challenges in remote areas and system maintenance training.",
+      creator: "65f01234567890abcdef1238",
+      moneyReceived: 22000,
+      backers: 145,
+      createdAt: "2023-12-12T11:30:00Z",
+    },
+    {
+      _id: "65f01234567890abcdef1239",
+      campaignName: "Youth Sports Program",
+      campaignDescription:
+        "Creating affordable sports programs for underprivileged youth to promote physical activity and teamwork.",
+      fundingGoal: 25000,
+      category: "Sports",
+      milestoneTitle: "Launch Summer Sports Camp",
+      amountNeeded: 12000,
+      completionDate: "2025-03-15",
+      teamInformation: "Professional coaches, youth mentors, and community organizers.",
+      expectedImpact: "Engage 150 youth in regular physical activity and team sports.",
+      risksAndChallenges: "Securing appropriate facilities and equipment.",
+      creator: "65f01234567890abcdef1240",
+      moneyReceived: 9000,
+      backers: 65,
+      createdAt: "2024-01-05T08:45:00Z",
+    },
+    {
+      _id: "65f01234567890abcdef1241",
+      campaignName: "Innovative Recycling Technology",
+      campaignDescription:
+        "Developing a new technology to efficiently recycle mixed plastics that are currently difficult to process.",
+      fundingGoal: 120000,
+      category: "Technology",
+      milestoneTitle: "Build Prototype Recycling Machine",
+      amountNeeded: 60000,
+      completionDate: "2025-09-30",
+      teamInformation: "Engineers, material scientists, and environmental experts.",
+      expectedImpact: "Reduce plastic waste by developing technology that can be implemented globally.",
+      risksAndChallenges: "Technical challenges in processing mixed plastics and scaling the technology.",
+      creator: "65f01234567890abcdef1242",
+      moneyReceived: 48000,
+      backers: 180,
+      createdAt: "2023-10-20T14:15:00Z",
+    },
   ]
-  
-  
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("most-funded")
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, _setItemsPerPage] = useState(3)
+
+  // Filtered campaigns state
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>(originalCampaignList)
+  const [paginatedCampaigns, setPaginatedCampaigns] = useState<Campaign[]>([])
+  const [totalPages, setTotalPages] = useState(1)
+
+  // Apply filters whenever filter states change
+  useEffect(() => {
+    let result = [...originalCampaignList]
+
+    // Apply search filter
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (campaign) =>
+          campaign.campaignName.toLowerCase().includes(query) ||
+          campaign.campaignDescription.toLowerCase().includes(query),
+      )
+    }
+
+    // Apply category filter
+    if (categoryFilter !== "all") {
+      // Convert kebab-case to Title Case for matching
+      const formattedCategory = categoryFilter
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+
+      result = result.filter((campaign) => campaign.category.toLowerCase() === formattedCategory.toLowerCase())
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case "most-funded":
+        result.sort((a, b) => b.moneyReceived - a.moneyReceived)
+        break
+      case "newest":
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          return dateB - dateA
+        })
+        break
+      case "end-date":
+        result.sort((a, b) => {
+          const dateA = new Date(a.completionDate).getTime()
+          const dateB = new Date(b.completionDate).getTime()
+          return dateA - dateB
+        })
+        break
+      default:
+        break
+    }
+
+    setFilteredCampaigns(result)
+    // Reset to first page when filters change
+    setCurrentPage(1)
+  }, [searchQuery, categoryFilter, sortBy])
+
+  // Apply pagination
+  useEffect(() => {
+    const totalPages = Math.ceil(filteredCampaigns.length / itemsPerPage)
+    setTotalPages(totalPages || 1) // Ensure at least 1 page even if no results
+
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    setPaginatedCampaigns(filteredCampaigns.slice(startIndex, endIndex))
+  }, [filteredCampaigns, currentPage, itemsPerPage])
+
+  // Calculate days remaining
+  const calculateDaysRemaining = (dateString: string) => {
+    const endDate = new Date(dateString)
+    const today = new Date()
+    const diffTime = endDate.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays > 0 ? diffDays : 0
+  }
+
+  // Calculate funding percentage
+  const calculateFundingPercentage = (received: number, goal: number) => {
+    const percentage = (received / goal) * 100
+    return Math.min(percentage, 100) // Cap at 100%
+  }
+
+  // Get unique categories from the campaign list
+  const uniqueCategories = Array.from(new Set(originalCampaignList.map((campaign) => campaign.category)))
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery("")
+    setCategoryFilter("all")
+    setSortBy("most-funded")
+    setCurrentPage(1)
+  }
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return
+    setCurrentPage(page)
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  // Generate pagination items
+  const renderPaginationItems = () => {
+    const items = []
+
+    // For small number of pages, show all page numbers
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              isActive={currentPage === i}
+              onClick={() => handlePageChange(i)}
+              className={
+                currentPage === i ? "bg-blue-600 text-white hover:bg-blue-700" : "text-blue-700 hover:bg-blue-50"
+              }
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>,
+        )
+      }
+      return items
+    }
+
+    // For larger number of pages, show ellipsis
+    items.push(
+      <PaginationItem key={1}>
+        <PaginationLink
+          isActive={currentPage === 1}
+          onClick={() => handlePageChange(1)}
+          className={currentPage === 1 ? "bg-blue-600 text-white hover:bg-blue-700" : "text-blue-700 hover:bg-blue-50"}
+        >
+          1
+        </PaginationLink>
+      </PaginationItem>,
+    )
+
+    // Add ellipsis or page numbers
+    if (currentPage > 3) {
+      items.push(
+        <PaginationItem key="ellipsis1">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      )
+    }
+
+    // Add pages around current page
+    const startPage = Math.max(2, currentPage - 1)
+    const endPage = Math.min(totalPages - 1, currentPage + 1)
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={currentPage === i}
+            onClick={() => handlePageChange(i)}
+            className={
+              currentPage === i ? "bg-blue-600 text-white hover:bg-blue-700" : "text-blue-700 hover:bg-blue-50"
+            }
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>,
+      )
+    }
+
+    if (currentPage < totalPages - 2) {
+      items.push(
+        <PaginationItem key="ellipsis2">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      )
+    }
+
+    if (totalPages > 1) {
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            isActive={currentPage === totalPages}
+            onClick={() => handlePageChange(totalPages)}
+            className={
+              currentPage === totalPages ? "bg-blue-600 text-white hover:bg-blue-700" : "text-blue-700 hover:bg-blue-50"
+            }
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>,
+      )
+    }
+
+    return items
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1 py-12 bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-6">Explore Campaigns</h1>
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="relative flex-grow">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                type="text"
-                placeholder="Search campaigns..."
-              />
+          <h1 className="text-3xl font-bold text-blue-800 mb-2">Explore Campaigns</h1>
+          <p className="text-blue-600 mb-8">Discover and support innovative projects from around the world</p>
+
+          <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-sm mb-8">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                <Input
+                  className="w-full pl-10 border-blue-200 focus-visible:ring-blue-400"
+                  type="text"
+                  placeholder="Search campaigns..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full md:w-[180px] border-blue-200 focus:ring-blue-400">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {uniqueCategories.map((category) => (
+                    <SelectItem key={category} value={category.toLowerCase().replace(/\s+/g, "-")}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full md:w-[180px] border-blue-200 focus:ring-blue-400">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="most-funded">Most Funded</SelectItem>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="end-date">End Date</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <select
-              className="w-full md:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Categories</option>
-              <option value="education">Education</option>
-              <option value="healthcare">Healthcare</option>
-              <option value="environment">Environment</option>
-              <option value="technology">Technology</option>
-              <option value="community">Community</option>
-            </select>
-            <select
-              className="w-full md:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="most-funded">Most Funded</option>
-              <option value="newest">Newest</option>
-              <option value="end-date">End Date</option>
-            </select>
+
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-blue-700">
+                Showing {filteredCampaigns.length} of {originalCampaignList.length} campaigns
+              </div>
+
+              {(searchQuery || categoryFilter !== "all" || sortBy !== "most-funded") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Reset Filters
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-6">
-            {campaignList.map((campaign) => (
-              <div key={campaign._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="md:flex">
-                  <div className="md:w-1/3">
-                    <Image
-                      src={holder}
-                      alt={campaign.campaignName}
-                      className="h-48 w-full object-cover md:h-full"
-                    />
-                  </div>
-                  <div className="md:w-2/3 p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h2 className="text-xl font-bold mb-1">{campaign.campaignName}</h2>
-                        <p className="text-gray-600">{campaign.campaignDescription}</p>
+          {filteredCampaigns.length > 0 ? (
+            <>
+              <div className="space-y-6">
+                {paginatedCampaigns.map((campaign) => {
+                  const categoryColor = categoryColors[campaign.category] || defaultCategoryColor
+                  const fundingPercentage = calculateFundingPercentage(campaign.moneyReceived, campaign.fundingGoal)
+                  const daysRemaining = calculateDaysRemaining(campaign.completionDate)
+
+                  return (
+                    <Card
+                      key={campaign._id}
+                      className="overflow-hidden border-blue-100 hover:shadow-lg transition-shadow duration-300"
+                    >
+                      <div className="md:flex">
+                        <div className="md:w-1/3 relative">
+                          <Image
+                            src={holder || "/placeholder.svg"}
+                            alt={campaign.campaignName}
+                            width={500}
+                            height={300}
+                            className="h-48 w-full object-cover md:h-full"
+                          />
+                          <Badge
+                            className={`absolute top-3 left-3 ${categoryColor.bg} ${categoryColor.text} border ${categoryColor.border}`}
+                          >
+                            {campaign.category}
+                          </Badge>
+                        </div>
+
+                        <CardContent className="md:w-2/3 p-6">
+                          <div className="mb-4">
+                            <h2 className="text-xl font-bold text-blue-900 mb-2">{campaign.campaignName}</h2>
+                            <p className="text-gray-600">{campaign.campaignDescription}</p>
+                          </div>
+
+                          <div className="mb-4">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="font-medium text-blue-800">
+                                NLe{campaign.moneyReceived.toLocaleString()}
+                              </span>
+                              <span className="text-gray-500">of NLe{campaign.fundingGoal.toLocaleString()}</span>
+                            </div>
+                            <div className="relative w-full h-3 bg-blue-100 rounded-full overflow-hidden">
+                              <div
+                                className="absolute top-0 left-0 h-full bg-blue-600 rounded-full"
+                                style={{ width: `${fundingPercentage}%` }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-sm mt-1">
+                              <span className="text-blue-700 font-medium">{fundingPercentage.toFixed(0)}% funded</span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap justify-between text-sm text-gray-600 mb-4 gap-y-2">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1 text-blue-500" />
+                              <span>{daysRemaining} days left</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Users className="h-4 w-4 mr-1 text-blue-500" />
+                              <span>{campaign.backers} backers</span>
+                            </div>
+                          </div>
+
+                          <Link href={`/campaign/${campaign._id}/details`} className="block mt-4">
+                            <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700">View Campaign</Button>
+                          </Link>
+                        </CardContent>
                       </div>
-                      <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded">
-                        {campaign.category}
-                      </span>
-                    </div>
-                    <div className="mb-4">
-                      <div className="relative w-full h-2 bg-gray-200 rounded-full"></div>
-                      <div className="flex justify-between text-sm mt-2">
-                        <span className="text-gray-500">NLe{campaign.fundingGoal.toLocaleString()} goal</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-500 mb-4">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        <span>Time Left: {campaign.completionDate}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        <span>{campaign.teamInformation} backers</span>
-                      </div>
-                    </div>
-                    <Link href='/campaign/1/details'>
-                      <button className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        View Campaign
-                      </button>
-                    </Link>
-                  </div>
+                    </Card>
+                  )
+                })}
+              </div>
+
+              {/* Pagination */}
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={`text-blue-700 hover:bg-blue-50 ${currentPage === 1 ? "opacity-50 pointer-events-none" : ""}`}
+                      />
+                    </PaginationItem>
+
+                    {renderPaginationItems()}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={`text-blue-700 hover:bg-blue-50 ${currentPage === totalPages ? "opacity-50 pointer-events-none" : ""}`}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+
+                <div className="text-center text-sm text-blue-600 mt-2">
+                  Page {currentPage} of {totalPages} • Showing {paginatedCampaigns.length} of {filteredCampaigns.length}{" "}
+                  campaigns
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <button className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-              Load More
-            </button>
-          </div>
+            </>
+          ) : (
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertDescription className="text-blue-800 text-center py-8">
+                No campaigns match your current filters. Try adjusting your search criteria or
+                <Button variant="link" onClick={resetFilters} className="text-blue-600 font-medium px-1">
+                  reset all filters
+                </Button>
+                to see all campaigns.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       </main>
     </div>
-  );
+  )
 }
+
