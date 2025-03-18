@@ -1,9 +1,7 @@
 "use client"
-
+import { useState } from 'react';
 import { logo } from '@/assets/assets';
 import { ToastContainer } from 'react-toastify';
-import { useContext,useState } from 'react';
-import AuthContext from '@/libs/context/authContext';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -11,9 +9,7 @@ function SignIn() {
   const [email,setEmail] = useState<string>()
   const [password, setPassword] = useState<string>("")
 
-  const { login } = useContext(AuthContext) || {}
   
-
   return (
     <section className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white shadow-lg rounded-2xl p-8 md:p-14 w-full max-w-md">

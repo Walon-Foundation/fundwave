@@ -1,12 +1,13 @@
 " use client"
 
-import { useContext } from "react";
-import AuthContext from "../context/AuthContext";
 import { Calendar, Edit, Mail, MapPin, Phone } from "lucide-react";
-import { aprof } from "../assets/assets";
+import Image from "next/image";
+import { aprof } from "@/assets/assets";
 
 export default function UserProfile() {
-  const { user } = useContext(AuthContext);
+  const user = [{
+    null:null
+  }]
 
   if (!user) return <p className="text-center text-4xl mt-32">Loading user data...</p>;
 
@@ -21,7 +22,7 @@ export default function UserProfile() {
           >
             {/* Profile Header */}
             <div className="flex flex-col items-center gap-6 justify-between">
-              <img
+              <Image
                 src={aprof}
                 alt="profile"
                 className="w-48 h-48 rounded-full object-cover border border-gray-200 shadow-md"

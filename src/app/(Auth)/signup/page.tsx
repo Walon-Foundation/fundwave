@@ -1,14 +1,12 @@
 "use client"
-
 import { g2_logo,f_logo } from "@/assets/assets";
-import { useContext, useState } from "react";
-import AuthContext from "@/libs/context/authContext";
 import Link from "next/link";
 import { ToastContainer } from "react-toastify";
+import { useState } from "react";
 import Image from "next/image";
 
 function SignUp() {
-  const { signup } = useContext(AuthContext) || {}
+  
 
   const [firstName, setFirstName] = useState<string>("")
   const [email, setEmail] = useState<string>("")
