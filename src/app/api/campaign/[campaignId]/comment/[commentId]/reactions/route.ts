@@ -44,6 +44,9 @@ export async function POST(req:NextRequest, {params}:{params:{commentId:string}}
             userId:userId.id,
             commentId
         })
+
+        comment.reactions.push(newReaction._id)
+        await comment.save()
         await newReaction.save()
 
         return apiResponse("reaction created", 200, newReaction)

@@ -5,7 +5,7 @@ interface Comment extends Document{
     campaignId:string | undefined,
     username:string,
     userId:string | undefined
-    reaction:string[] | undefined[]
+    reactions:string[] | undefined[]
 }
 
 const commentSchema = new Schema<Comment>({
@@ -22,7 +22,7 @@ const commentSchema = new Schema<Comment>({
         type:String,
         required: true,
     },
-    reaction:[{
+    reactions:[{
         type:Schema.Types.ObjectId,
         ref:"Reaction"
     }],
