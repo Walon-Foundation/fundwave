@@ -5,7 +5,7 @@ interface Reaction extends Document {
     like:number,
     userId:string | undefined,
     username:string,
-    campaignId: string | undefined
+    commentId: string | undefined
 }
 
 const reactionSchema = new Schema<Reaction>({
@@ -21,10 +21,7 @@ const reactionSchema = new Schema<Reaction>({
         type:Schema.Types.ObjectId,
         ref:"User"
     },
-    username: {
-        type:String,
-    },
-    campaignId: {
+    commentId: {
         type:Schema.Types.ObjectId,
         ref: "Campaign"
     }

@@ -34,7 +34,7 @@ export async function DELETE(req:NextRequest,{params}:{params:{campaignId:string
         //connecting to database
         await ConnectDB()
 
-         //geting the roles from the header
+        //geting the roles from the header
         const authHeader = req.headers.get("authorization")
         if(!authHeader || !authHeader.startsWith("Bearer ")){
             return errorHandler(404, "invalid token", "error with the token")
