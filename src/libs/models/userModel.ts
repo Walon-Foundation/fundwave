@@ -6,13 +6,14 @@ interface User extends Document {
   email: string;
   username:string
   password: string;
-  country?: string;
-  capitalCity?: string;
-  phoneNumber?: string;
-  sex?: string;
+  country: string;
+  capitalCity: string;
+  phoneNumber: string;
+  sex: string;
+  DOB:string;
   qualification?: string;
   campaigns?: string[];
-}
+};
 
 const userSchema = new Schema<User>(
   {
@@ -22,7 +23,8 @@ const userSchema = new Schema<User>(
     },
     username: {
       type:String,
-      required:true
+      required:true,
+      unique:true
     },
     lastName: {
       type: String,
@@ -39,7 +41,6 @@ const userSchema = new Schema<User>(
     country: {
       type: String,
     },
-
     capitalCity: {
       type: String,
     },
@@ -49,6 +50,9 @@ const userSchema = new Schema<User>(
     sex:{
       type:String,
       enum:["Male","Female"],
+    },
+    DOB:{
+      type:String,
     },
     qualification: {
       type:String,
