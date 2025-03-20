@@ -18,10 +18,10 @@ export interface Campaign {
 export interface Comment {
   _id?: string;
   description: string;
-  campaignId: string | undefined;
-  username: string;
-  userId: string | undefined;
-  reactions: string[] | undefined[];
+  campaignId?: string | undefined;
+  username?: string;
+  userId?: string | undefined;
+  reactions?: string[] | undefined[];
 }
 
 export interface Reaction {

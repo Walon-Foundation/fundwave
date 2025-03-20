@@ -55,7 +55,7 @@ export async function DELETE(req:NextRequest,{params}:{params:{campaignId:string
             return errorHandler(401, "invalid camapign id", "wrong id")
         };
 
-        return apiResponse("campaign deleted", 200, null)
+        return apiResponse("campaign deleted", 200,  {campaignId})
 
     }catch(error){
         return errorHandler(505, "server error", error)
