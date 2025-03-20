@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaXTwitter, FaFacebookF } from 'react-icons/fa6';
-// import { useContext } from 'react';
 import { holder } from '@/assets/assets';
-// import AuthContext from '@/libs/context/authContext';
+
 
 const FeaturedCampaign = () => {
   const campaignList = [
@@ -69,7 +68,7 @@ const FeaturedCampaign = () => {
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                  {card.day_left} days left
+                  {100} days left
                 </div>
               </div>
               <div className="p-6">
@@ -105,7 +104,7 @@ const FeaturedCampaign = () => {
               </div>
               <div className="bg-gray-50 px-6 py-4">
                 <Link 
-                  href="/campaign/1/details" 
+                  href="/campaign/1" 
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
                   <button>
@@ -118,7 +117,7 @@ const FeaturedCampaign = () => {
         </div>
         <div className="text-center mt-12">
           <Link 
-            href="/explore" 
+            href="/campaign" 
             className="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-8 rounded-full hover:bg-gray-300 transition-colors"
           >
             Explore More Campaigns

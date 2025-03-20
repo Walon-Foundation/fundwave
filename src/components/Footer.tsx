@@ -1,28 +1,60 @@
-import Link from "next/link"
-import { logo } from "@/assets/assets"
 import Image from "next/image"
+import Link from "next/link"
 
-
-function Footer() {
-
-    const date = new Date().getFullYear()
+export default function Footer() {
+  const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="">
-        <div className="flex flex-col md:flex-row justify-between mx-4 items-center">
-          <div className="flex flex-col md:flex-row items-center my-5 ">
-            <Image src={logo} alt="logo" className=" w-[100px] mb-1" />
-            <p className="text-md"> &copy;{date}<span className="font-extrabold"> FundWave </span>All right reserved</p>
+    <footer className="border-t bg-background">
+      <div className="mx-2 py-8">
+        <div className="grid  md:grid-cols-3 lg:grid-cols-4">
+          <div className="flex flex-col gap-4">
+            <Link href="/" className="flex items-center gap-2">
+              {/* Replace with your actual logo import */}
+              <div className="relative h-8 w-[100px]">
+                <Image src="/placeholder.svg?height=32&width=100" alt="FundWave Logo" fill className="object-contain" />
+              </div>
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              Empowering your financial journey with innovative solutions.
+            </p>
           </div>
-          <div className="flex flex-col gap-2 md:flex-row text-center md:gap-4 font-light ">
-            <p>Terms of Service</p>
-            <Link href='/privacypolicy'><p>Privacy Policy</p></Link>
-            <Link href='/contactus'><p>Contact Us</p></Link>
-            <Link href='/aboutus'><p>About Us</p></Link>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="font-medium">Quick Links</h3>
+            <nav className="flex flex-col gap-2">
+              <Link href="/howitworks" className="text-sm text-muted-foreground hover:text-foreground">
+                How it works
+              </Link>
+              <Link href="/aboutus" className="text-sm text-muted-foreground hover:text-foreground">
+                About Us
+              </Link>
+              <Link href="/contactus" className="text-sm text-muted-foreground hover:text-foreground">
+                Contact Us
+              </Link>
+            </nav>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="font-medium">Legal</h3>
+            <nav className="flex flex-col gap-2">
+              <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
+                Terms of Service
+              </Link>
+              <Link href="/privacypolicy" className="text-sm text-muted-foreground hover:text-foreground">
+                Privacy Policy
+              </Link>
+            </nav>
           </div>
         </div>
+
+        <div className="mt-8 border-t pt-6">
+          <p className="text-center text-sm text-muted-foreground">
+            &copy; {currentYear} <span className="font-semibold">FundWave</span>. All rights reserved.
+          </p>
+        </div>
+      </div>
     </footer>
   )
 }
 
-export default Footer
