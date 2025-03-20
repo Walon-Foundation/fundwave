@@ -247,6 +247,7 @@ export default function ExploreCampaigns() {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [itemsPerPage, _setItemsPerPage] = useState(3)
 
   // Filtered campaigns state

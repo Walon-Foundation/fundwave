@@ -6,10 +6,8 @@ interface User extends Document {
   email: string;
   username:string
   password: string;
-  country: string;
-  capitalCity: string;
   phoneNumber: string;
-  sex: string;
+  address:string;
   DOB:string;
   qualification?: string;
   campaigns?: string[];
@@ -40,23 +38,16 @@ const userSchema = new Schema<User>(
       type: String,
       required: true
     },
-    country: {
-      type: String,
-    },
-    capitalCity: {
-      type: String,
-    },
     phoneNumber: {
       type: String,
-    },
-    sex:{
-      type:String,
-      enum:["Male","Female"],
     },
     roles:{
       type:String,
       enum:["Admin", "User"],
       default:"User"
+    },
+    address:{
+      type:String
     },
     DOB:{
       type:String,

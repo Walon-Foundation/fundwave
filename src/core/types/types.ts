@@ -40,13 +40,11 @@ export interface User {
   email: string;
   username: string;
   password: string;
-  country: string;
-  capitalCity: string;
   phoneNumber: string;
-  sex: string;
   DOB: string;
   qualification?: string;
   campaigns?: string[];
   isCampaign: boolean;
   roles: string;
+  address:string;
 }

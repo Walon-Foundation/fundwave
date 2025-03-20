@@ -34,12 +34,10 @@ export async function POST(req:NextRequest){
             firstName:user.firstName,
             lastName:user.lastname,
             email:user.email,
-            country:user.country,
-            capitalCity:user.capitalCity,
             phoneNumber: user.phoneNumber,
-            sex:user.sex,
             qualification:user.qualification,
             DOE:user.DOB,
+            address:user.address,
             roles:user.roles,
             isCampaign:user.isCampaign
         },process.env.USER_TOKEN_SECRET_KEY!,{expiresIn:"1d"})
