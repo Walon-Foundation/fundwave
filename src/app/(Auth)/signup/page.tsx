@@ -11,18 +11,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { axiosInstance } from "@/core/api/axiosInstance"
+import { useRouter } from "next/navigation"
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState<string>("")
   const [email, setEmail] = useState<string>("")
   const [lastName, setLastName] = useState<string>("")
   const [password, setPassword] = useState<string>("")
+  const [confirmPassword, setConfirmPassword] = useState<string>("")
+  const [username, setUsername] = useState<string>("")
+  const router = useRouter()
   
 
   // Mock function for form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Form submission logic would go here
+    try{
+      if(password === confirmPassword){
+        const data = {
+          password,
+          email,
+          firstName,
+          lastName,
+          username
+        }
+        const response = await axiosInstance.post('/auth/register', data)
+        console.log(response.data)
+        setConfirmPassword("")
+        setEmail("")
+        setFirstName("")
+        setLastName("")
+        setPassword("")
+        setUsername("")
+        if(response.status === 200){
+          router.push('/login');
+        }
+      }else{
+        return new Error("register failed")
+      }
+    }catch(error){
+      console.error(error)
+    }
   }
 
   return (
@@ -74,6 +104,20 @@ export default function SignUp() {
                       required
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-blue-800">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      placeholder="@johndoe"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="border-blue-200 focus:border-blue-400"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -101,6 +145,21 @@ export default function SignUp() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="border-blue-200 focus:border-blue-400"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm password" className="text-blue-800">
+                    Confirm Password
+                  </Label>
+                  <Input
+                    id="confirm password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="border-blue-200 focus:border-blue-400"
                     required
                   />

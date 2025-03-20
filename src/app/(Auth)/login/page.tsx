@@ -11,15 +11,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { axiosInstance } from "@/core/api/axiosInstance"
+import { useRouter } from "next/navigation"
 
 export default function SignIn() {
-  const [email, setEmail] = useState<string>("")
+  const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
+  const router = useRouter()
 
-  // Mock function for form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Form submission logic would go here
+    try{
+      const data = {
+        username,
+        password
+      }
+      const response = await axiosInstance.post('/auth/login',data)
+      console.log(response.data)
+      if(response.status === 200){
+        router.push("/")
+      }
+    }catch(error){
+      console.error(error)
+    }
   }
 
   return (
@@ -52,15 +67,15 @@ export default function SignIn() {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-blue-800">
-                  Email
+                <Label htmlFor="username" className="text-blue-800">
+                  Username
                 </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="john.doe@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="username"
+                  placeholder="@johndoe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="border-blue-200 focus:border-blue-400"
                   required
                 />

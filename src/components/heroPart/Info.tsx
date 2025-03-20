@@ -5,8 +5,8 @@ import { BsPeopleFill } from "react-icons/bs"
 
 function AboutUs() {
   return (
-    <section className="mt-10">
-        <div className="flex flex-col items-center justify-center mx-2 bg-green-50 py-10">
+    <section className="mt-10 mb-2">
+        <div className="flex flex-col items-center justify-center mx-2 bg-blue-50 py-10">
         <h1 className="font-bold text-5xl text-center tracking-tight mb-5">Why FundWave?</h1>
             <div className="flex flex-col md:flex-row gap-5">
                 <div className="flex flex-col items-center">

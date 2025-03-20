@@ -8,14 +8,18 @@ import { apiResponse } from "@/core/helpers/apiResponse";
 import { ConnectDB } from "@/core/configs/mongoDB";
 
 
-ConnectDB()
+
 
 export async function POST(req:NextRequest){
     try{
+        //database connection
+        await ConnectDB()
+
+        
         const reqBody  = await req.json()
         const result = loginSchema.safeParse(reqBody)
         if(!result.success){
-            return errorHandler(400,result.error.issues[0].message,null)
+            return errorHandler(400,result.error.issues[0].message,result.error)
         }
         const { username, password } = result.data
 
@@ -27,12 +31,13 @@ export async function POST(req:NextRequest){
         if(!passwordMatch){
             return errorHandler(401,"Invalid password",null)
         }
-        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles},process.env.ACCESS_TOKEN_SECRET!,{expiresIn:"1d"})
+
+        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles},process.env.ACCESS_TOKEN_SECRET!,{ expiresIn:"1d" })
         const userToken = jwt.sign({
             id:user._id,
             username:user.username, 
             firstName:user.firstName,
-            lastName:user.lastname,
+            lastName:user.lastName,
             email:user.email,
             phoneNumber: user.phoneNumber,
             qualification:user.qualification,
@@ -40,7 +45,7 @@ export async function POST(req:NextRequest){
             address:user.address,
             roles:user.roles,
             isCampaign:user.isCampaign
-        },process.env.USER_TOKEN_SECRET_KEY!,{expiresIn:"1d"})
+        },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
 
         return apiResponse("Login successful",200,{accessToken,userToken});
     }catch(error){

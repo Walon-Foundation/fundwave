@@ -6,14 +6,17 @@ import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { ConnectDB } from "@/core/configs/mongoDB";
 
-ConnectDB()
+
 
 export async function POST(req: NextRequest) {
     try{
+        //database connection
+        await ConnectDB()
+
         const reqBody = await req.json()
         const result = registerSchema.safeParse(reqBody)
         if(!result.success){
-            return errorHandler(400,result.error.issues[0].message,null)
+            return errorHandler(400,result.error.issues[0].message,result.error)
         }
         const { firstName, lastName, username, email, password,roles } = result.data
         const user = await User.findOne({email})
