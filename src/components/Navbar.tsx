@@ -1,17 +1,21 @@
 "use client"
-
 import { Menu, Search } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useSelector, useDispatch } from "react-redux"
+import { RootState } from "@/core/store/store"
+import { logout } from "@/core/store/features/user/userSlice"
 
 export default function Navbar() {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const isAuthenticated = false
+  const isAuthenticated = useSelector((state:RootState) => state.user.isAuthenticated)
+  const dispatch = useDispatch()
+
+ 
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -69,7 +73,7 @@ export default function Navbar() {
                   Profile
                 </Button>
               </Link>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => dispatch(logout())}>
                 Logout
               </Button>
             </div>
@@ -119,7 +123,7 @@ export default function Navbar() {
                       </SheetClose>
                     </Link>
                     <SheetClose asChild>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => dispatch(logout())}>
                         Logout
                       </Button>
                     </SheetClose>

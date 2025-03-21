@@ -13,11 +13,14 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useRouter } from "next/navigation"
+import { useDispatch } from "react-redux"
+import { login } from "@/core/store/features/user/userSlice"
 
 export default function SignIn() {
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const router = useRouter()
+  const dispatch = useDispatch()
 
   
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
@@ -30,7 +33,11 @@ export default function SignIn() {
       const response = await axiosInstance.post('/auth/login',data)
       console.log(response.data)
       if(response.status === 200){
-        router.push("/")
+        dispatch(login({
+          accessToken:response.data.data.accessToken,
+          userToken:response.data.data.userToken
+        }))
+        router.push("/");
       }
     }catch(error){
       console.error(error)
