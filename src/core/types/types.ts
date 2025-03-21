@@ -47,4 +47,6 @@ export interface User {
   isCampaign: boolean;
   roles: string;
   address:string;
+  createdAt:string,
+  updatedAt:string,
 }
