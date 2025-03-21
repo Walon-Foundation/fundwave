@@ -13,6 +13,7 @@ export interface Campaign {
   creatorId: string | undefined;
   moneyRecieved: number;
   comments: string[];
+  update:string[];
 }
 
 export interface Comment {

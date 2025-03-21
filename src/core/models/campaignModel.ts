@@ -17,6 +17,7 @@ interface Campaign extends Document {
   problem:string,
   solution:string[]
   team:string,
+  update:string[];
   backers:number
 }
 
@@ -46,6 +47,9 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
+    update:[{
+      type:String
+    }],
     amountNeeded: {
       type: Number,
       required: true
