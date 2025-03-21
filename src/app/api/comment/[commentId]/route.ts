@@ -14,7 +14,7 @@ export async function DELETE({params}: {params:{commentId:string}}){
         const { commentId } = params
         const comment = await Comment.findByIdAndDelete({id:commentId})
         if(!comment){
-            return errorHandler(404, "invalid campaign", null)
+            return errorHandler(404, "invalid comment", null)
         }
         return apiResponse("comment deleted", 200, null)
     }catch(error){

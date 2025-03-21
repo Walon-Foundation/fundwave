@@ -22,17 +22,9 @@ export interface Comment {
   campaignId?: string | undefined;
   username?: string;
   userId?: string | undefined;
-  reactions?: string[] | undefined[];
 }
 
-export interface Reaction {
-  _id?: string;
-  dislike: number;
-  like: number;
-  userId: string | undefined;
-  username: string;
-  commentId: string | undefined;
-}
+
 
 export interface User {
   _id?: string;
