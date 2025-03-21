@@ -33,6 +33,7 @@ export async function POST(req:NextRequest){
         }
 
         const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles},process.env.ACCESS_TOKEN_SECRET!,{ expiresIn:"1d" })
+        const sessionToken = jwt.sign({id:user._id},process.env.SESSION_TOKEN_SECRET!, { expiresIn: "1d"})
         const userToken = jwt.sign({
             id:user._id,
             username:user.username, 
@@ -48,7 +49,18 @@ export async function POST(req:NextRequest){
             createdAt:user.createdAt
         },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
 
-        return apiResponse("Login successful",200,{accessToken,userToken});
+        const response = apiResponse("Login successful",200,{userToken, sessionToken});
+        
+        response.cookies.set(
+            "accessToken",accessToken,{
+                httpOnly:true,
+                maxAge: 24 * 60 * 60 * 1000,
+                path:"/",
+                secure: true
+            }
+        )
+
+        return response
     }catch(error){
         return errorHandler(500,"Internal server error",error)
     }

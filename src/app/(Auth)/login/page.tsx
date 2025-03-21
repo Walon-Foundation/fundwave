@@ -34,7 +34,7 @@ export default function SignIn() {
       console.log(response.data)
       if(response.status === 200){
         dispatch(login({
-          accessToken:response.data.data.accessToken,
+          sessionToken:response.data.data.sessionToken,
           userToken:response.data.data.userToken
         }))
         router.push("/");
