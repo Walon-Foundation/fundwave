@@ -14,6 +14,10 @@ interface Campaign extends Document {
   creatorId: string | undefined;
   moneyRecieved: number;
   comments: string[];
+  problem:string,
+  solution:string[]
+  team:string,
+  backers:number
 }
 
 const campaignSchema = new Schema<Campaign>(
@@ -26,10 +30,18 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
+    problem:{
+      type:String,
+      required:true
+    },
     category: {
       type: String,
       required: true
     },
+    solution:[{
+      type:String,
+      required:true
+    }],
     milestoneTitle: {
       type: String,
       required: true
@@ -58,6 +70,9 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
+    team:{
+      type:String
+    },
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -66,6 +81,10 @@ const campaignSchema = new Schema<Campaign>(
     moneyRecieved: {
       type:Number,
       default: 0
+    },
+    backers:{
+      type:Number,
+      default:0
     },
     comments: [{
       type:Schema.Types.ObjectId,

@@ -171,7 +171,7 @@ const CampaignDetails = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className=" mx-auto px-4 md:px-6">
           {/* Campaign Header */}
           <div className="mb-8">
             <div className="flex flex-wrap items-center gap-2 mb-2">
