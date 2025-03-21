@@ -32,7 +32,8 @@ export async function POST(req:NextRequest){
             return errorHandler(401,"Invalid password",null)
         }
 
-        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles},process.env.ACCESS_TOKEN_SECRET!,{ expiresIn:"1d" })
+        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles, iscampaign:user.isCampaign},process.env.ACCESS_TOKEN_SECRET!,{ expiresIn:"1d" })
+
         const sessionToken = jwt.sign({id:user._id},process.env.SESSION_TOKEN_SECRET!, { expiresIn: "1d"})
         const userToken = jwt.sign({
             id:user._id,

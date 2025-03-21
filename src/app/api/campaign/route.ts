@@ -6,20 +6,28 @@ import jwt from "jsonwebtoken";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { campaignCreateSchema } from "@/core/validators/campaign.schema";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
     //connecting to the database
     await ConnectDB();
 
-    const authHeader = req.headers.get("authorization");
-    if(!authHeader || !authHeader.startsWith("Bearer ")){
-      return errorHandler(401,"Unauthorized",null)
+    //getting the accessToken from the cookies
+    const token =  (await cookies()).get("accessToken") as string | undefined
+    if(!token){
+      return errorHandler(401, "unauthorized", null)
     }
-    const token = authHeader.split(" ")[1];
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
+    
+    //verifing the cookie
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string, iscampaign:boolean};
 
     const userId = decodedToken;
+
+    if(userId.iscampaign != true){
+      return errorHandler(401, "User kyc need", null)
+    }
+
     //getting data from the request body
     const reqBody = await req.json()
     const result = campaignCreateSchema.safeParse(reqBody)
