@@ -15,7 +15,7 @@ interface Campaign extends Document {
   moneyRecieved: number;
   comments: string[];
   problem:string,
-  solution:string[]
+  solution:string
   update:string[];
   backers:number
 }
@@ -38,10 +38,10 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
-    solution:[{
+    solution:{
       type:String,
       required:true
-    }],
+    },
     milestone: {
       type: String,
       required: true

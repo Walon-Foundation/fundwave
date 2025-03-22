@@ -16,7 +16,8 @@ export interface Campaign  {
   problem:string,
   solution:string
   update?:string[];
-  backers?:number
+  backers?:number;
+  createdAt?:string
 }
 
 export interface Comment {
