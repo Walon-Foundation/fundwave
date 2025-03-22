@@ -1,5 +1,5 @@
-export interface Campaign {
-  _id?: string;
+export interface Campaign  {
+  _id?:string
   campaignName: string;
   campaignDescription: string;
   category: string;
@@ -9,11 +9,15 @@ export interface Campaign {
   teamInformation: string;
   expectedImpact: string;
   risksAndChallenges: string;
-  creatorName: string;
-  creatorId: string | undefined;
-  moneyRecieved: number;
-  comments: string[];
-  update:string[];
+  creatorName?: string;
+  creatorId?: string ;
+  moneyRecieved?: number;
+  comments?: string[];
+  problem:string,
+  solution:string[]
+  team:string,
+  update?:string[];
+  backers?:number
 }
 
 export interface Comment {

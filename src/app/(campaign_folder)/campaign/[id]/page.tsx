@@ -170,20 +170,20 @@ const CampaignDetails = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <main className="flex-1 py-12">
-        <div className=" mx-auto px-4 md:px-6">
+      <main className="flex-1 py-8 md:py-12">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
           {/* Campaign Header */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <Link href="/campaign" className="text-blue-600 hover:underline text-sm flex items-center">
                 All Campaigns <ChevronRight className="h-3 w-3" />
               </Link>
               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">{campaign.category}</Badge>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-2">{campaign.campaignName}</h1>
-            <p className="text-xl text-blue-700 mb-4">{campaign.campaignDescription}</p>
-            <div className="flex items-center text-sm text-blue-600 mb-2">
-              <span className="flex items-center mr-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-2">{campaign.campaignName}</h1>
+            <p className="text-lg md:text-xl text-blue-700 mb-4">{campaign.campaignDescription}</p>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-blue-600 mb-2">
+              <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />
                 Created by {campaign.creatorName}
               </span>
@@ -194,7 +194,7 @@ const CampaignDetails = () => {
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-3">
+          <div className="grid gap-6 md:gap-8 grid-cols-1 lg:grid-cols-3">
             {/* Main Content Area */}
             <div className="lg:col-span-2 space-y-6">
               <Card className="overflow-hidden border-blue-100">
@@ -205,29 +205,29 @@ const CampaignDetails = () => {
                     alt={campaign.campaignName}
                     width={800}
                     height={400}
-                    className="w-full h-[400px] object-cover"
+                    className="w-full h-[250px] sm:h-[300px] md:h-[400px] object-cover"
                   />
                 </div>
 
                 {/* Tabs Navigation */}
                 <Tabs defaultValue="about" value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <div className="px-6 pt-6">
-                    <TabsList className="grid w-full grid-cols-3 bg-blue-50">
+                    <TabsList className="grid w-full grid-cols-3 bg-blue-50 rounded-md">
                       <TabsTrigger
                         value="about"
-                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-sm md:text-base py-2"
                       >
                         About
                       </TabsTrigger>
                       <TabsTrigger
                         value="updates"
-                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-sm md:text-base py-2"
                       >
                         Updates
                       </TabsTrigger>
                       <TabsTrigger
                         value="comments"
-                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-sm md:text-base py-2"
                       >
                         Comments
                       </TabsTrigger>
@@ -318,19 +318,19 @@ const CampaignDetails = () => {
                     <div className="space-y-6">
                       {campaign.comments && campaign.comments.length > 0 ? (
                         campaign.comments.map((comment) => (
-                          <div key={comment.id} className="flex gap-4 pb-4 border-b border-blue-100">
-                            <Avatar className="h-10 w-10">
+                          <div key={comment.id} className="flex gap-3 md:gap-4 pb-4 border-b border-blue-100">
+                            <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
                               <AvatarImage src={comment.avatar} alt={comment.name} />
                               <AvatarFallback className="bg-blue-100 text-blue-800">
                                 {comment.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <h4 className="font-semibold text-blue-800">{comment.name}</h4>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                                <h4 className="font-semibold text-blue-800 text-sm md:text-base">{comment.name}</h4>
                                 <span className="text-xs text-gray-500">{formatDate(comment.date)}</span>
                               </div>
-                              <p className="mt-1 text-gray-700">{comment.text}</p>
+                              <p className="mt-1 text-gray-700 text-sm md:text-base break-words">{comment.text}</p>
                             </div>
                           </div>
                         ))
@@ -348,7 +348,7 @@ const CampaignDetails = () => {
                         />
                         <Button
                           onClick={handleCommentSubmit}
-                          className="mt-3 bg-blue-600 hover:bg-blue-700"
+                          className="mt-3 bg-blue-600 hover:bg-blue-700 transition-colors"
                           disabled={!commentText.trim()}
                         >
                           Post Comment
@@ -359,7 +359,7 @@ const CampaignDetails = () => {
                 </Tabs>
 
                 {/* Campaign Stats Footer */}
-                <CardFooter className="bg-blue-50 border-t border-blue-100 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+                <CardFooter className="bg-blue-50 border-t border-blue-100 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-4 text-sm text-blue-700">
                     <span className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
@@ -374,7 +374,7 @@ const CampaignDetails = () => {
                       {campaign.comments?.length || 0} comments
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-3 sm:mt-0">
                     <Button
                       variant="outline"
                       size="sm"
@@ -400,7 +400,7 @@ const CampaignDetails = () => {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Donation Card */}
-              <Card className="border-blue-100">
+              <Card className="border-blue-100 shadow-sm hover:shadow transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl text-blue-800">Support This Project</CardTitle>
                   <CardDescription>
@@ -413,8 +413,8 @@ const CampaignDetails = () => {
                       <span className="font-medium text-blue-800">NLe{campaign.moneyReceived.toLocaleString()}</span>
                       <span className="text-gray-500">of NLe{campaign.fundingGoal?.toLocaleString()}</span>
                     </div>
-                    <Progress value={fundingProgress} className="h-2 bg-blue-100" />
-                    <div className="flex justify-between text-sm">
+                    <Progress value={fundingProgress} className="h-3 bg-blue-100" />
+                    <div className="flex flex-wrap justify-between text-sm gap-2">
                       <span className="text-blue-700 font-medium">{fundingProgress}% funded</span>
                       <span className="text-blue-700 flex items-center">
                         <Clock className="h-3 w-3 mr-1" />
@@ -444,7 +444,7 @@ const CampaignDetails = () => {
 
                   <div className="flex gap-2 pt-2">
                     <Button
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 transition-colors"
                       onClick={handleDonation}
                       disabled={!donationAmount || Number.parseFloat(donationAmount) <= 0}
                     >
@@ -481,7 +481,7 @@ const CampaignDetails = () => {
               </Card>
 
               {/* Creator Card */}
-              <Card className="border-blue-100">
+              <Card className="border-blue-100 shadow-sm hover:shadow transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-blue-800">Campaign Creator</CardTitle>
                 </CardHeader>
@@ -498,7 +498,10 @@ const CampaignDetails = () => {
                       <p className="text-sm text-gray-500">Campaign Organizer</p>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50">
+                  <Button
+                    variant="outline"
+                    className="w-full border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Visit Creator Profile
                   </Button>

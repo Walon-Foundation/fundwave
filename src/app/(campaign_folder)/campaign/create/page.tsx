@@ -1,97 +1,97 @@
 "use client"
-
 import { useState } from "react"
-import { Trash2 } from "lucide-react"
-import { ToastContainer } from "react-toastify"
-
+import type React from "react"
+import { ToastContainer, toast } from "react-toastify"
+import { ArrowLeft, ArrowRight, Save, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Progress } from "@/components/ui/progress"
+
 
 export default function Campaign() {
-  const [activeSection, setActiveSection] = useState("basic")
+  const [currentStep, setCurrentStep] = useState(1)
+  const totalSteps = 3
+
+  // Form state
   const [campaignName, setCampaignName] = useState("")
   const [campaignDescription, setCampaignDescription] = useState("")
   const [fundingGoal, setFundingGoal] = useState("")
-  const [milestoneTitle, setMilestoneTitle] = useState("")
+  const [milestone, setMilestone] = useState("")
   const [amountNeeded, setAmountNeeded] = useState("")
   const [completionDate, setCompletionDate] = useState("")
   const [teamInformation, setTeamInformation] = useState("")
   const [expectedImpact, setExpectedImpact] = useState("")
   const [risksAndChallenges, setRisksAndChallenges] = useState("")
   const [category, setCategory] = useState("")
-  const [milestones, setMilestones] = useState<[]>([])
+  const [solution, setSolution] = useState("")
+  const [problem, setProblem] = useState("")
 
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section)
-  }
-
-  const addMilestone = () => {
-    if (milestoneTitle && amountNeeded && completionDate) {
-      const newMilestone = {
-        id: Date.now(),
-        title: milestoneTitle,
-        amount: amountNeeded,
-        date: completionDate,
-      }
-      setMilestones([...milestones, newMilestone])
-      setMilestoneTitle("")
-      setAmountNeeded("")
-      setCompletionDate("")
+  // Step navigation
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1)
+      window.scrollTo(0, 0)
     }
   }
 
-  const removeMilestone = (id: number) => {
-    setMilestones(milestones.filter((milestone) => milestone.id !== id))
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+      window.scrollTo(0, 0)
+    }
   }
+
+  // Form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    toast.success("Campaign submitted successfully!")
+    // Here you would typically send the data to your API
+  }
+
+  // Save draft
+  const saveDraft = () => {
+    toast.info("Campaign draft saved!")
+    // Here you would typically save the draft to your API or localStorage
+  }
+
+  // Calculate progress percentage
+  const progressPercentage = (currentStep / totalSteps) * 100
+
+  // Step titles for the progress indicator
+  const stepTitles = ["Basic Information", "Milestones", "Campaign Details"]
 
   return (
     <section className="mx-auto my-12 px-4 w-full bg-gradient-to-b from-blue-50 to-white min-h-screen">
-      <div className="flex flex-col justify-center min-h-screen items-center mx-auto max-w-7xl">
-        <div className="p-8 w-full bg-white rounded-xl shadow-md border border-blue-100">
+      <div className="flex flex-col justify-center min-h-screen items-center mx-auto max-w-3xl">
+        <div className="p-6 sm:p-8 w-full bg-white rounded-xl shadow-md border border-blue-100">
           <div className="text-center mb-8">
-            <h1 className="text-3xl lg:text-4xl font-bold text-blue-800">Create Your Campaign</h1>
-            <p className="text-lg text-blue-600 mt-2">Fill in the details to launch your fundraising campaign</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-800">Create Your Campaign</h1>
+            <p className="text-base sm:text-lg text-blue-600 mt-2">
+              Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 mb-8">
-            <button
-              className={`flex-1 py-3 px-4 rounded-lg border border-blue-200 text-lg font-semibold transition-all ${
-                activeSection === "basic"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-blue-700 hover:bg-blue-50"
-              }`}
-              onClick={() => handleSectionChange("basic")}
-            >
-              Basic
-            </button>
-            <button
-              className={`flex-1 py-3 px-4 rounded-lg border border-blue-200 text-lg font-semibold transition-all ${
-                activeSection === "milestones"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-blue-700 hover:bg-blue-50"
-              }`}
-              onClick={() => handleSectionChange("milestones")}
-            >
-              Milestones
-            </button>
-            <button
-              className={`flex-1 py-3 px-4 rounded-lg border border-blue-200 text-lg font-semibold transition-all ${
-                activeSection === "details"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-blue-700 hover:bg-blue-50"
-              }`}
-              onClick={() => handleSectionChange("details")}
-            >
-              Details
-            </button>
+          {/* Progress bar */}
+          <div className="mb-8">
+            <Progress value={progressPercentage} className="h-2 bg-blue-100" />
+            <div className="flex justify-between mt-2 text-sm text-blue-600">
+              {stepTitles.map((title, index) => (
+                <div
+                  key={index}
+                  className={`text-center ${index + 1 === currentStep ? "font-semibold text-blue-800" : ""}`}
+                >
+                  Step {index + 1}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <form className="space-y-8">
-            {activeSection === "basic" && (
-              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Step 1: Basic Information */}
+            {currentStep === 1 && (
+              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 animate-in fade-in duration-300">
                 <div>
                   <Label htmlFor="campaign_name" className="text-lg font-semibold text-blue-800 mb-2">
                     Campaign Name
@@ -101,7 +101,8 @@ export default function Campaign() {
                     placeholder="Enter your campaign name"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    required
                   />
                 </div>
                 <div>
@@ -113,7 +114,8 @@ export default function Campaign() {
                     placeholder="Describe your campaign"
                     value={campaignDescription}
                     onChange={(e) => setCampaignDescription(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
                   />
                 </div>
                 <div>
@@ -125,7 +127,8 @@ export default function Campaign() {
                     placeholder="Enter amount (e.g. $10,000)"
                     value={fundingGoal}
                     onChange={(e) => setFundingGoal(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    required
                   />
                 </div>
                 <div>
@@ -137,46 +140,18 @@ export default function Campaign() {
                     placeholder="Select or enter a category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
+                    required
                   />
                 </div>
               </div>
             )}
 
-            {activeSection === "milestones" && (
-              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100">
-                {milestones.length > 0 && (
-                  <div className="space-y-4 mb-6">
-                    <h3 className="text-xl font-semibold text-blue-800">Your Milestones</h3>
-                    {milestones.map((milestone) => (
-                      <Card key={milestone.id} className="border-blue-200 bg-white">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                              <h4 className="font-semibold text-blue-700">{milestone.title}</h4>
-                              <p className="text-blue-600">Amount: {milestone.amount}</p>
-                              <p className="text-blue-600">
-                                Target Date: {new Date(milestone.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeMilestone(milestone.id)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-5 w-5" />
-                              <span className="sr-only">Remove milestone</span>
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
+            {/* Step 2: Milestones */}
+            {currentStep === 2 && (
+              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 animate-in fade-in duration-300">
                 <div className="border border-blue-200 rounded-lg bg-white p-6 shadow-sm">
-                  <h3 className="text-xl font-semibold text-blue-800 mb-4">Add New Milestone</h3>
+                  <h3 className="text-xl font-semibold text-blue-800 mb-4">Add Milestone</h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="milestone_title" className="font-semibold text-blue-700">
@@ -185,9 +160,10 @@ export default function Campaign() {
                       <Input
                         id="milestone_title"
                         placeholder="What will you achieve?"
-                        value={milestoneTitle}
-                        onChange={(e) => setMilestoneTitle(e.target.value)}
+                        value={milestone}
+                        onChange={(e) => setMilestone(e.target.value)}
                         className="border-blue-200 focus-visible:ring-blue-400"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -200,6 +176,7 @@ export default function Campaign() {
                         value={amountNeeded}
                         onChange={(e) => setAmountNeeded(e.target.value)}
                         className="border-blue-200 focus-visible:ring-blue-400"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -212,22 +189,46 @@ export default function Campaign() {
                         value={completionDate}
                         onChange={(e) => setCompletionDate(e.target.value)}
                         className="border-blue-200 focus-visible:ring-blue-400"
+                        required
                       />
                     </div>
                   </div>
-                  <Button
-                    onClick={addMilestone}
-                    type="button"
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Add Milestone
-                  </Button>
                 </div>
+                <p className="text-sm text-blue-600 italic">
+                  You can add more milestones after creating your campaign.
+                </p>
               </div>
             )}
 
-            {activeSection === "details" && (
-              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100">
+            {/* Step 3: Campaign Details */}
+            {currentStep === 3 && (
+              <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 animate-in fade-in duration-300">
+                <div>
+                  <Label htmlFor="problem" className="text-lg font-semibold text-blue-800 mb-2">
+                    Problem
+                  </Label>
+                  <Textarea
+                    id="problem"
+                    placeholder="What problems are you trying to solve?"
+                    value={problem}
+                    onChange={(e) => setProblem(e.target.value)}
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="solution" className="text-lg font-semibold text-blue-800 mb-2">
+                    Solution
+                  </Label>
+                  <Textarea
+                    id="solution"
+                    placeholder="What is your solution to the problem?"
+                    value={solution}
+                    onChange={(e) => setSolution(e.target.value)}
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
+                  />
+                </div>
                 <div>
                   <Label htmlFor="team_info" className="text-lg font-semibold text-blue-800 mb-2">
                     Team Information
@@ -237,7 +238,8 @@ export default function Campaign() {
                     placeholder="Tell us about your team"
                     value={teamInformation}
                     onChange={(e) => setTeamInformation(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
                   />
                 </div>
                 <div>
@@ -249,7 +251,8 @@ export default function Campaign() {
                     placeholder="How will your campaign make a difference?"
                     value={expectedImpact}
                     onChange={(e) => setExpectedImpact(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
                   />
                 </div>
                 <div>
@@ -261,23 +264,54 @@ export default function Campaign() {
                     placeholder="What obstacles might you face?"
                     value={risksAndChallenges}
                     onChange={(e) => setRisksAndChallenges(e.target.value)}
-                    className="w-full max-w-2xl border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
+                    required
                   />
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col gap-4 md:flex-row md:justify-between mt-8">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full md:w-auto border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800 font-semibold"
-              >
-                Save Draft
-              </Button>
-              <Button type="submit" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                Submit Campaign
-              </Button>
+            {/* Navigation buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between mt-8">
+              <div className="flex gap-2">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="flex-1 sm:flex-none border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800 font-semibold"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Previous
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={saveDraft}
+                  className="flex-1 sm:flex-none border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800 font-semibold"
+                >
+                  <Save className="w-4 h-4 mr-2" /> Save Draft
+                </Button>
+              </div>
+
+              <div>
+                {currentStep < totalSteps ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                  >
+                    Next <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                  >
+                    Submit Campaign <Send className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </div>
