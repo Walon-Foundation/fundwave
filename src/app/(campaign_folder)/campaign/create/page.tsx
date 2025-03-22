@@ -8,9 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
+import { useAppDispatch } from "@/core/hooks/storeHooks"
+import { addCampaign } from "@/core/store/features/campaigns/campaignSlice"
+import { Campaign,  } from "@/core/types/types"
+import { useRouter } from "next/navigation"
 
 
-export default function Campaign() {
+export default function AddCampaign() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 3
 
@@ -28,6 +32,9 @@ export default function Campaign() {
   const [solution, setSolution] = useState("")
   const [problem, setProblem] = useState("")
 
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+
   // Step navigation
   const nextStep = () => {
     if (currentStep < totalSteps) {
@@ -43,11 +50,34 @@ export default function Campaign() {
     }
   }
 
+  //changing amountNeeded to number
+  const newAmountNeeded = Number(amountNeeded)
+
   // Form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    toast.success("Campaign submitted successfully!")
-    // Here you would typically send the data to your API
+    try{
+      const data:Campaign = {
+        campaignDescription,
+        campaignName,
+        category,
+        solution,
+        problem,
+        teamInformation,
+        risksAndChallenges,
+        completionDate,
+        milestone,
+        amountNeeded:newAmountNeeded,
+        expectedImpact
+
+      }
+      const action = await dispatch(addCampaign(data))
+      if(addCampaign.fulfilled.match(action)){
+        router.push('/campaign')
+      }
+    }catch(error){
+      console.error(error)
+    }
   }
 
   // Save draft

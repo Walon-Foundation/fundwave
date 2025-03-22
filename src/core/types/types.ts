@@ -3,7 +3,7 @@ export interface Campaign  {
   campaignName: string;
   campaignDescription: string;
   category: string;
-  milestoneTitle: string;
+  milestone: string;
   amountNeeded: number;
   completionDate: string;
   teamInformation: string;
@@ -14,8 +14,7 @@ export interface Campaign  {
   moneyRecieved?: number;
   comments?: string[];
   problem:string,
-  solution:string[]
-  team:string,
+  solution:string
   update?:string[];
   backers?:number
 }

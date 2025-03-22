@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
     await ConnectDB();
 
     //getting the accessToken from the cookies
-    const token =  (await cookies()).get("accessToken") as string | undefined
+    const token =  (await cookies()).get("accessToken")?.value as string | undefined
+    console.log(token)
     if(!token){
       return errorHandler(401, "unauthorized", null)
     }
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     const decodedUser = decodedToken;
 
     if(decodedUser.iscampaign != true){
-      return errorHandler(401, "User kyc needed", "not eligible to created a campaign")
+      return errorHandler(401, "User kyc needed", "not eligible to create a campaign")
     }
 
     //getting data from the request body

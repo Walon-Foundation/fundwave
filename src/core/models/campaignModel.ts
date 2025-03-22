@@ -4,7 +4,7 @@ interface Campaign extends Document {
   campaignName: string;
   campaignDescription: string;
   category: string;
-  milestoneTitle: string;
+  milestone: string;
   amountNeeded: number;
   completionDate: string;
   teamInformation: string;
@@ -16,7 +16,6 @@ interface Campaign extends Document {
   comments: string[];
   problem:string,
   solution:string[]
-  team:string,
   update:string[];
   backers:number
 }
@@ -43,7 +42,7 @@ const campaignSchema = new Schema<Campaign>(
       type:String,
       required:true
     }],
-    milestoneTitle: {
+    milestone: {
       type: String,
       required: true
     },
@@ -73,9 +72,6 @@ const campaignSchema = new Schema<Campaign>(
     creatorName: {
       type: String,
       required: true
-    },
-    team:{
-      type:String
     },
     creatorId: {
       type: Schema.Types.ObjectId,
