@@ -22,6 +22,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice"
 import { useAppSelector } from "@/core/hooks/storeHooks"
+import { Campaign } from "@/core/types/types"
 
 // This would normally come from your assets
 const holder = "/placeholder.svg?height=300&width=500"
@@ -78,32 +79,17 @@ const defaultCategoryColor = {
 }
 
 // Campaign type definition
-interface Campaign {
-  _id: string
-  campaignName: string
-  campaignDescription: string
-  fundingGoal: number
-  category: string
-  milestoneTitle: string
-  amountNeeded: number
-  completionDate: string
-  teamInformation: string
-  expectedImpact: string
-  risksAndChallenges: string
-  creator: string
-  moneyReceived: number
-  backers: number
-  createdAt?: string // Optional for sorting by newest
-}
+
 
 export default function ExploreCampaigns() {
   const originalCampaignList = useAppSelector(selectAllCampaign)
+  console.log(originalCampaignList)
   
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [sortBy, setSortBy] = useState("most-funded")
+  const [sortBy, setSortBy] = useState("newest")
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
@@ -124,7 +110,7 @@ export default function ExploreCampaigns() {
       const query = searchQuery.toLowerCase()
       result = result.filter(
         (campaign) =>
-          campaign?.campaignName.toLowerCase()?.includes(query) ||
+          campaign?.campaignName?.toLowerCase()?.includes(query) ||
           campaign?.campaignDescription?.toLowerCase()?.includes(query),
       )
     }
@@ -143,7 +129,7 @@ export default function ExploreCampaigns() {
     // Apply sorting
     switch (sortBy) {
       case "most-funded":
-        result.sort((a, b) => (b.moneyRecieved ?? 0)  - (a.moneyRecieved ?? 0 ))
+        result.sort((a, b) => b.moneyRecieved  as number  - (a.moneyRecieved ?? 0 ))
         break
       case "newest":
         result.sort((a, b) => {
@@ -200,7 +186,7 @@ export default function ExploreCampaigns() {
   const resetFilters = () => {
     setSearchQuery("")
     setCategoryFilter("all")
-    setSortBy("most-funded")
+    setSortBy("newest")
     setCurrentPage(1)
   }
 
@@ -375,7 +361,7 @@ export default function ExploreCampaigns() {
               <div className="space-y-6">
                 {paginatedCampaigns.map((campaign) => {
                   const categoryColor = categoryColors[campaign.category] || defaultCategoryColor
-                  const fundingPercentage = calculateFundingPercentage(campaign.moneyReceived, campaign.fundingGoal)
+                  const fundingPercentage = calculateFundingPercentage(campaign?.moneyRecieved as number, 50)
                   const daysRemaining = calculateDaysRemaining(campaign.completionDate)
 
                   return (
@@ -408,9 +394,9 @@ export default function ExploreCampaigns() {
                           <div className="mb-4">
                             <div className="flex justify-between text-sm mb-1">
                               <span className="font-medium text-blue-800">
-                                NLe{campaign.moneyReceived.toLocaleString()}
+                                NLe{campaign?.moneyRecieved?.toLocaleString()}
                               </span>
-                              <span className="text-gray-500">of NLe{campaign.fundingGoal.toLocaleString()}</span>
+                              <span className="text-gray-500">of NLe{campaign.amountNeeded?.toLocaleString()}</span>
                             </div>
                             <div className="relative w-full h-3 bg-blue-100 rounded-full overflow-hidden">
                               <div
