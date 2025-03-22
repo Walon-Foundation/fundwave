@@ -5,22 +5,22 @@ import { updateUserSchema } from "@/core/validators/user.schema";
 import { ConnectDB } from "@/core/configs/mongoDB";
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken"
+import { cookies } from "next/headers";
 
 export async function PATCH(req:NextRequest){
     try{
         //connecting to the database
         await ConnectDB()
 
-        //get userId from the accessToken
-        
-        const authHeader = req.headers.get("authorization");
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return errorHandler(401,"Unauthorized",null)
+        //getting the accessToken from the cookies
+        const token =  (await cookies()).get("accessToken") as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
         }
-        const token = authHeader.split(" ")[1];
+
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
     
-        const userId = decodedToken;
+        const decodedUser = decodedToken;
 
         const reqBody = await req.json()
         const result = updateUserSchema.safeParse(reqBody)
@@ -29,7 +29,7 @@ export async function PATCH(req:NextRequest){
         }
         const {phoneNumber, sex, country, capitalCity, qualificaton,DOB} = result.data
 
-        const user = await User.findOne({_id:userId.id})
+        const user = await User.findOne({_id:decodedUser.id})
         if(!user){
             return errorHandler(401, "invalid user","user not found")
         }

@@ -5,6 +5,7 @@ import { errorHandler } from "@/core/helpers/errorHandler";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { addCommentSchema } from "@/core/validators/comment.schema";
 import jwt from "jsonwebtoken"
+import { cookies } from "next/headers";
 
 import { ConnectDB } from "@/core/configs/mongoDB";
 
@@ -13,12 +14,12 @@ export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}
         //connect to the database
         await ConnectDB();
 
-        //getting userId and username from the sent token in the header
-        const authHeader = req.headers.get("authorization");
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return errorHandler(401,"Unauthorized",null)
+        //getting the accessToken from the cookies
+        const token =  (await cookies()).get("accessToken") as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
         }
-        const token = authHeader.split(" ")[1];
+
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
         const userId = decodedToken;
     

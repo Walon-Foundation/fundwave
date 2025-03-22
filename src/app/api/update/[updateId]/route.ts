@@ -3,11 +3,26 @@ import { errorHandler } from "@/core/helpers/errorHandler";
 import { NextRequest } from "next/server";
 import { ConnectDB } from "@/core/configs/mongoDB";
 import Update from "@/core/models/updateModel";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken"
 
 export async function DELETE(req:NextRequest, {params}:{params:{updateId:string}}){
     try{
         //database connection
         await ConnectDB()
+
+        //getting the accessToken from the cookies
+        const token =  (await cookies()).get("accessToken") as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string,roles:string};
+        const decodedUser = decodedToken;
+
+        if(decodedUser.roles != "Admin"){
+            return errorHandler(401, "unauthorized", "not admin")
+        }
 
         const { updateId } = params
         const update = await Update.findByIdAndDelete({id:updateId})
@@ -24,6 +39,19 @@ export async function PATCH(req:NextRequest, {params}:{params:{updateId:string}}
     try{
         //database connection
         await ConnectDB()
+
+        //getting the accessToken from the cookies
+        const token =  (await cookies()).get("accessToken") as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string,roles:string};
+        const decodedUser = decodedToken;
+
+        if(decodedUser.roles != "Admin"){
+            return errorHandler(401, "unauthorized", "not admin")
+        }
 
         //params
         const { updateId } = params

@@ -48,8 +48,8 @@ export default function Campaign() {
   }
 
   return (
-    <section className="my-12 px-4 w-full bg-gradient-to-b from-blue-50 to-white min-h-screen">
-      <div className="flex flex-col items-center mx-auto max-w-7xl">
+    <section className="mx-auto my-12 px-4 w-full bg-gradient-to-b from-blue-50 to-white min-h-screen">
+      <div className="flex flex-col justify-center min-h-screen items-center mx-auto max-w-7xl">
         <div className="p-8 w-full bg-white rounded-xl shadow-md border border-blue-100">
           <div className="text-center mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold text-blue-800">Create Your Campaign</h1>

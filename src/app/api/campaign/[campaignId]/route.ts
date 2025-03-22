@@ -4,6 +4,7 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import jwt from "jsonwebtoken"
+import { cookies } from "next/headers";
 
 export async function GET(req:NextRequest,{params}:{params:{campaignId:string}}){
     try{
@@ -34,15 +35,14 @@ export async function DELETE(req:NextRequest,{params}:{params:{campaignId:string
         //connecting to database
         await ConnectDB()
 
-        //geting the roles from the header
-        const authHeader = req.headers.get("authorization")
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return errorHandler(404, "invalid token", "error with the token")
+        //getting the accessToken from the cookies
+        const token =  (await cookies()).get("accessToken") as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
         }
 
-        const token  = authHeader.split(" ")[1]
         const decodeUser = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!,) as {roles:string}
-        if(decodeUser.roles === "Admin"){
+        if(decodeUser.roles != "Admin"){
             return errorHandler(401, "unauthorized", "not an admin")
         }
 

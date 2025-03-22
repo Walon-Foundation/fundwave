@@ -22,10 +22,10 @@ export async function POST(req: NextRequest) {
     //verifing the cookie
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string, iscampaign:boolean};
 
-    const userId = decodedToken;
+    const decodedUser = decodedToken;
 
-    if(userId.iscampaign != true){
-      return errorHandler(401, "User kyc need", null)
+    if(decodedUser.iscampaign != true){
+      return errorHandler(401, "User kyc needed", "not eligible to created a campaign")
     }
 
     //getting data from the request body
@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
       expectedImpact,
     } = result.data;
 
-    //checking if the userId is correct
-    const user = await User.findOne({ _id:userId.id });
+    //checking if the decodedUser is correct
+    const user = await User.findOne({ _id:decodedUser.id });
     if (!user) {
         return errorHandler(401,"User not found",null)
     }
