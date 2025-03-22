@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
 
     const decodedUser = decodedToken;
 
+    console.log(decodedUser.iscampaign)
+
     if(decodedUser.iscampaign != true){
       return errorHandler(401, "User kyc needed", "not eligible to create a campaign")
     }
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
     const reqBody = await req.json()
     const result = campaignCreateSchema.safeParse(reqBody)
     if(!result.success){
-      return errorHandler(400,result.error.issues[0].message,null)
+      return errorHandler(400,result.error.issues[0].message,result.error)
     }
     
     const {
@@ -42,22 +44,24 @@ export async function POST(req: NextRequest) {
       amountNeeded,
       completionDate,
       risksAndChallenges,
-      milestoneTitle,
+      milestone,
       category,
       teamInformation,
       expectedImpact,
+      problem,
+      solution
     } = result.data;
 
     //checking if the decodedUser is correct
     const user = await User.findOne({ _id:decodedUser.id });
     if (!user) {
-        return errorHandler(401,"User not found",null)
+      return errorHandler(401,"User not found",null)
     }
 
     //checking if a campaign exist with that name
     const campaign = await Campaign.findOne({campaignName})
     if(campaign){
-        return errorHandler(400,"Campaign already exist",null)
+      return errorHandler(400,"Campaign already exist","campaign already exist")
     }
 
     //creating the new campaign
@@ -67,21 +71,23 @@ export async function POST(req: NextRequest) {
       amountNeeded,
       completionDate,
       risksAndChallenges,
-      milestoneTitle,
+      milestone,
       category,
       teamInformation,
       expectedImpact,
       creatorName: user.username,
       creatorId: user._id,
+      problem,
+      solution
     });
-
-    // Add campaign to user's campaigns
-    user.campaigns.push(campaign._id);
-    await user.save();
-
 
     //saving campaign to the database
     await newCampaign.save();
+
+
+    // Add campaign to user's campaigns
+    user.campaigns.push(newCampaign._id);
+    await user.save();
 
     return apiResponse("Campaign created successfully",200, newCampaign);
   } catch (error: unknown) {

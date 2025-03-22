@@ -73,7 +73,7 @@ export default function AddCampaign() {
       }
       const action = await dispatch(addCampaign(data))
       if(addCampaign.fulfilled.match(action)){
-        router.push('/campaign')
+        // router.push('/campaign')
       }
     }catch(error){
       console.error(error)
