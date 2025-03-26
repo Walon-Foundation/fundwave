@@ -1,42 +1,75 @@
 "use client"
 
-import { Calendar, Edit, Mail, MapPin, Phone, } from "lucide-react"
+import { useState } from "react"
+import Link from "next/link"
+import { Calendar, Edit, Mail, MapPin, Phone, Award, UserIcon, Megaphone, } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { jwtDecode } from "jwt-decode"
 import Cookies from "js-cookie"
-import { User } from "@/core/types/types"
-
-
+import type { User } from "@/core/types/types"
+import { Badge } from "@/components/ui/badge"
 
 export default function UserProfile() {
-  const token = Cookies.get("userToken") as string
-  if(!token || token === ""){
-    return <div className="flex flex-col min-h-screen items-center justify-center text-4xl text-red-600"><p>User is not logged in</p></div>
+  const [error, setError] = useState<string | null>(null)
+
+  let user;
+  const token:string = Cookies.get("userToken") as string
+  if (!token && token === "") {
+    setError("User is not logged in")
+    return
+  }else {
+    user = jwtDecode<User>(token)
   }
-  const decodedUser = jwtDecode(token) as User
   
-  if (!decodedUser) return <p className="text-center text-4xl mt-32">Loading User data...</p>
+
+  if (error || !user) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <div className="bg-red-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <UserIcon className="h-10 w-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-red-600 mb-2">{error || "User not found"}</h2>
+          <p className="text-gray-600 mb-6">Please log in to view your profile information.</p>
+          <Link href="/login">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full">Go to Login</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-blue-50 py-10 px-4 flex flex-col  justify-center items-center gap-6">
-      <h1 className="text-3xl font-bold text-blue-800 mb-4">User Profile</h1>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-blue-800">My Profile</h1>
+          <Link href="/dashboard">
+            <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
 
-      {/* Container for User Profiles */}
-      <div className="w-full max-w-3xl flex flex-col gap-8">
-          <Card key={decodedUser._id} className="border-blue-100 shadow-md overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 p-0 h-32 relative">
-              <div className="absolute -bottom-16 left-8">
-                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                  <AvatarImage src={"hkhk"} alt={`${decodedUser.firstName} ${decodedUser.lastName}`} />
+        <Card className="border-blue-100 shadow-xl overflow-hidden">
+          {/* Banner and Avatar Section */}
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-500 p-0 h-40 relative">
+            <div className="absolute -bottom-16 left-8">
+              <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+                {user.profilePicture ? (
+                  <AvatarImage src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} />
+                ) : (
                   <AvatarFallback className="bg-blue-200 text-blue-700 text-2xl">
-                    {decodedUser.firstName.charAt(0)}
-                    {decodedUser.lastName.charAt(0)}
+                    {user.firstName?.charAt(0)}
+                    {user.lastName?.charAt(0)}
                   </AvatarFallback>
-                </Avatar>
-              </div>
+                )}
+              </Avatar>
+            </div>
+            <Link href="/profile/edit">
               <Button
                 size="icon"
                 variant="ghost"
@@ -45,81 +78,123 @@ export default function UserProfile() {
                 <Edit className="w-5 h-5" />
                 <span className="sr-only">Edit Profile</span>
               </Button>
-            </CardHeader>
+            </Link>
+          </CardHeader>
 
-            <CardContent className="pt-20 pb-6 px-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-blue-900">{`${decodedUser.firstName} ${decodedUser.lastName}`}</h2>
-                  <p className="text-blue-600">@{decodedUser.username}</p>
-                </div>
-                <div className="mt-2 md:mt-0 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                  {decodedUser.roles}
+          <CardContent className="pt-20 pb-8 px-8">
+            {/* User Name and Role */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-blue-900">{`${user.firstName} ${user.lastName}`}</h2>
+                <p className="text-blue-600 flex items-center gap-1">
+                  @{user.username}
+                </p>
+              </div>
+              <div className="mt-3 md:mt-0">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1 text-sm">
+                  {user.roles || "Member"}
+                </Badge>
+              </div>
+            </div>
+
+            <Separator className="my-6 bg-blue-100" />
+
+            {/* Information Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Contact Info */}
+              <div className="space-y-5">
+                <h3 className="font-semibold text-blue-800 text-lg flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Contact Information
+                </h3>
+
+                <div className="space-y-4 pl-2">
+                  <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
+                    <Mail className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
+                    <span>{user.email}</span>
+                  </div>
+
+                  <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
+                    <Phone className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
+                    <span>{user.phoneNumber || "Not provided"}</span>
+                  </div>
+
+                  <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
+                    <MapPin className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
+                    <span>{user.address || "Sierra Leone"}</span>
+                  </div>
                 </div>
               </div>
 
-              <Separator className="my-6 bg-blue-100" />
+              {/* Personal Info */}
+              <div className="space-y-5">
+                <h3 className="font-semibold text-blue-800 text-lg flex items-center gap-2">
+                  <UserIcon className="w-5 h-5" />
+                  Personal Information
+                </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Contact Info */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-blue-800 mb-3">Contact Information</h3>
-
-                  <div className="flex items-center text-gray-700">
-                    <Mail className="w-5 h-5 mr-3 text-blue-500" />
-                    <span>{decodedUser.email}</span>
+                <div className="space-y-4 pl-2">
+                  <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
+                    <Calendar className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
+                    <span>
+                      Joined:{" "}
+                      {new Date(user.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
 
-                  <div className="flex items-center text-gray-700">
-                    <Phone className="w-5 h-5 mr-3 text-blue-500" />
-                    <span>{decodedUser.phoneNumber}</span>
-                  </div>
-
-                  <div className="flex items-center text-gray-700">
-                    <MapPin className="w-5 h-5 mr-3 text-blue-500" />
-                    <span>{`Sierra Leone`}</span>
-                  </div>
-                </div>
-
-                {/* Personal Info */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-blue-800 mb-3">Personal Information</h3>
-
-                  <div className="flex items-center text-gray-700">
-                    <Calendar className="w-5 h-5 mr-3 text-blue-500" />
-                    <span>Joined: {new Date(decodedUser.createdAt).toLocaleString()}</span>
-                  </div>
-                    <div className="flex items-start text-gray-700">
-                      <div className="flex-shrink-0 mt-1">
-                        <svg
-                          className="w-5 h-5 mr-3 text-blue-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                      <span>{decodedUser.qualification}</span>
+                  {user.qualification && (
+                    <div className="flex items-start text-gray-700 group hover:text-blue-600 transition-colors">
+                      <Award className="w-5 h-5 mr-3 mt-1 text-blue-500 group-hover:text-blue-600" />
+                      <span>{user.qualification}</span>
                     </div>
+                  )}
                 </div>
               </div>
-                  <Separator className="my-6 bg-blue-100" />
-                  <div>
-                    <h3 className="font-semibold text-blue-800 mb-3">Campaigns</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {decodedUser?.campaigns?.map((campaign, index) => (
-                        <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                          {campaign}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Campaigns Section */}
+            <Separator className="my-6 bg-blue-100" />
+
+            {user.isCampaign ? (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-blue-800 text-lg flex items-center gap-2">
+                  <Megaphone className="w-5 h-5" />
+                  My Campaigns
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {user.campaigns && user.campaigns.length > 0 ? (
+                    user.campaigns.map((campaign, index) => (
+                      <Badge
+                        key={index}
+                        className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
+                      >
+                        {campaign}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic">No active campaigns</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
+                <h3 className="font-semibold text-blue-800 text-lg mb-3">Complete Your KYC to Create Campaigns</h3>
+                <p className="text-gray-600 mb-4">
+                  To start creating and managing campaigns, you need to complete your KYC verification first.
+                </p>
+                <Link href="/kyc">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">Complete KYC Verification</Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
 }
-
 

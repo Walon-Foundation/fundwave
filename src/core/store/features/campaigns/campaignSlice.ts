@@ -13,7 +13,7 @@ const campaignAdaptor = createEntityAdapter<Campaign, string>({
 export const fetchCampaigns = createAsyncThunk("campaign/fetchCampaigns", async(_,{rejectWithValue}) => {
     try{
         const response = await axiosInstance.get('/campaign')
-        return response.data.data as Campaign[]
+        return response.data.data as Campaign[] || []
     }catch(error){
         console.error(error)
         return rejectWithValue("Failed to fetch campaign");

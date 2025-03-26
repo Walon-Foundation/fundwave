@@ -13,6 +13,8 @@ interface User extends Document {
   campaigns?: string[];
   isCampaign:boolean;
   roles:string
+  sex:string;
+  profilePicture?:string
 };
 
 const userSchema = new Schema<User>(
@@ -41,6 +43,10 @@ const userSchema = new Schema<User>(
     phoneNumber: {
       type: String,
     },
+    profilePicture:{
+      type:String,
+      required:true
+    },
     roles:{
       type:String,
       enum:["Admin", "User"],
@@ -58,6 +64,10 @@ const userSchema = new Schema<User>(
     isCampaign:{
       type:Boolean,
       default:false,
+    },
+    sex:{
+      type:String,
+      enum:["Male", "Female"],
     },
     campaigns: [{
       type: Schema.Types.ObjectId,

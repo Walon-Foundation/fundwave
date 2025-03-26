@@ -24,8 +24,12 @@ const authSlice = createSlice({
       Cookies.remove("userToken");
       state.isAuthenticated = false;
     },
+    kycUpdate:(state, action: PayloadAction<{ userToken:string }>) => {
+      Cookies.remove("userToken");
+      Cookies.set("userToken", action.payload.userToken, {expires: 1});
+    }
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, kycUpdate } = authSlice.actions;
 export default authSlice.reducer;

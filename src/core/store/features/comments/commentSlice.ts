@@ -13,7 +13,7 @@ const commentAdaptor = createEntityAdapter<Comment, string>({
 export const fetchComment = createAsyncThunk("comment/fetchComment", async(_,{rejectWithValue}) => {
     try{
         const response = await axiosInstance.get('/comment')
-        return response.data.data as Comment[]
+        return response.data.data as Comment[] || []
     }catch(error){
         console.error(error)
         return rejectWithValue("Failed to fetch comment");

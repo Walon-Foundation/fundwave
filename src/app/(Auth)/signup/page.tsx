@@ -1,11 +1,9 @@
 "use client"
-
+import Link from "next/link"
 import type React from "react"
 
-import { useState } from "react"
-import Link from "next/link"
-import { ToastContainer } from "react-toastify"
-
+import { useState, useRef } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,45 +11,38 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useRouter } from "next/navigation"
+import { UserCircle } from "lucide-react"
 
 export default function SignUp() {
-  const [firstName, setFirstName] = useState<string>("")
-  const [email, setEmail] = useState<string>("")
-  const [lastName, setLastName] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
-  const [confirmPassword, setConfirmPassword] = useState<string>("")
-  const [username, setUsername] = useState<string>("")
   const router = useRouter()
-  
+  const formRef = useRef<HTMLFormElement>(null)
+  const [profilePreview, setProfilePreview] = useState<string | null>(null)
 
-  // Mock function for form submission
-  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    try{
-      if(password === confirmPassword){
-        const data = {
-          password,
-          email,
-          firstName,
-          lastName,
-          username
-        }
-        const response = await axiosInstance.post('/auth/register', data)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault()
+      const formData = new FormData(e.currentTarget)
+      const response = await axiosInstance.post("auth/register", formData)
+      if (response.status === 201) {
+        router.push("/login")
+        formRef.current?.reset()
         console.log(response.data)
-        setConfirmPassword("")
-        setEmail("")
-        setFirstName("")
-        setLastName("")
-        setPassword("")
-        setUsername("")
-        if(response.status === 200){
-          router.push('/login');
-        }
-      }else{
-        return new Error("register failed")
       }
-    }catch(error){
+    } catch (error) {
       console.error(error)
+    }
+  }
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfilePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setProfilePreview(null)
     }
   }
 
@@ -71,7 +62,38 @@ export default function SignUp() {
           </CardHeader>
 
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+              {/* Profile Picture Preview */}
+              <div className="flex flex-col items-center mb-4">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-300 mb-2 flex items-center justify-center bg-blue-50">
+                  {profilePreview ? (
+                    <Image
+                      src={profilePreview || "/placeholder.svg"}
+                      alt="Profile Preview"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserCircle className="w-16 h-16 text-blue-300" />
+                  )}
+                </div>
+                <div className="space-y-2 w-full">
+                  <Label htmlFor="profilePicture" className="text-blue-800 block text-center">
+                    Profile Picture
+                  </Label>
+                  <Input
+                    id="profilePicture"
+                    type="file"
+                    name="profilePicture"
+                    className="border-blue-200 focus:border-blue-400"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    required
+                  />
+                </div>
+              </div>
+
               {/* Personal Information */}
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-blue-700 uppercase tracking-wide">Personal Information</h3>
@@ -84,8 +106,7 @@ export default function SignUp() {
                     <Input
                       id="firstName"
                       placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      name="firstName"
                       className="border-blue-200 focus:border-blue-400"
                       required
                     />
@@ -98,8 +119,7 @@ export default function SignUp() {
                     <Input
                       id="lastName"
                       placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      name="lastName"
                       className="border-blue-200 focus:border-blue-400"
                       required
                     />
@@ -112,27 +132,25 @@ export default function SignUp() {
                     <Input
                       id="username"
                       placeholder="@johndoe"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      name="username"
                       className="border-blue-200 focus:border-blue-400"
                       required
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-blue-800">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john.doe@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="border-blue-200 focus:border-blue-400"
-                    required
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-blue-800">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="john.doe@example.com"
+                      name="email"
+                      className="border-blue-200 focus:border-blue-400"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -143,23 +161,21 @@ export default function SignUp() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
                     className="border-blue-200 focus:border-blue-400"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm password" className="text-blue-800">
+                  <Label htmlFor="confirmPassword" className="text-blue-800">
                     Confirm Password
                   </Label>
                   <Input
-                    id="confirm password"
+                    id="confirmPassword"
                     type="password"
                     placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    name="confirmPassword"
                     className="border-blue-200 focus:border-blue-400"
                     required
                   />
@@ -193,8 +209,6 @@ export default function SignUp() {
           </CardContent>
         </Card>
       </div>
-
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
     </div>
   )
 }

@@ -97,6 +97,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try{
+    //database connection
+    await ConnectDB()
+    
     const campaigns = await Campaign.find({})
     if(campaigns.length === 0){
       return apiResponse("No campaigns found",200, undefined)

@@ -39,6 +39,7 @@ export interface User {
   password: string;
   phoneNumber: string;
   DOB: string;
+  sex: string;
   qualification?: string;
   campaigns?: string[];
   isCampaign: boolean;
@@ -46,4 +47,5 @@ export interface User {
   address:string;
   createdAt:string,
   updatedAt:string,
+  profilePicture:string
 }

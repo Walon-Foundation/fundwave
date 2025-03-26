@@ -16,11 +16,10 @@ export const registerSchema = z.object({
 })
 
 export const updateUserSchema = z.object({
-    country: z.string().min(2, "Country must be at least to 2 characters long"),
+    address: z.string().min(2, "Address must be at least to 2 characters long"),
     sex: z.enum(["Male", "Female"]),
-    phoneNumber: z.number().min(9, "Number must have at least 9 digits "),
-    capitalCity: z.string().min(2, "Capital city must be at least 2 characters"),
-    qualificaton:z.string().min(2, "Qualification must be at least 2 characters"),
+    phoneNumber: z.string().min(9, "Number must have at least 9 digits "),
+    qualification:z.string().min(2, "Qualification must be at least 2 characters"),
     DOB: z.string().min(2, "DOB must be at least 2 characters")
 })
 
