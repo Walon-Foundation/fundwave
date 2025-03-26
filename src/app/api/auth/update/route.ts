@@ -27,7 +27,7 @@ export async function PATCH(req:NextRequest){
         if(!result.success){
             return errorHandler(400, "invalid request body",result.error)
         }
-        const {phoneNumber, sex, address, qualificaton,DOB} = result.data
+        const {phoneNumber, sex, address, qualification,DOB} = result.data
 
         const user = await User.findOne({_id:decodedUser.id})
         if(!user){
@@ -39,7 +39,7 @@ export async function PATCH(req:NextRequest){
         user.phoneNumber = phoneNumber;
         user.address = address;
         user.DOB  = DOB;
-        user.qualification = qualificaton
+        user.qualification = qualification
         user.isCampaign = true;
 
         //saving the user
@@ -55,15 +55,25 @@ export async function PATCH(req:NextRequest){
             email:user.email,
             phoneNumber: user.phoneNumber,
             qualification:user.qualification,
-            DOE:user.DOB,
+            DOB:user.DOB,
             address:user.address,
             roles:user.roles,
             isCampaign:user.isCampaign,
             createdAt:user.createdAt
         },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
 
-        return apiResponse("user update",  200, {userToken} );
+        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles, iscampaign:user.isCampaign},process.env.ACCESS_TOKEN_SECRET!)
 
+        const response = apiResponse("user update",  200, {userToken} );
+
+        response.cookies.set("accessToken",accessToken,{
+            httpOnly:true,
+            sameSite:"none",
+            secure:true, 
+            maxAge: 24 * 60 * 60
+        })
+
+        return response
     }catch(error){
         return errorHandler(500,"server error",error)
     }

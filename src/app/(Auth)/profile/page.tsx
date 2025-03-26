@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Calendar, Edit, Mail, MapPin, Phone, Award, UserIcon, Megaphone, } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,21 +11,39 @@ import { jwtDecode } from "jwt-decode"
 import Cookies from "js-cookie"
 import type { User } from "@/core/types/types"
 import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
 
 export default function UserProfile() {
   const [error, setError] = useState<string | null>(null)
+  const [user,setUser] = useState<User|null>(null)
+  const router = useRouter()
 
-  let user;
-  const token:string = Cookies.get("userToken") as string
-  if (!token && token === "") {
-    setError("User is not logged in")
-    return
-  }else {
-    user = jwtDecode<User>(token)
-  }
+  const token = Cookies.get("userToken");
   
 
-  if (error || !user) {
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const user = jwtDecode(token) as User;
+      setUser(user)
+      console.log(user);
+    } catch (err) {
+      console.error(err)
+      setError("Invalid token, redirecting...");
+      router.push('/login');
+    }
+  }, [token, router]);
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+
+  if ( !token) {
     return (
       <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
@@ -41,7 +59,6 @@ export default function UserProfile() {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4">
       <div className="max-w-4xl mx-auto">
@@ -59,12 +76,12 @@ export default function UserProfile() {
           <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-500 p-0 h-40 relative">
             <div className="absolute -bottom-16 left-8">
               <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                {user.profilePicture ? (
-                  <AvatarImage src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} />
+                {user?.profilePicture ? (
+                  <AvatarImage src={user?.profilePicture} alt={`${user?.firstName} ${user?.lastName}`} />
                 ) : (
                   <AvatarFallback className="bg-blue-200 text-blue-700 text-2xl">
-                    {user.firstName?.charAt(0)}
-                    {user.lastName?.charAt(0)}
+                    {user?.firstName?.charAt(0)}
+                    {user?.lastName?.charAt(0)}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -85,14 +102,14 @@ export default function UserProfile() {
             {/* User Name and Role */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-blue-900">{`${user.firstName} ${user.lastName}`}</h2>
+                <h2 className="text-2xl font-bold text-blue-900">{`${user?.firstName} ${user?.lastName}`}</h2>
                 <p className="text-blue-600 flex items-center gap-1">
-                  @{user.username}
+                  @{user?.username}
                 </p>
               </div>
               <div className="mt-3 md:mt-0">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800 px-3 py-1 text-sm">
-                  {user.roles || "Member"}
+                  {user?.roles || "Member"}
                 </Badge>
               </div>
             </div>
@@ -111,17 +128,17 @@ export default function UserProfile() {
                 <div className="space-y-4 pl-2">
                   <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
                     <Mail className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
-                    <span>{user.email}</span>
+                    <span>{user?.email}</span>
                   </div>
 
                   <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
                     <Phone className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
-                    <span>{user.phoneNumber || "Not provided"}</span>
+                    <span>{user?.phoneNumber || "Not provided"}</span>
                   </div>
 
                   <div className="flex items-center text-gray-700 group hover:text-blue-600 transition-colors">
                     <MapPin className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
-                    <span>{user.address || "Sierra Leone"}</span>
+                    <span>{user?.address || "Sierra Leone"}</span>
                   </div>
                 </div>
               </div>
@@ -138,7 +155,7 @@ export default function UserProfile() {
                     <Calendar className="w-5 h-5 mr-3 text-blue-500 group-hover:text-blue-600" />
                     <span>
                       Joined:{" "}
-                      {new Date(user.createdAt).toLocaleDateString("en-US", {
+                      {new Date(user?.createdAt ?? "").toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -146,10 +163,10 @@ export default function UserProfile() {
                     </span>
                   </div>
 
-                  {user.qualification && (
+                  {user?.qualification && (
                     <div className="flex items-start text-gray-700 group hover:text-blue-600 transition-colors">
                       <Award className="w-5 h-5 mr-3 mt-1 text-blue-500 group-hover:text-blue-600" />
-                      <span>{user.qualification}</span>
+                      <span>{user?.qualification}</span>
                     </div>
                   )}
                 </div>
@@ -159,15 +176,15 @@ export default function UserProfile() {
             {/* Campaigns Section */}
             <Separator className="my-6 bg-blue-100" />
 
-            {user.isCampaign ? (
+            {user?.isCampaign ? (
               <div className="space-y-4">
                 <h3 className="font-semibold text-blue-800 text-lg flex items-center gap-2">
                   <Megaphone className="w-5 h-5" />
                   My Campaigns
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {user.campaigns && user.campaigns.length > 0 ? (
-                    user.campaigns.map((campaign, index) => (
+                  {user?.campaigns && user?.campaigns.length > 0 ? (
+                    user?.campaigns.map((campaign, index) => (
                       <Badge
                         key={index}
                         className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
