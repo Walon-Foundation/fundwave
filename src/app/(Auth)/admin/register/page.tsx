@@ -1,11 +1,8 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Shield, Info, Check } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+
 
 export default function AdminRegister() {
   const [firstName, setFirstName] = useState<string>("")

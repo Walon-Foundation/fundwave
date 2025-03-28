@@ -49,8 +49,16 @@ export async function POST(req:NextRequest){
             createdAt:user.createdAt
         },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
 
+        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles, iscampaign:user.isCampaign},process.env.ACCESS_TOKEN_SECRET!)
+
         const response = apiResponse("Login successful",200,{userToken, sessionToken});
 
+        response.cookies.set("accessToken",accessToken, {
+            httpOnly:true,
+            secure:true,
+            sameSite:"none",
+            maxAge: 24 * 60 * 60
+        })
         return response
     }catch(error){
         return errorHandler(500,"Internal server error",error)

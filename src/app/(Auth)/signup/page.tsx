@@ -12,11 +12,13 @@ import { Separator } from "@/components/ui/separator"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useRouter } from "next/navigation"
 import { UserCircle } from "lucide-react"
+import useAuthRedirect from "@/core/hooks/useAuthRedirect"
 
 export default function SignUp() {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const [profilePreview, setProfilePreview] = useState<string | null>(null)
+  useAuthRedirect()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {

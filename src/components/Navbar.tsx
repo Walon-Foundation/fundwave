@@ -6,14 +6,15 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { useAppDispatch } from "@/core/hooks/storeHooks";
 import { RootState } from "@/core/store/store";
 import { logout } from "@/core/store/features/user/userSlice";
 
 export default function Navbar() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -15,12 +15,15 @@ import { axiosInstance } from "@/core/api/axiosInstance"
 import { useRouter } from "next/navigation"
 import { useDispatch } from "react-redux"
 import { login } from "@/core/store/features/user/userSlice"
+import useAuthRedirect from "@/core/hooks/useAuthRedirect"
 
 export default function SignIn() {
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const router = useRouter()
   const dispatch = useDispatch()
+
+  useAuthRedirect()
 
   
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
