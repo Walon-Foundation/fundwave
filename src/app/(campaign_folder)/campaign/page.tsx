@@ -22,7 +22,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice"
 import { useAppSelector } from "@/core/hooks/storeHooks"
-import { Campaign } from "@/core/types/types"
+import type { Campaign } from "@/core/types/types"
 
 // This would normally come from your assets
 const holder = "/placeholder.svg?height=300&width=500"
@@ -80,11 +80,9 @@ const defaultCategoryColor = {
 
 // Campaign type definition
 
-
 export default function ExploreCampaigns() {
   const originalCampaignList = useAppSelector(selectAllCampaign)
   console.log(originalCampaignList)
-  
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("")
@@ -103,6 +101,11 @@ export default function ExploreCampaigns() {
 
   // Apply filters whenever filter states change
   useEffect(() => {
+    if (!originalCampaignList || originalCampaignList.length === 0) {
+      setFilteredCampaigns([])
+      return
+    }
+
     let result = [...originalCampaignList]
 
     // Apply search filter
@@ -129,12 +132,17 @@ export default function ExploreCampaigns() {
     // Apply sorting
     switch (sortBy) {
       case "most-funded":
-        result.sort((a, b) => b.moneyRecieved  as number  - (a.moneyRecieved ?? 0 ))
+        result.sort((a, b) => (b.moneyRecieved as number) - (a.moneyRecieved ?? 0))
         break
       case "newest":
         result.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          // Handle cases where createdAt might be undefined
+          if (!a.createdAt && !b.createdAt) return 0
+          if (!a.createdAt) return 1
+          if (!b.createdAt) return -1
+
+          const dateA = new Date(a.createdAt).getTime()
+          const dateB = new Date(b.createdAt).getTime()
           return dateB - dateA
         })
         break
@@ -149,10 +157,12 @@ export default function ExploreCampaigns() {
         break
     }
 
+    console.log("Sorted results:", result)
+
     setFilteredCampaigns(result)
     // Reset to first page when filters change
     setCurrentPage(1)
-  }, [searchQuery, categoryFilter, sortBy])
+  }, [searchQuery, categoryFilter, sortBy, originalCampaignList])
 
   // Apply pagination
   useEffect(() => {
