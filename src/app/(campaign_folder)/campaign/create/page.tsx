@@ -21,7 +21,6 @@ export default function AddCampaign() {
   // Form state
   const [campaignName, setCampaignName] = useState("")
   const [campaignDescription, setCampaignDescription] = useState("")
-  const [fundingGoal, setFundingGoal] = useState("")
   const [milestone, setMilestone] = useState("")
   const [amountNeeded, setAmountNeeded] = useState("")
   const [completionDate, setCompletionDate] = useState("")
@@ -73,7 +72,7 @@ export default function AddCampaign() {
       }
       const action = await dispatch(addCampaign(data))
       if(addCampaign.fulfilled.match(action)){
-        // router.push('/campaign')
+        router.push('/campaign')
       }
     }catch(error){
       console.error(error)
@@ -149,19 +148,6 @@ export default function AddCampaign() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="funding_goal" className="text-lg font-semibold text-blue-800 mb-2">
-                    Funding Goal
-                  </Label>
-                  <Input
-                    id="funding_goal"
-                    placeholder="Enter amount (e.g. $10,000)"
-                    value={fundingGoal}
-                    onChange={(e) => setFundingGoal(e.target.value)}
-                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
-                    required
-                  />
-                </div>
-                <div>
                   <Label htmlFor="category" className="text-lg font-semibold text-blue-800 mb-2">
                     Category
                   </Label>
@@ -202,7 +188,7 @@ export default function AddCampaign() {
                       </Label>
                       <Input
                         id="amount_needed"
-                        placeholder="Funding required"
+                        placeholder="NLe 500,000"
                         value={amountNeeded}
                         onChange={(e) => setAmountNeeded(e.target.value)}
                         className="border-blue-200 focus-visible:ring-blue-400"
