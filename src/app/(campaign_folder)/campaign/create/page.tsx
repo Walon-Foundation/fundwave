@@ -12,11 +12,14 @@ import { useAppDispatch } from "@/core/hooks/storeHooks"
 import { addCampaign } from "@/core/store/features/campaigns/campaignSlice"
 import { Campaign,  } from "@/core/types/types"
 import { useRouter } from "next/navigation"
+import useIsCampaign from "@/core/hooks/useIsCampaign"
 
 
 export default function AddCampaign() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 3
+
+  useIsCampaign()
 
   // Form state
   const [campaignName, setCampaignName] = useState("")
