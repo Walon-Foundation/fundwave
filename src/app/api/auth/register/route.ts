@@ -5,10 +5,8 @@ import { registerSchema } from "@/core/validators/user.schema";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { ConnectDB } from "@/core/configs/mongoDB";
-import path from "path";
-import fs from "fs"
+import cloudinary from "@/core/configs/cloudinary";
 
-const uploadDir = path.join(process.cwd(), "public", "uploads")
 
 export async function POST(req: NextRequest) {
     try{
@@ -22,6 +20,7 @@ export async function POST(req: NextRequest) {
         const password = formData.get("password") as string
         const firstName = formData.get("firstName") as string
         const lastName = formData.get("lastName") as string
+        const role = formData.get("role") as string
 
         const reqBody = {
             firstName,
@@ -39,9 +38,7 @@ export async function POST(req: NextRequest) {
             return errorHandler(400,"Profile picture is required",null)
         }
 
-        const fileName = profilePicture.name
-        const localfilePath = path.join(uploadDir, fileName)
-
+        // const fileName = profilePicture.name
         const user = await User.findOne({email})
         if(user){
             return errorHandler(400,"User already exists",null)
@@ -49,17 +46,31 @@ export async function POST(req: NextRequest) {
         const passwordHash = await bcrypt.hash(password,10)
 
         const buffer = await profilePicture.arrayBuffer()
-        const binaryData = Buffer.from(buffer)
-        fs.writeFileSync(localfilePath,binaryData)
+        const bytes = Buffer.from(buffer)
 
-        const newUser = new User({
-            firstName,
-            lastName,
-            username,
-            email,
-            password:passwordHash,
-            profilePicture:localfilePath
-        })
+        const uploadResult = await cloudinary.uploader.upload(profilePicture.type, bytes,)
+         
+        let newUser;
+        if(role != ""){
+            newUser = new User({
+                firstName,
+                lastName,
+                username,
+                email,
+                password:passwordHash,
+                profilePicture:uploadResult.secure_url,
+                role
+            })
+        }else {
+            newUser = new User({
+                firstName,
+                lastName,
+                username,
+                email,
+                password:passwordHash,
+                profilePicture:uploadResult.secure_url
+            })
+        }
 
         await newUser.save()
         return apiResponse("User created successfully",201, undefined)

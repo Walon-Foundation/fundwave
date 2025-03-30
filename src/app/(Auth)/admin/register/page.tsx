@@ -11,7 +11,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-
+import { axiosInstance } from "@/core/api/axiosInstance"
+import { useRouter } from "next/navigation"
+import ProfilePicturePreview from "@/components/profile-picture-preview"
 
 export default function AdminRegister() {
   const [firstName, setFirstName] = useState<string>("")
@@ -22,16 +24,39 @@ export default function AdminRegister() {
   const [role, setRole] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [profilePicture, setProfilePicture] = useState<File | null>(null)
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append("firstName", firstName)
+      formData.append("lastName", lastName)
+      formData.append("email", email)
+      formData.append("password", password)
+      formData.append("role", role)
+      if (profilePicture) {
+        formData.append("profilePicture", profilePicture)
+      }
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // Handle registration logic here
-    }, 1500)
+      if (password === confirmPassword) {
+        const response = await axiosInstance.post("/auth/register", formData)
+        if (response.status === 201) {
+          setIsLoading(false)
+          router.push("/admin/login")
+        } else {
+          setError("Admin registration failed")
+        }
+      } else {
+        setError("Password and Confirm Password do not match")
+      }
+    } catch (error) {
+      setError("Admin registration failed")
+      console.error(error)
+    }
   }
 
   // Password strength indicator
@@ -64,7 +89,7 @@ export default function AdminRegister() {
           <CardHeader className="space-y-1 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-t-lg">
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-5 w-5" />
-              <CardTitle className="text-2xl font-bold">Admin Registration</CardTitle>
+              <CardTitle className="text-2xl font-bold">{error ? error : "Admin Registration"}</CardTitle>
             </div>
             <CardDescription className="text-blue-100">Request administrative access to the system</CardDescription>
           </CardHeader>
@@ -83,6 +108,10 @@ export default function AdminRegister() {
                 <h3 className="text-lg font-semibold text-blue-800">Personal Information</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 flex justify-center">
+                    <ProfilePicturePreview onImageChange={setProfilePicture} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="text-blue-800">
                       First Name
@@ -281,7 +310,7 @@ export default function AdminRegister() {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                disabled={isLoading || !acceptTerms || (confirmPassword && password !== confirmPassword) as boolean}
+                disabled={isLoading || !acceptTerms || ((confirmPassword && password !== confirmPassword) as boolean)}
               >
                 {isLoading ? "Submitting Request..." : "Submit Admin Access Request"}
               </Button>

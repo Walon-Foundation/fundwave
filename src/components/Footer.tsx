@@ -32,6 +32,8 @@ export default function Footer() {
               <Link href="/contactus" className="text-sm text-muted-foreground hover:text-foreground">
                 Contact Us
               </Link>
+              <Link href='/admin/login' className="text-sm text-muted-foreground hover:text-foreground" >
+              Admin</Link>
             </nav>
           </div>
 
