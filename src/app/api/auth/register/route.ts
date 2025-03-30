@@ -5,7 +5,7 @@ import { registerSchema } from "@/core/validators/user.schema";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { ConnectDB } from "@/core/configs/mongoDB";
-import cloudinary from "@/core/configs/cloudinary";
+
 
 
 export async function POST(req: NextRequest) {
@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
         const buffer = await profilePicture.arrayBuffer()
         const bytes = Buffer.from(buffer)
 
-        const uploadResult = await cloudinary.uploader.upload(profilePicture.type, bytes,)
          
         let newUser;
         if(role != ""){
@@ -58,8 +57,8 @@ export async function POST(req: NextRequest) {
                 username,
                 email,
                 password:passwordHash,
-                profilePicture:uploadResult.secure_url,
-                role
+                profilePicture:profilePicture.name,
+                roles:role
             })
         }else {
             newUser = new User({
@@ -68,7 +67,7 @@ export async function POST(req: NextRequest) {
                 username,
                 email,
                 password:passwordHash,
-                profilePicture:uploadResult.secure_url
+                profilePicture:profilePicture.name
             })
         }
 

@@ -16,7 +16,7 @@ export  async function middleware(req: NextRequest) {
     const pathname = req.nextUrl.pathname;
 
     // Role-based access control
-    const adminRoutes = ["/admin/dashboard"];
+    const adminRoutes = ["/admin/dashboard","/profile"];
     const userRoutes = ["/profile", "/dashboard"];
     const createPage = ['/campaign/create']
 

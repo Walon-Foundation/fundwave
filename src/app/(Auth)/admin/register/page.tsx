@@ -25,6 +25,7 @@ export default function AdminRegister() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  const [username, setUsername] = useState<string>("")
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
   const router = useRouter()
 
@@ -38,6 +39,7 @@ export default function AdminRegister() {
       formData.append("email", email)
       formData.append("password", password)
       formData.append("role", role)
+      formData.append("username",username)
       if (profilePicture) {
         formData.append("profilePicture", profilePicture)
       }
@@ -135,6 +137,20 @@ export default function AdminRegister() {
                       placeholder="Doe"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      className="border-blue-200 focus-visible:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-blue-800">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      placeholder="@johndoe"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       className="border-blue-200 focus-visible:ring-blue-500"
                       required
                     />
@@ -310,7 +326,7 @@ export default function AdminRegister() {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                disabled={isLoading || !acceptTerms || ((confirmPassword && password !== confirmPassword) as boolean)}
+                disabled={ !acceptTerms || ((confirmPassword && password !== confirmPassword) as boolean)}
               >
                 {isLoading ? "Submitting Request..." : "Submit Admin Access Request"}
               </Button>

@@ -25,11 +25,11 @@ export async function POST(req:NextRequest){
 
         const user = await User.findOne({ username });
         if(!user){
-            return errorHandler(401,"User not found",null)
+            return errorHandler(401,"User not found","no user found")
         }
         const passwordMatch = await bcrypt.compare(password,user.password)
         if(!passwordMatch){
-            return errorHandler(401,"Invalid password",null)
+            return errorHandler(401,"Invalid password","invalid password")
         }
 
         const sessionToken = jwt.sign({id:user._id},process.env.SESSION_TOKEN_SECRET!, { expiresIn: "1d"})

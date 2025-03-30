@@ -12,23 +12,38 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import { axiosInstance } from "@/core/api/axiosInstance"
+import { useDispatch } from "react-redux"
+import { login } from "@/core/store/features/user/userSlice"
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState<string>("")
+  const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const dispatch = useDispatch()
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
+    try{
+      const data = {
+        username,
+        password
+      }
+      const response = await axiosInstance.post("/auth/login",data)
+      if(response.status === 200){
+        console.log(response.data)
+        dispatch(login({
+          sessionToken:response.data.data.sessionToken,
+          userToken:response.data.data.userToken
+        }))
+      }
+    }catch(error){
       setIsLoading(false)
-      // Handle login logic here
-    }, 1500)
+      console.error(error)
+    }
   }
 
   return (
@@ -58,15 +73,15 @@ export default function AdminLogin() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-blue-800 font-medium">
+                <Label htmlFor="username" className="text-blue-800 font-medium">
                   Admin Email
                 </Label>
                 <Input
-                  id="email"
-                  type="email"
+                  id="username"
+                  type="username"
                   placeholder="admin@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="border-blue-200 focus-visible:ring-blue-500"
                   required
                 />
