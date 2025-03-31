@@ -19,6 +19,7 @@ export default function UserProfile() {
 
   const token = Cookies.get("userToken");
   
+  
 
   useEffect(() => {
     if (!token) {
@@ -29,7 +30,7 @@ export default function UserProfile() {
     try {
       const user = jwtDecode(token) as User;
       setUser(user)
-      console.log(user);
+      console.log(user.profilePicture);
     } catch (err) {
       console.error(err)
       setError("Invalid token, redirecting...");

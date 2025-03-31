@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 
 export  async function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
-  console.log(token)
   if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
@@ -11,8 +10,6 @@ export  async function middleware(req: NextRequest) {
     const decoded = jwtDecode(token) as { id:string, roles:string, iscampaign:boolean};
 
     const { roles, iscampaign } = decoded;
-    console.log(roles);
-    console.log(iscampaign)
     const pathname = req.nextUrl.pathname;
 
     // Role-based access control

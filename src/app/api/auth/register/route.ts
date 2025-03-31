@@ -5,6 +5,8 @@ import { registerSchema } from "@/core/validators/user.schema";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { ConnectDB } from "@/core/configs/mongoDB";
+import cloudinary from "@/core/configs/cloudinary";
+import { UploadApiOptions } from "cloudinary";
 
 
 
@@ -47,8 +49,30 @@ export async function POST(req: NextRequest) {
 
         const buffer = await profilePicture.arrayBuffer()
         const bytes = Buffer.from(buffer)
+        
+        // Generate timestamp and signature
+        const timestamp = Math.floor(Date.now() / 1000);
+        const paramsToSign = { folder: 'profile_pictures', timestamp };
+        const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET!);
 
-         
+        console.log('Params to sign:', paramsToSign);
+    console.log('Generated signature:', signature);
+    console.log('API Secret (redacted):', process.env.CLOUDINARY_API_SECRET?.slice(0, 4) + '...'); // Partial log for safety
+    console.log('Expected string to sign:', `folder=profile_pictures&timestamp=${timestamp}`);
+
+        const options:UploadApiOptions = {
+            folder: 'profile_pictures',
+            timestamp: timestamp,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            signature: signature
+        }
+
+        //get a database to store file and pictures
+        const profileUpload = await cloudinary.uploader.upload(
+            `data:${profilePicture.type};base64,${bytes.toString('base64')}`,
+           options
+          );
+
         let newUser;
         if(role != ""){
             newUser = new User({
@@ -57,7 +81,7 @@ export async function POST(req: NextRequest) {
                 username,
                 email,
                 password:passwordHash,
-                profilePicture:profilePicture.name,
+                profilePicture:profileUpload.secure_url,
                 roles:role
             })
         }else {
@@ -66,8 +90,9 @@ export async function POST(req: NextRequest) {
                 lastName,
                 username,
                 email,
+                roles:"User",
                 password:passwordHash,
-                profilePicture:profilePicture.name
+                profilePicture:profileUpload.secure_url
             })
         }
 
