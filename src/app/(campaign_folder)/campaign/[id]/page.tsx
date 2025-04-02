@@ -27,42 +27,11 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { useAppSelector } from "@/core/hooks/storeHooks"
+import { selectCampaignById } from "@/core/store/features/campaigns/campaignSlice"
+import { useParams } from "next/navigation"
+import type { Campaign } from "@/core/types/types"
 
-export interface Campaign {
-  _id?: string
-  campaignName: string
-  campaignDescription: string
-  category: string
-  milestoneTitle: string
-  amountNeeded: number
-  completionDate: string
-  teamInformation: string
-  expectedImpact: string
-  risksAndChallenges: string
-  creatorName: string
-  creatorId: string | undefined
-  moneyReceived: number
-  comments: Comment[]
-  updates?: Update[]
-  backers?: number
-  fundingGoal?: number
-  image?: string
-}
-
-interface Comment {
-  id: string
-  name: string
-  avatar?: string
-  text: string
-  date: string
-}
-
-interface Update {
-  id: string
-  title: string
-  content: string
-  date: string
-}
 
 // This would normally come from your assets or API
 const campaignImage = "/placeholder.svg?height=500&width=800"
@@ -72,73 +41,22 @@ const CampaignDetails = () => {
   const [commentText, setCommentText] = useState("")
   const [isLiked, setIsLiked] = useState(false)
   const [donationAmount, setDonationAmount] = useState<string>("")
+  const { id } = useParams()
 
-  // Mock campaign data based on the interface
-  const campaign: Campaign = {
-    _id: "campaign123",
-    campaignName: "Clean Water for Rural Schools",
-    campaignDescription: "Help us bring clean water to 10 rural schools in Tanzania",
-    category: "Community",
-    milestoneTitle: "Equipment Procurement",
-    amountNeeded: 4000,
-    completionDate: "2025-07-15",
-    teamInformation:
-      "Our team consists of water engineers, public health specialists, and local community leaders with extensive experience in water purification projects.",
-    expectedImpact:
-      "This project will directly benefit over 5,000 students, improving their health, increasing school attendance, and empowering communities with knowledge about water management.",
-    risksAndChallenges:
-      "Potential challenges include logistical difficulties in remote areas, seasonal weather conditions affecting installation timelines, and ensuring long-term maintenance of the systems.",
-    creatorName: "Water for All Foundation",
-    creatorId: "user456",
-    moneyReceived: 6500,
-    fundingGoal: 10000,
-    backers: 250,
-    image: campaignImage,
-    comments: [
-      {
-        id: "comment1",
-        name: "John Doe",
-        avatar: "/placeholder.svg?height=40&width=40",
-        text: "This is an amazing initiative! I'm glad to be part of this project.",
-        date: "2023-06-20",
-      },
-      {
-        id: "comment2",
-        name: "Jane Smith",
-        avatar: "/placeholder.svg?height=40&width=40",
-        text: "I've seen firsthand the impact of clean water in rural areas. Keep up the great work!",
-        date: "2023-06-18",
-      },
-    ],
-    updates: [
-      {
-        id: "update1",
-        title: "First School Installation Complete!",
-        content:
-          "We're excited to announce that we've completed the installation of our first water purification system at Mwanza Primary School. The students and teachers are thrilled with the new clean water source!",
-        date: "2023-06-15",
-      },
-      {
-        id: "update2",
-        title: "Halfway to Our Goal",
-        content:
-          "Thanks to your generous support, we've reached the halfway point of our funding goal. We're now preparing for installations in the next three schools. Keep the momentum going!",
-        date: "2023-05-30",
-      },
-    ],
-  }
+  const campaign = useAppSelector((state) => selectCampaignById(state, id as string)) as Campaign
+
 
   // Calculate funding progress percentage
-  const fundingProgress = campaign.fundingGoal
-    ? Math.min(Math.round((campaign.moneyReceived / campaign.fundingGoal) * 100), 100)
+  const fundingProgress = campaign?.amountNeeded
+    ? Math.min(Math.round((campaign?.moneyRecieved || 0 / campaign?.amountNeeded) * 100), 100)
     : 0
 
   // Calculate milestone progress percentage
-  const milestoneProgress = Math.min(Math.round((campaign.moneyReceived / campaign.amountNeeded) * 100), 100)
+  const milestoneProgress = Math.min(Math.round((campaign?.moneyRecieved || 0 / campaign?.amountNeeded) * 100), 100)
 
   // Calculate days remaining
   const calculateDaysRemaining = () => {
-    const endDate = new Date(campaign.completionDate)
+    const endDate = new Date(campaign?.completionDate)
     const today = new Date()
     const diffTime = endDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -178,14 +96,14 @@ const CampaignDetails = () => {
               <Link href="/campaign" className="text-blue-600 hover:underline text-sm flex items-center">
                 All Campaigns <ChevronRight className="h-3 w-3" />
               </Link>
-              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">{campaign.category}</Badge>
+              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">{campaign?.category}</Badge>
             </div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-2">{campaign.campaignName}</h1>
-            <p className="text-lg md:text-xl text-blue-700 mb-4">{campaign.campaignDescription}</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-2">{campaign?.campaignName}</h1>
+            <p className="text-lg md:text-xl text-blue-700 mb-4">{campaign?.campaignDescription}</p>
             <div className="flex flex-wrap items-center gap-4 text-sm text-blue-600 mb-2">
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />
-                Created by {campaign.creatorName}
+                Created by {campaign?.creatorName}
               </span>
               <span className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1" />
@@ -201,8 +119,8 @@ const CampaignDetails = () => {
                 {/* Campaign Image */}
                 <div className="relative">
                   <Image
-                    src={campaign.image || campaignImage}
-                    alt={campaign.campaignName}
+                    src={""}
+                    alt={campaign?.campaignName}
                     width={800}
                     height={400}
                     className="w-full h-[250px] sm:h-[300px] md:h-[400px] object-cover"
@@ -271,7 +189,7 @@ const CampaignDetails = () => {
                           <Info className="h-5 w-5 mr-2 text-blue-600" />
                           Expected Impact
                         </h3>
-                        <p className="text-gray-700">{campaign.expectedImpact}</p>
+                        <p className="text-gray-700">{campaign?.expectedImpact}</p>
                       </div>
 
                       <Separator className="my-6 bg-blue-100" />
@@ -281,7 +199,7 @@ const CampaignDetails = () => {
                           <Users className="h-5 w-5 mr-2 text-blue-600" />
                           About the Team
                         </h3>
-                        <p className="text-gray-700">{campaign.teamInformation}</p>
+                        <p className="text-gray-700">{campaign?.teamInformation}</p>
                       </div>
 
                       <div className="space-y-4">
@@ -289,15 +207,15 @@ const CampaignDetails = () => {
                           <AlertTriangle className="h-5 w-5 mr-2 text-blue-600" />
                           Risks and Challenges
                         </h3>
-                        <p className="text-gray-700">{campaign.risksAndChallenges}</p>
+                        <p className="text-gray-700">{campaign?.risksAndChallenges}</p>
                       </div>
                     </div>
                   </TabsContent>
 
                   {/* Updates Tab */}
                   <TabsContent value="updates" className="p-6 space-y-6">
-                    {campaign.updates && campaign.updates.length > 0 ? (
-                      campaign.updates.map((update) => (
+                    {/* {campaign?.update && campaign?.update?.length > 0 ? (
+                      campaign.update.map((update) => (
                         <Card key={update.id} className="bg-white border-blue-100">
                           <CardHeader className="pb-2">
                             <CardTitle className="text-lg text-blue-800">{update.title}</CardTitle>
@@ -310,13 +228,13 @@ const CampaignDetails = () => {
                       ))
                     ) : (
                       <div className="text-center py-8 text-gray-500">No updates have been posted yet.</div>
-                    )}
+                    )} */}
                   </TabsContent>
 
                   {/* Comments Tab */}
                   <TabsContent value="comments" className="p-6 space-y-6">
                     <div className="space-y-6">
-                      {campaign.comments && campaign.comments.length > 0 ? (
+                      {/* {campaign.comments && campaign.comments.length > 0 ? (
                         campaign.comments.map((comment) => (
                           <div key={comment.id} className="flex gap-3 md:gap-4 pb-4 border-b border-blue-100">
                             <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
@@ -336,7 +254,7 @@ const CampaignDetails = () => {
                         ))
                       ) : (
                         <div className="text-center py-4 text-gray-500">No comments yet. Be the first to comment!</div>
-                      )}
+                      )} */}
 
                       <div className="pt-4">
                         <h4 className="font-semibold text-blue-800 mb-2">Add a Comment</h4>
@@ -367,11 +285,11 @@ const CampaignDetails = () => {
                     </span>
                     <span className="flex items-center">
                       <Users className="h-4 w-4 mr-1" />
-                      {campaign.backers} backers
+                      {campaign?.backers} backers
                     </span>
                     <span className="flex items-center">
                       <MessageCircle className="h-4 w-4 mr-1" />
-                      {campaign.comments?.length || 0} comments
+                      {campaign?.comments?.length || 0} comments
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-3 sm:mt-0">
@@ -404,14 +322,14 @@ const CampaignDetails = () => {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl text-blue-800">Support This Project</CardTitle>
                   <CardDescription>
-                    Help us reach our goal of NLe{campaign.fundingGoal?.toLocaleString()}
+                    Help us reach our goal of NLe{campaign?.amountNeeded?.toLocaleString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-blue-800">NLe{campaign.moneyReceived.toLocaleString()}</span>
-                      <span className="text-gray-500">of NLe{campaign.fundingGoal?.toLocaleString()}</span>
+                      <span className="font-medium text-blue-800">NLe{campaign?.moneyRecieved || "".toLocaleString()}</span>
+                      <span className="text-gray-500">of NLe{campaign?.amountNeeded?.toLocaleString()}</span>
                     </div>
                     <Progress value={fundingProgress} className="h-3 bg-blue-100" />
                     <div className="flex flex-wrap justify-between text-sm gap-2">
@@ -462,15 +380,15 @@ const CampaignDetails = () => {
               <Card className="border-blue-100">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-blue-800">Current Milestone</CardTitle>
-                  <CardDescription>{campaign.milestoneTitle}</CardDescription>
+                  <CardDescription>{campaign?.milestone}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium text-blue-800">
-                        NLe{Math.min(campaign.moneyReceived, campaign.amountNeeded).toLocaleString()}
+                        NLe{Math.min(campaign?.moneyRecieved || 0, campaign?.amountNeeded).toLocaleString()}
                       </span>
-                      <span className="text-gray-500">of NLe{campaign.amountNeeded.toLocaleString()}</span>
+                      <span className="text-gray-500">of NLe{campaign?.amountNeeded.toLocaleString()}</span>
                     </div>
                     <Progress value={milestoneProgress} className="h-2 bg-blue-100" />
                     <div className="flex justify-between text-sm">
@@ -488,13 +406,13 @@ const CampaignDetails = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src="/placeholder.svg?height=48&width=48" alt={campaign.creatorName} />
+                      <AvatarImage src="/placeholder.svg?height=48&width=48" alt={campaign?.creatorName} />
                       <AvatarFallback className="bg-blue-100 text-blue-800">
-                        {campaign.creatorName.charAt(0)}
+                        {campaign?.creatorName?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="font-semibold text-blue-800">{campaign.creatorName}</h4>
+                      <h4 className="font-semibold text-blue-800">{campaign?.creatorName}</h4>
                       <p className="text-sm text-gray-500">Campaign Organizer</p>
                     </div>
                   </div>
