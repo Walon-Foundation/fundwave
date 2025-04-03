@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -77,6 +76,7 @@ const CampaignDetails = () => {
       const action = await dispatch(addComment({description:commentText, campaignId:id as string}))
       if(addComment.fulfilled.match(action)){
         await dispatch(fetchComment())
+        setCommentText("")
       }
     }catch(error){
       console.error(error)
