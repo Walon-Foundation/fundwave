@@ -27,10 +27,12 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { useAppSelector } from "@/core/hooks/storeHooks"
 import { selectCampaignById } from "@/core/store/features/campaigns/campaignSlice"
 import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
+import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
+import { addComment,fetchComment } from "@/core/store/features/comments/commentSlice"
+import { selectAllComment } from "@/core/store/features/comments/commentSlice"
 
 
 
@@ -41,8 +43,11 @@ const CampaignDetails = () => {
   const [isLiked, setIsLiked] = useState(false)
   const [donationAmount, setDonationAmount] = useState<string>("")
   const { id } = useParams()
+  const dispatch = useAppDispatch()
 
   const campaign = useAppSelector((state) => selectCampaignById(state, id as string)) as Campaign
+  const allComment = useAppSelector(selectAllComment)
+  const campaignComment = allComment.filter(comment => comment.campaignId === id as string)
 
 
   // Calculate funding progress percentage
@@ -65,11 +70,17 @@ const CampaignDetails = () => {
   const daysRemaining = calculateDaysRemaining()
 
   // Handle comment submission
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async(e:React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     if (!commentText.trim()) return
-    // In a real app, you would send this to your API
-    alert(`Comment submitted: ${commentText}`)
-    setCommentText("")
+    try{
+      const action = await dispatch(addComment({description:commentText, campaignId:id as string}))
+      if(addComment.fulfilled.match(action)){
+        await dispatch(fetchComment())
+      }
+    }catch(error){
+      console.error(error)
+    }
   }
 
   // Handle donation submission
@@ -221,30 +232,30 @@ const CampaignDetails = () => {
                   {/* Comments Tab */}
                   <TabsContent value="comments" className="p-6 space-y-6">
                     <div className="space-y-6">
-                      {/* {campaign.comments && campaign.comments.length > 0 ? (
-                        campaign.comments.map((comment) => (
-                          <div key={comment.id} className="flex gap-3 md:gap-4 pb-4 border-b border-blue-100">
+                      {campaign?.comments && campaign?.comments?.length > 0 ? (
+                        campaignComment.map((comment) => (
+                          <div key={comment._id} className="flex gap-3 md:gap-4 pb-4 border-b border-blue-100">
                             <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
-                              <AvatarImage src={comment.avatar} alt={comment.name} />
+                              <AvatarImage src={comment?.username} alt={comment?._id} />
                               <AvatarFallback className="bg-blue-100 text-blue-800">
-                                {comment.name.charAt(0)}
+                                {comment?.username?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                                <h4 className="font-semibold text-blue-800 text-sm md:text-base">{comment.name}</h4>
-                                <span className="text-xs text-gray-500">{formatDate(comment.date)}</span>
+                                <span className="text-xs text-gray-500">{comment?.createdAt}</span>
                               </div>
-                              <p className="mt-1 text-gray-700 text-sm md:text-base break-words">{comment.text}</p>
+                              <p className="mt-1 text-gray-700 text-sm md:text-base break-words">{comment.description}</p>
                             </div>
                           </div>
                         ))
                       ) : (
                         <div className="text-center py-4 text-gray-500">No comments yet. Be the first to comment!</div>
-                      )} */}
+                      )}
 
                       <div className="pt-4">
                         <h4 className="font-semibold text-blue-800 mb-2">Add a Comment</h4>
+                        <form onSubmit={handleCommentSubmit}>
                         <Textarea
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
@@ -252,12 +263,12 @@ const CampaignDetails = () => {
                           className="min-h-[100px] border-blue-200 focus-visible:ring-blue-400"
                         />
                         <Button
-                          onClick={handleCommentSubmit}
                           className="mt-3 bg-blue-600 hover:bg-blue-700 transition-colors"
                           disabled={!commentText.trim()}
                         >
                           Post Comment
                         </Button>
+                        </form>
                       </div>
                     </div>
                   </TabsContent>

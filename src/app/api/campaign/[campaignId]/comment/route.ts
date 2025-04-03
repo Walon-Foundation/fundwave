@@ -9,13 +9,13 @@ import { cookies } from "next/headers";
 
 import { ConnectDB } from "@/core/configs/mongoDB";
 
-export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}){
+export async function POST(req:NextRequest,{params}:{params:Promise<{campaignId:string}>}){
     try{
         //connect to the database
         await ConnectDB();
 
         //getting the accessToken from the cookies
-        const token =  (await cookies()).get("accessToken") as string | undefined
+        const token =  (await cookies()).get("accessToken")?.value as string | undefined
         if(!token){
             return errorHandler(401, "unauthorized", null)
         }
@@ -24,7 +24,7 @@ export async function POST(req:NextRequest,{params}:{params:{campaignId:string}}
         const userId = decodedToken;
     
         //getting the params and  data from the request
-        const { campaignId } = params
+        const  campaignId = (await params).campaignId
 
         const reqBody = await req.json()
         const result = addCommentSchema.safeParse(reqBody)

@@ -1,25 +1,28 @@
-"use client"
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Calendar, Edit, Mail, MapPin, Phone, Award, UserIcon, Megaphone, } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { jwtDecode } from "jwt-decode"
-import Cookies from "js-cookie"
-import type { User } from "@/core/types/types"
-import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Calendar, Edit, Mail, MapPin, Phone, Award, UserIcon, Megaphone } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
+import type { Campaign, User } from "@/core/types/types";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice";
+import { useAppSelector } from "@/core/hooks/storeHooks";
 
 export default function UserProfile() {
-  const [error, setError] = useState<string | null>(null)
-  const [user,setUser] = useState<User|null>(null)
-  const router = useRouter()
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [userCampaigns, setUserCampaign] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+  const allCampaign = useAppSelector(selectAllCampaign);
 
   const token = Cookies.get("userToken");
-  
-  
 
   useEffect(() => {
     if (!token) {
@@ -28,22 +31,40 @@ export default function UserProfile() {
     }
 
     try {
-      const user = jwtDecode(token) as User;
-      setUser(user)
-      console.log(user.profilePicture);
+      const decodedUser = jwtDecode(token) as User;
+      setUser(decodedUser);
     } catch (err) {
-      console.error(err)
+      console.error(err);
       setError("Invalid token, redirecting...");
       router.push('/login');
+    } finally {
+      setLoading(false);
     }
   }, [token, router]);
 
-  if (error) {
-    return <p>{error}</p>;
+  // This effect runs when `user` changes and filters campaigns based on `user.username`
+  useEffect(() => {
+    if (user) {
+      const filteredCampaign = allCampaign.filter(campaign => campaign.creatorName === user?.username);
+      setUserCampaign(filteredCampaign);
+    }
+  }, [user, allCampaign]);
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <UserIcon className="h-10 w-10 text-gray-600" />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-
-  if ( !token) {
+  if (error) {
     return (
       <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
@@ -57,8 +78,12 @@ export default function UserProfile() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
+
+ 
+  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4">
       <div className="max-w-4xl mx-auto">
@@ -184,13 +209,19 @@ export default function UserProfile() {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {user?.campaigns && user?.campaigns.length > 0 ? (
-                    user?.campaigns.map((campaign, index) => (
-                      <Badge
-                        key={index}
-                        className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
-                      >
-                        {campaign}
-                      </Badge>
+                    (userCampaigns ? (
+                      userCampaigns.map((campaign, index) => (
+                        <Badge
+                          key={index}
+                          className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
+                        >
+                          {campaign?.campaignName}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p>
+                        No campaign yet
+                      </p>
                     ))
                   ) : (
                     <p className="text-gray-500 italic">No active campaigns</p>
@@ -212,6 +243,5 @@ export default function UserProfile() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-

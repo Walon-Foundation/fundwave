@@ -381,7 +381,7 @@ export default function ExploreCampaigns() {
                         <div className="md:w-1/3 relative">
                           <Image
                             src={campaign?.campaignPicture}
-                            alt={campaign.campaignName}
+                            alt={campaign?.campaignName}
                             width={500}
                             height={300}
                             className="h-48 w-full object-cover md:h-full"
@@ -389,14 +389,14 @@ export default function ExploreCampaigns() {
                           <Badge
                             className={`absolute top-3 left-3 ${categoryColor.bg} ${categoryColor.text} border ${categoryColor.border}`}
                           >
-                            {campaign.category}
+                            {campaign?.category}
                           </Badge>
                         </div>
 
                         <CardContent className="md:w-2/3 p-6">
                           <div className="mb-4">
-                            <h2 className="text-xl font-bold text-blue-900 mb-2">{campaign.campaignName}</h2>
-                            <p className="text-gray-600">{campaign.campaignDescription}</p>
+                            <h2 className="text-xl font-bold text-blue-900 mb-2">{campaign?.campaignName}</h2>
+                            <p className="text-gray-600">{campaign?.campaignDescription}</p>
                           </div>
 
                           <div className="mb-4">
@@ -404,7 +404,7 @@ export default function ExploreCampaigns() {
                               <span className="font-medium text-blue-800">
                                 NLe{campaign?.moneyReceived?.toLocaleString()}
                               </span>
-                              <span className="text-gray-500">of NLe{campaign.amountNeeded?.toLocaleString()}</span>
+                              <span className="text-gray-500">of NLe{campaign?.amountNeeded?.toLocaleString()}</span>
                             </div>
                             <div className="relative w-full h-3 bg-blue-100 rounded-full overflow-hidden">
                               <div
@@ -424,11 +424,11 @@ export default function ExploreCampaigns() {
                             </div>
                             <div className="flex items-center">
                               <Users className="h-4 w-4 mr-1 text-blue-500" />
-                              <span>{campaign.backers} backers</span>
+                              <span>{campaign?.backers} backers</span>
                             </div>
                           </div>
 
-                          <Link href={`/campaign/${campaign._id}`} className="block mt-4">
+                          <Link href={`/campaign/${campaign?._id}`} className="block mt-4">
                             <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700">View Campaign</Button>
                           </Link>
                         </CardContent>

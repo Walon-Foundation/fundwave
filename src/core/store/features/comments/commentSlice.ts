@@ -25,7 +25,7 @@ export const addComment = createAsyncThunk("comment/addComment", async(data:Comm
         if(Object.keys(data).length === 0){
             return rejectWithValue("All field required")
         }
-        const response = await  axiosInstance.post(`/comment/${data.campaignId}/comment/`, data)
+        const response = await  axiosInstance.post(`/campaign/${data.campaignId}/comment/`, data)
         return response.data.data as Comment
     }catch(error){
         console.error(error);
@@ -120,9 +120,9 @@ const commentSlice = createSlice({
 })
 
 export const {
-    selectAll:selectAllCampaign,
-    selectById:selectCampaignById,
-    selectIds: getCampaignId,
+    selectAll:selectAllComment,
+    selectById:selectCommentById,
+    selectIds: getCommentId,
 } = commentAdaptor.getSelectors((state:RootState) => state.comment)
 
 export default commentSlice.reducer
