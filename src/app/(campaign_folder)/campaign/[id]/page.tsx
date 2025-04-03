@@ -33,8 +33,7 @@ import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
 
 
-// This would normally come from your assets or API
-const campaignImage = "/placeholder.svg?height=500&width=800"
+
 
 const CampaignDetails = () => {
   const [activeTab, setActiveTab] = useState("about")
@@ -80,12 +79,7 @@ const CampaignDetails = () => {
     alert(`Donation amount: NLe${donationAmount}`)
   }
 
-  // Format date to readable format
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }
-    return new Date(dateString).toLocaleDateString(undefined, options)
-  }
-
+ 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <main className="flex-1 py-8 md:py-12">
