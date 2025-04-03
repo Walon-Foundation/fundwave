@@ -7,6 +7,7 @@ import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { campaignCreateSchema } from "@/core/validators/campaign.schema";
 import { cookies } from "next/headers";
+import { supabase } from "@/core/configs/supabase";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,20 +26,27 @@ export async function POST(req: NextRequest) {
 
     const decodedUser = decodedToken;
 
-    console.log(decodedUser.iscampaign)
-
     if(decodedUser.iscampaign != true){
       return errorHandler(401, "User kyc needed", "not eligible to create a campaign")
     }
 
     //getting data from the request body
-    const reqBody = await req.json()
-    const result = campaignCreateSchema.safeParse(reqBody)
-    if(!result.success){
-      return errorHandler(400,result.error.issues[0].message,result.error)
-    }
-    
-    const {
+    const formData = await req.formData()
+
+    const campaignName = formData.get("campaignName") as string
+    const campaignDescription = formData.get("campaignDescription") as string
+    const amountNeeded = formData.get("amountNeeded") as string
+    const milestone = formData.get("milestone") as string
+    const teamInformation = formData.get("teamInformation") as string
+    const problem = formData.get("problem") as string
+    const solution = formData.get("solution") as string
+    const risksAndChallenges = formData.get("risksAndChallenges") as string
+    const expectedImpact = formData.get("expectedImpact") as string
+    const category = formData.get("category") as string
+    const completionDate = formData.get("completionDate") as string
+    const campaignPicture = formData.get("campaignPicture") as File 
+
+    const reqBody = {
       campaignDescription,
       campaignName,
       amountNeeded,
@@ -49,9 +57,18 @@ export async function POST(req: NextRequest) {
       teamInformation,
       expectedImpact,
       problem,
-      solution
-    } = result.data;
+      solution:JSON.parse(solution)
+    };
 
+    if(!campaignPicture){
+      return errorHandler(404, "no campaign picture found", "invalid campaign picture")
+    }
+
+    const result = campaignCreateSchema.safeParse(reqBody)
+    if(!result.success){
+      return errorHandler(400,result.error.issues[0].message,result.error)
+    }
+    
     //checking if the decodedUser is correct
     const user = await User.findOne({ _id:decodedUser.id });
     if (!user) {
@@ -64,11 +81,35 @@ export async function POST(req: NextRequest) {
       return errorHandler(400,"Campaign already exist","campaign already exist")
     }
 
+    //converting file to buffer for supabase upload
+    const buffer = await campaignPicture.arrayBuffer();
+    const bytes = Buffer.from(buffer);
+
+    //sending to supabase
+    const filename = `${campaignPicture.name} - ${Date.now()} - ${campaignName}`
+
+    const { error } = await supabase.storage.from("campaigns").upload(
+      filename, bytes, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: campaignPicture.type, // Use the file's MIME type
+      }
+    )
+    if(error){
+      return errorHandler(500, "failed to upload to supabase", error.message)
+    }
+
+    const { data:urlData} = supabase.storage.from("campaigns").getPublicUrl(filename)
+    const campaignPictureUrl = urlData.publicUrl
+
+
+
     //creating the new campaign
     const newCampaign = await new Campaign({
+      campaignPicture:campaignPictureUrl,
       campaignDescription,
       campaignName,
-      amountNeeded,
+      amountNeeded: Number(amountNeeded),
       completionDate,
       risksAndChallenges,
       milestone,
@@ -78,7 +119,7 @@ export async function POST(req: NextRequest) {
       creatorName: user.username,
       creatorId: user._id,
       problem,
-      solution
+      solution:JSON.parse(solution)
     });
 
     //saving campaign to the database
@@ -89,7 +130,7 @@ export async function POST(req: NextRequest) {
     user.campaigns.push(newCampaign._id);
     await user.save();
 
-    return apiResponse("Campaign created successfully",200, newCampaign);
+    return apiResponse("Campaign created successfully",201, newCampaign);
   } catch (error: unknown) {
     return errorHandler(500, "Internal Server Error", error);
   }

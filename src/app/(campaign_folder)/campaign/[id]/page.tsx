@@ -113,7 +113,7 @@ const CampaignDetails = () => {
                 {/* Campaign Image */}
                 <div className="relative">
                   <Image
-                    src={""}
+                    src={campaign?.campaignPicture}
                     alt={campaign?.campaignName}
                     width={800}
                     height={400}
@@ -123,7 +123,7 @@ const CampaignDetails = () => {
 
                 {/* Tabs Navigation */}
                 <Tabs defaultValue="about" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <div className="px-6 pt-6">
+                  <div className="px-6  py-6 ">
                     <TabsList className="grid w-full grid-cols-3 bg-blue-50 rounded-md">
                       <TabsTrigger
                         value="about"
@@ -155,9 +155,7 @@ const CampaignDetails = () => {
                           The Problem
                         </h3>
                         <p className="text-gray-700">
-                          Many rural schools in Tanzania lack access to clean water, leading to waterborne diseases and
-                          decreased school attendance. Students often have to walk long distances to fetch water, which
-                          takes away from their learning time and exposes them to various risks.
+                          {campaign?.problem}
                         </p>
                       </div>
 
@@ -166,16 +164,11 @@ const CampaignDetails = () => {
                           <Award className="h-5 w-5 mr-2 text-blue-600" />
                           Our Solution
                         </h3>
-                        <p className="text-gray-700">
-                          We will install modern water purification systems in each school and provide education on
-                          water conservation and hygiene practices. Our comprehensive approach includes:
-                        </p>
-                        <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                          <li>Installing sustainable water purification systems at 10 rural schools</li>
-                          <li>Training school staff on system maintenance and water management</li>
-                          <li>Educating students and communities on hygiene practices</li>
-                          <li>Establishing water management committees at each school</li>
-                        </ul>
+                        {campaign?.solution.map((solution, index) => (
+                          <p className="text-gray-700" key={index}>
+                          {index+ 1}. <span>{solution}</span>
+                          </p>
+                        ))}
                       </div>
 
                       <div className="space-y-4">

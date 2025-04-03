@@ -24,8 +24,7 @@ import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice
 import { useAppSelector } from "@/core/hooks/storeHooks"
 import type { Campaign } from "@/core/types/types"
 
-// This would normally come from your assets
-const holder = "/placeholder.svg?height=300&width=500"
+
 
 // Category color mapping
 const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
@@ -82,7 +81,6 @@ const defaultCategoryColor = {
 
 export default function ExploreCampaigns() {
   const originalCampaignList = useAppSelector(selectAllCampaign)
-  console.log(originalCampaignList)
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("")
@@ -157,7 +155,7 @@ export default function ExploreCampaigns() {
         break
     }
 
-    console.log("Sorted results:", result)
+    
 
     setFilteredCampaigns(result)
     // Reset to first page when filters change
@@ -382,7 +380,7 @@ export default function ExploreCampaigns() {
                       <div className="md:flex">
                         <div className="md:w-1/3 relative">
                           <Image
-                            src={holder || "/placeholder.svg"}
+                            src={campaign?.campaignPicture}
                             alt={campaign.campaignName}
                             width={500}
                             height={300}

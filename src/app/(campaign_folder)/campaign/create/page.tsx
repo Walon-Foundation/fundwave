@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { useAppDispatch } from "@/core/hooks/storeHooks"
-import { addCampaign } from "@/core/store/features/campaigns/campaignSlice"
-import { Campaign,  } from "@/core/types/types"
+import { fetchCampaigns } from "@/core/store/features/campaigns/campaignSlice"
 import { useRouter } from "next/navigation"
 import useIsCampaign from "@/core/hooks/useIsCampaign"
 import {Minus, Plus, List} from "lucide-react"
+import CampaignPicturePreview from "@/components/campaign-picture-preview"
+import { axiosInstance } from "@/core/api/axiosInstance"
 
 
 export default function AddCampaign() {
@@ -34,10 +35,10 @@ export default function AddCampaign() {
   const [category, setCategory] = useState("")
   const [solution, setSolution] = useState<string[]>([])
   const [problem, setProblem] = useState("")
-  const [campaignPicture, SetCampaignPicture] = useState("")
+  const [campaignPicture, setCampaignPicture] = useState<File | null >(null)
 
-  const dispatch = useAppDispatch()
   const router = useRouter()
+  const dispatch = useAppDispatch()
 
   // Step navigation
   const nextStep = () => {
@@ -56,8 +57,6 @@ export default function AddCampaign() {
     }
   }
 
-  //changing amountNeeded to number
-  const newAmountNeeded = Number(amountNeeded)
 
   //step to adding the solution
   const addSolution = () => {
@@ -81,23 +80,25 @@ export default function AddCampaign() {
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
-      const data:Campaign = {
-        campaignDescription,
-        campaignPicture,
-        campaignName,
-        category,
-        solution,
-        problem,
-        teamInformation,
-        risksAndChallenges,
-        completionDate,
-        milestone,
-        amountNeeded:newAmountNeeded,
-        expectedImpact
-
+      const formData = new FormData()
+      formData.append("campaignName",campaignName)
+      formData.append("campaignDescription", campaignDescription)
+      formData.append("amountNeeded",amountNeeded)
+      formData.append("milestone",milestone)
+      formData.append("teamInformation",teamInformation)
+      formData.append("problem", problem)
+      formData.append("solution",JSON.stringify(solution))
+      formData.append("risksAndChallenges",risksAndChallenges)
+      formData.append("expectedImpact",expectedImpact)
+      formData.append("category", category)
+      formData.append("completionDate",completionDate)
+      if(campaignPicture){
+        formData.append("campaignPicture",campaignPicture)
       }
-      const action = await dispatch(addCampaign(data))
-      if(addCampaign.fulfilled.match(action)){
+      const response = await axiosInstance.post('/campaign', formData)
+      if(response.status === 201){
+        await dispatch(fetchCampaigns())
+        console.log(response.data)
         router.push('/campaign')
       }
     }catch(error){
@@ -147,6 +148,9 @@ export default function AddCampaign() {
             {/* Step 1: Basic Information */}
             {currentStep === 1 && (
               <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 animate-in fade-in duration-300">
+                <div>
+                  <CampaignPicturePreview onImageChange={setCampaignPicture}/>
+                </div>
                 <div>
                   <Label htmlFor="campaign_name" className="text-lg font-semibold text-blue-800 mb-2">
                     Campaign Name
@@ -214,7 +218,7 @@ export default function AddCampaign() {
                       </Label>
                       <Input
                         id="amount_needed"
-                        placeholder="NLe 500,000"
+                        placeholder="NLe 500000"
                         value={amountNeeded}
                         onChange={(e) => setAmountNeeded(e.target.value)}
                         className="border-blue-200 focus-visible:ring-blue-400"

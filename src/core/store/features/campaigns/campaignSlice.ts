@@ -20,18 +20,6 @@ export const fetchCampaigns = createAsyncThunk("campaign/fetchCampaigns", async(
     }
 })
 
-export const addCampaign = createAsyncThunk("campaign/addCampaign", async(data:Campaign, {rejectWithValue}) => {
-    try{
-        if(Object.keys(data).length === 0){
-            return rejectWithValue("All field required")
-        }
-        const response = await  axiosInstance.post("/campaign", data)
-        return response.data.data as Campaign
-    }catch(error){
-        console.error(error);
-        return rejectWithValue("Failed to add campaign")
-    }
-})
 
 export const deleteCampaign = createAsyncThunk("campaign/deleteCampaign", async(id:string, {rejectWithValue}) => {
     try{
@@ -63,19 +51,6 @@ const campaignSlice = createSlice({
             state.error = null;
         })
         .addCase(fetchCampaigns.rejected, (state, action) => {
-            state.status = "failed";
-            state.error = action.error.message as string;
-        })
-        .addCase(addCampaign.pending, (state) => {
-            state.status = "loading";
-            state.error = null
-        })
-        .addCase(addCampaign.fulfilled, (state, action) => {
-            state.status = "success";
-            campaignAdaptor.upsertOne(state, action.payload);
-            state.error = null
-        })
-        .addCase(addCampaign.rejected, (state, action) => {
             state.status = "failed";
             state.error = action.error.message as string;
         })
