@@ -1,3 +1,4 @@
+import { logo } from "@/assets/assets"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -12,7 +13,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-2">
               {/* Replace with your actual logo import */}
               <div className="relative h-8 w-[100px]">
-                <Image src="/placeholder.svg?height=32&width=100" alt="FundWave Logo" fill className="object-contain" />
+                <Image src={logo}  fill alt="FundWave Logo"  className="object-contain" />
               </div>
             </Link>
             <p className="text-sm text-muted-foreground">

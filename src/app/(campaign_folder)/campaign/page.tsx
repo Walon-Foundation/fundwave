@@ -132,7 +132,7 @@ export default function ExploreCampaigns() {
     // Apply sorting
     switch (sortBy) {
       case "most-funded":
-        result.sort((a, b) => (b.moneyRecieved as number) - (a.moneyRecieved ?? 0))
+        result.sort((a, b) => (b.moneyReceived as number) - (a.moneyReceived ?? 0))
         break
       case "newest":
         result.sort((a, b) => {
@@ -371,7 +371,7 @@ export default function ExploreCampaigns() {
               <div className="space-y-6">
                 {paginatedCampaigns.map((campaign) => {
                   const categoryColor = categoryColors[campaign.category] || defaultCategoryColor
-                  const fundingPercentage = calculateFundingPercentage(campaign?.moneyRecieved as number, 50)
+                  const fundingPercentage = calculateFundingPercentage(campaign?.moneyReceived as number, 50)
                   const daysRemaining = calculateDaysRemaining(campaign.completionDate)
 
                   return (
@@ -404,7 +404,7 @@ export default function ExploreCampaigns() {
                           <div className="mb-4">
                             <div className="flex justify-between text-sm mb-1">
                               <span className="font-medium text-blue-800">
-                                NLe{campaign?.moneyRecieved?.toLocaleString()}
+                                NLe{campaign?.moneyReceived?.toLocaleString()}
                               </span>
                               <span className="text-gray-500">of NLe{campaign.amountNeeded?.toLocaleString()}</span>
                             </div>

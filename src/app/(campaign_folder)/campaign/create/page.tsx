@@ -13,6 +13,7 @@ import { addCampaign } from "@/core/store/features/campaigns/campaignSlice"
 import { Campaign,  } from "@/core/types/types"
 import { useRouter } from "next/navigation"
 import useIsCampaign from "@/core/hooks/useIsCampaign"
+import {Minus, Plus, List} from "lucide-react"
 
 
 export default function AddCampaign() {
@@ -31,8 +32,9 @@ export default function AddCampaign() {
   const [expectedImpact, setExpectedImpact] = useState("")
   const [risksAndChallenges, setRisksAndChallenges] = useState("")
   const [category, setCategory] = useState("")
-  const [solution, setSolution] = useState("")
+  const [solution, setSolution] = useState<string[]>([])
   const [problem, setProblem] = useState("")
+  const [campaignPicture, SetCampaignPicture] = useState("")
 
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -45,6 +47,8 @@ export default function AddCampaign() {
     }
   }
 
+
+
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
@@ -55,12 +59,31 @@ export default function AddCampaign() {
   //changing amountNeeded to number
   const newAmountNeeded = Number(amountNeeded)
 
+  //step to adding the solution
+  const addSolution = () => {
+    setSolution([...solution, ""])
+  }
+
+  const removeSolution = (index: number) => {
+    if (solution.length > 1) {
+      const newSolution = solution.filter((_, i) => i !== index)
+      setSolution(newSolution)
+    }
+  }
+
+  const handleSolutionChange = (index: number, value: string) => {
+    const newSolution = [...solution]
+    newSolution[index] = value
+    setSolution(newSolution)
+  }
+
   // Form submission
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
       const data:Campaign = {
         campaignDescription,
+        campaignPicture,
         campaignName,
         category,
         solution,
@@ -235,19 +258,37 @@ export default function AddCampaign() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="solution" className="text-lg font-semibold text-blue-800 mb-2">
-                    Solution
-                  </Label>
-                  <Textarea
-                    id="solution"
-                    placeholder="What is your solution to the problem?"
-                    value={solution}
-                    onChange={(e) => setSolution(e.target.value)}
-                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
-                    required
-                  />
-                </div>
+                <div className="grid gap-4 py-4">
+                  {solution.map((solution, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Label htmlFor={`solution-${index}`} className="sr-only">
+                        Solution {index + 1}
+                      </Label>
+                      <div className="relative flex-grow">
+                        <List className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-900 bg-white h-5 w-5" />
+                        <Input
+                          id={`solution-${index}`}
+                          value={solution}
+                          onChange={(e) => handleSolutionChange(index, e.target.value)}
+                          placeholder={`Solution ${index + 1}`}
+                          className="pl-10 bg-white text-blue-900"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeSolution(index)}
+                        disabled={solution.length === 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" onClick={addSolution} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" /> Add Solution
+                  </Button>
+              </div>
                 <div>
                   <Label htmlFor="team_info" className="text-lg font-semibold text-blue-800 mb-2">
                     Team Information

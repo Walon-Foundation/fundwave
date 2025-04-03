@@ -9,6 +9,7 @@ import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/s
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/core/hooks/storeHooks";
 import { RootState } from "@/core/store/store";
+import { logo } from "@/assets/assets";
 import { logout } from "@/core/store/features/user/userSlice";
 
 export default function Navbar() {
@@ -32,7 +33,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2">
             <div className="relative h-8 w-[100px]">
               <Image
-                src="/placeholder.svg?height=32&width=100"
+                src={logo}
                 alt="FundWave Logo"
                 fill
                 className="object-contain"

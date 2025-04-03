@@ -47,11 +47,11 @@ const CampaignDetails = () => {
 
   // Calculate funding progress percentage
   const fundingProgress = campaign?.amountNeeded
-    ? Math.min(Math.round((campaign?.moneyRecieved || 0 / campaign?.amountNeeded) * 100), 100)
+    ? Math.min(Math.round((campaign?.moneyReceived || 0 / campaign?.amountNeeded) * 100), 100)
     : 0
 
   // Calculate milestone progress percentage
-  const milestoneProgress = Math.min(Math.round((campaign?.moneyRecieved || 0 / campaign?.amountNeeded) * 100), 100)
+  const milestoneProgress = Math.min(Math.round((campaign?.moneyReceived || 0 / campaign?.amountNeeded) * 100), 100)
 
   // Calculate days remaining
   const calculateDaysRemaining = () => {
@@ -322,7 +322,7 @@ const CampaignDetails = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-blue-800">NLe{campaign?.moneyRecieved || "".toLocaleString()}</span>
+                      <span className="font-medium text-blue-800">NLe{campaign?.moneyReceived || "".toLocaleString()}</span>
                       <span className="text-gray-500">of NLe{campaign?.amountNeeded?.toLocaleString()}</span>
                     </div>
                     <Progress value={fundingProgress} className="h-3 bg-blue-100" />
@@ -380,7 +380,7 @@ const CampaignDetails = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium text-blue-800">
-                        NLe{Math.min(campaign?.moneyRecieved || 0, campaign?.amountNeeded).toLocaleString()}
+                        NLe{Math.min(campaign?.moneyReceived || 0, campaign?.amountNeeded).toLocaleString()}
                       </span>
                       <span className="text-gray-500">of NLe{campaign?.amountNeeded.toLocaleString()}</span>
                     </div>

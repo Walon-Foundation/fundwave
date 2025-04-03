@@ -9,6 +9,7 @@ const useIsCampaign = () => {
 
   useEffect(() => {
     const token = Cookies.get("userToken");
+    console.log(token)
 
     if (!token) {
       router.replace("/login"); 

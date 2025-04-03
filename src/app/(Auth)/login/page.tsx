@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation"
 import { useDispatch } from "react-redux"
 import { login } from "@/core/store/features/user/userSlice"
 import useAuthRedirect from "@/core/hooks/useAuthRedirect"
+import Image from "next/image"
+import { logo } from "@/assets/assets"
 
 export default function SignIn() {
   const [username, setUsername] = useState<string>("")
@@ -52,19 +54,13 @@ export default function SignIn() {
       <div className="w-full max-w-md mx-auto">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shadow-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-8 h-8 text-white"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
+          <div className="w-24 h-15 flex items-center justify-center shadow-lg">
+            <Image
+            src={logo}
+            alt="Fundwave logo"
+            height={100}
+            width={100}
+            />
           </div>
         </div>
 

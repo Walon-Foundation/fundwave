@@ -1,5 +1,6 @@
 export interface Campaign  {
   _id?:string
+  campaignPicture:string
   campaignName: string;
   campaignDescription: string;
   category: string;
@@ -11,10 +12,10 @@ export interface Campaign  {
   risksAndChallenges: string;
   creatorName?: string;
   creatorId?: string ;
-  moneyRecieved?: number;
+  moneyReceived?: number;
   comments?: string[];
   problem:string,
-  solution:string
+  solution:string[]
   update?:string[];
   backers?:number;
   createdAt?:string

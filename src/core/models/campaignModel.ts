@@ -1,6 +1,7 @@
 import {models, model, Schema, Document} from "mongoose";
 
 interface Campaign extends Document {
+  campaignPicture: string;
   campaignName: string;
   campaignDescription: string;
   category: string;
@@ -12,10 +13,10 @@ interface Campaign extends Document {
   risksAndChallenges: string;
   creatorName: string;
   creatorId: string | undefined;
-  moneyRecieved: number;
+  moneyReceived: number;
   comments: string[];
   problem:string,
-  solution:string
+  solution:string[],
   update:string[];
   backers:number
 }
@@ -25,6 +26,10 @@ const campaignSchema = new Schema<Campaign>(
     campaignName: {
       type: String,
       required: true
+    },
+    campaignPicture:{
+      type:String,
+      required:true
     },
     campaignDescription: {
       type: String,
@@ -38,10 +43,10 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
-    solution:{
+    solution:[{
       type:String,
       required:true
-    },
+    }],
     milestone: {
       type: String,
       required: true
@@ -78,7 +83,7 @@ const campaignSchema = new Schema<Campaign>(
       ref: 'User',
       required: true
     },
-    moneyRecieved: {
+    moneyReceived: {
       type:Number,
       default: 0
     },
