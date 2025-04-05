@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useRouter } from "next/navigation"
-import ProfilePicturePreview from "@/components/profile-picture-preview"
 
 export default function AdminRegister() {
   const [firstName, setFirstName] = useState<string>("")
@@ -26,7 +25,6 @@ export default function AdminRegister() {
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [username, setUsername] = useState<string>("")
-  const [profilePicture, setProfilePicture] = useState<File | null>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,9 +38,6 @@ export default function AdminRegister() {
       formData.append("password", password)
       formData.append("role", role)
       formData.append("username",username)
-      if (profilePicture) {
-        formData.append("profilePicture", profilePicture)
-      }
 
       if (password === confirmPassword) {
         const response = await axiosInstance.post("/auth/register", formData)
@@ -110,9 +105,6 @@ export default function AdminRegister() {
                 <h3 className="text-lg font-semibold text-blue-800">Personal Information</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2 flex justify-center">
-                    <ProfilePicturePreview onImageChange={setProfilePicture} />
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="text-blue-800">

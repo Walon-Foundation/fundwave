@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useDispatch } from "react-redux"
 import { kycUpdate } from "@/core/store/features/user/userSlice"
+import ProfilePicturePreview from "@/components/profile-picture-preview"
 
 import { useRouter } from "next/navigation"
 
@@ -18,6 +19,7 @@ export default function KycForm() {
   const [qualification, setQualification] = useState("")
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [profilePicture, setProfilePicture] = useState<File | null>(null)
 
 
   const dispatch = useDispatch()
@@ -25,22 +27,18 @@ export default function KycForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const data = {
-      sex: gender,
-      address,
-      qualification,
-      DOB: dateOfBirth,
-      phoneNumber,
-    }
-    console.log({
-      sex: gender,
-      address,
-      qualification,
-      DOB: dateOfBirth?.toString(),
-      phoneNumber,
-    })
+    const formData = new FormData()
+    
+    formData.append("gender", gender);
+    formData.append("address", address);
+    formData.append("qualification", qualification);    
+    formData.append("dateOfBirth", dateOfBirth);
+    formData.append("phoneNumber", phoneNumber);
+    if (profilePicture) {
+      formData.append("profilePicture", profilePicture);
+    }  
     try {
-      const response = await axiosInstance.patch("/auth/update", data)
+      const response = await axiosInstance.patch("/auth/update", formData)
       if (response.status === 200) {
         dispatch(kycUpdate({ userToken: response.data.data.userToken }))
         router.push('/profile')
@@ -66,6 +64,9 @@ export default function KycForm() {
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <ProfilePicturePreview onImageChange={setProfilePicture} />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="gender" className="text-blue-800">
                 Gender

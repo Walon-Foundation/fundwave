@@ -6,6 +6,7 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers";
+import { supabase } from "@/core/configs/supabase";
 
 export async function PATCH(req:NextRequest){
     try{
@@ -22,12 +23,46 @@ export async function PATCH(req:NextRequest){
     
         const decodedUser = decodedToken;
 
-        const reqBody = await req.json()
+        const formData = await req.formData()
+        const gender =  formData.get("gender");
+        const address =  formData.get("address");
+        const qualification =  formData.get("qualification");    
+        const dateOfBirth =  formData.get("dateOfBirth");
+        const phoneNumber =  formData.get("phoneNumber");
+        const profilePicture = formData.get("profilePicture") as File | null; 
+
+        const reqBody = {
+            sex:gender,
+            address,
+            qualification,
+            DOB:dateOfBirth,
+            phoneNumber,
+        }
         const result = updateUserSchema.safeParse(reqBody)
         if(!result.success){
             return errorHandler(400, "invalid request body",result.error)
         }
-        const {phoneNumber, sex, address, qualification,DOB} = result.data
+
+        if(!profilePicture){
+            return errorHandler(400, "invalid request body","no profile picture found")
+        }
+
+        const buffer = await  profilePicture.arrayBuffer()
+        const bytes = Buffer.from(buffer)
+        const filename = `${profilePicture.name} - ${Date.now()} - ${decodedUser.id}`
+
+        const {error} = await supabase.storage.from("profiles").upload(filename, bytes, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: profilePicture.type,
+        })
+
+        if(error){
+            return errorHandler(400, "invalid request body",error)
+        }
+
+        const {data:urlData} = supabase.storage.from("profiles").getPublicUrl(filename)
+        const profilePictureUrl = urlData.publicUrl
 
         const user = await User.findOne({_id:decodedUser.id})
         if(!user){
@@ -35,12 +70,14 @@ export async function PATCH(req:NextRequest){
         }
 
         //update the user
-        user.sex = sex;
+        user.sex = gender;
         user.phoneNumber = phoneNumber;
         user.address = address;
-        user.DOB  = DOB;
+        user.DOB  = dateOfBirth;
         user.qualification = qualification
         user.isCampaign = true;
+        user.profilePicture = profilePictureUrl
+        
 
         //saving the user
         await user.save()

@@ -17,11 +17,9 @@ import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/core/api/axiosInstance";
 import { useRouter } from "next/navigation";
 import useAuthRedirect from "@/core/hooks/useAuthRedirect";
-import ProfilePicturePreview from "@/components/profile-picture-preview";
 
 export default function SignUp() {
   const router = useRouter();
-  const [profilePreview, setProfilePreview] = useState<File | null>(null);
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -40,9 +38,6 @@ export default function SignUp() {
       formData.append("email", email);
       formData.append("password", password);
       formData.append("username", username);
-      if (profilePreview) {
-        formData.append("profilePicture", profilePreview);
-      }
       if (password != confirmPassword) {
         return;
       }
@@ -76,11 +71,6 @@ export default function SignUp() {
 
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Profile Picture Preview */}
-              <div className="flex flex-col items-center mb-4">
-                <ProfilePicturePreview onImageChange={setProfilePreview} />
-              </div>
-
               {/* Personal Information */}
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-blue-700 uppercase tracking-wide">

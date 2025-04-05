@@ -45,7 +45,7 @@ const userSchema = new Schema<User>(
     },
     profilePicture:{
       type:String,
-      required:true
+      default:""
     },
     roles:{
       type:String,
