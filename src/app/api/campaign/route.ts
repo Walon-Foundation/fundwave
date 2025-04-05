@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
 
     //getting the accessToken from the cookies
     const token =  (await cookies()).get("accessToken")?.value as string | undefined
-    console.log(token)
     if(!token){
       return errorHandler(401, "unauthorized", null)
     }

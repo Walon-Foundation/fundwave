@@ -1,131 +1,137 @@
 "use client"
+import Link from "next/link"
+import Image from "next/image"
+import { FaXTwitter, FaFacebookF} from "react-icons/fa6"
+import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice"
+import { useAppSelector } from "@/core/hooks/storeHooks"
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { FaXTwitter, FaFacebookF } from 'react-icons/fa6';
-import { holder } from '@/assets/assets';
+import { ArrowRight, Clock } from "lucide-react"
 
+export default function FeaturedCampaign() {
+  const allCampaign = useAppSelector(selectAllCampaign)
+  const campaignList = allCampaign.slice(0, 4)
 
-const FeaturedCampaign = () => {
-  const campaignList = [
-    {
-      "_id": "1a2b3c4d5e",
-      "campaignName": "Clean Water for All",
-      "campaignDescription": "Providing clean and safe drinking water to underprivileged communities.",
-      "money_raised": 12000,
-      "fundingGoal": 50000,
-      "goal": 654000
-    },
-    {
-      "_id": "2b3c4d5e6f",
-      "campaignName": "Education for Every Child",
-      "campaignDescription": "Supporting children's education by providing school supplies and scholarships.",
-      "money_raised": 25000,
-      "fundingGoal": 60000,
-      "goal": 700000000
-    },
-    {
-      "_id": "3c4d5e6f7g",
-      "campaignName": "Tech for Youth",
-      "campaignDescription": "Empowering young minds with access to technology and coding education.",
-      "money_raised": 18000,
-      "fundingGoal": 40000,
-      "goal": 69000000
-    },
-    {
-      "_id": "4d5e6f7g8h",
-      "campaignName": "Healthcare for All",
-      "campaignDescription": "Providing free medical checkups and medicines to those in need.",
-      "money_raised": 15000,
-      "fundingGoal": 70000,
-      "goal": 5600000
-    },
-    {
-      "_id": "5e6f7g8h9i",
-      "campaignName": "Green Earth Initiative",
-      "campaignDescription": "Planting trees and promoting sustainability to fight climate change.",
-      "money_raised": 30000,
-      "fundingGoal": 80000,
-      "goal": 8000000
-    }
-  ]
-  
+  // Calculate days remaining (placeholder function)
+  const calculateDaysRemaining = (endDate: string) => {
+    if (!endDate) return 30 // Default value
+    const end = new Date(endDate)
+    const today = new Date()
+    const diffTime = end.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays > 0 ? diffDays : 0
+  }
+
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-24 bg-gradient-to-b from-white to-blue-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-center mb-16 text-4xl md:text-5xl font-extrabold">
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Featured Campaigns
-          </span>
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {campaignList.map((card) => (
-            <div key={card._id} className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-              <div className="relative">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-blue-900">Featured Campaigns</h2>
+          <div className="h-1 w-20 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto mb-6 rounded-full"></div>
+          <p className="text-blue-700 text-lg">
+            Discover and support these impactful initiatives making a difference in our community
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          {campaignList.map((campaign) => (
+            <div
+              key={campaign._id}
+              className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-blue-100"
+            >
+              {/* Campaign Image with Overlay */}
+              <div className="relative overflow-hidden">
                 <Image
-                  src={holder}
-                  alt={card.campaignName}
-                  className="w-full h-48 object-cover"
+                  src={campaign?.campaignPicture || "/placeholder.svg"}
+                  alt={campaign.campaignName}
+                  height={300}
+                  width={500}
+                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                  {100} days left
+
+                {/* Category Badge */}
+                <div className="absolute top-4 left-4 bg-blue-600/90 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
+                  {campaign.category || "Campaign"}
                 </div>
-              </div>
-              <div className="p-6">
-                <h3 className="font-bold text-xl mb-2 truncate">{card.campaignDescription}</h3>
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Raised: NLe{card.money_raised}</span>
-                    <span>Goal: NLe{card.fundingGoal}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${(card.money_raised / card.goal) * 100}%` }}
-                    ></div>
-                  </div>
+
+                {/* Days Left Badge */}
+                <div className="absolute top-4 right-4 bg-white/90 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center backdrop-blur-sm">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {calculateDaysRemaining(campaign.completionDate)} days left
                 </div>
-                <div className="flex items-center justify-between">
-                  <Link 
-                    href="/support" 
-                    className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition-colors"
+
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                {/* Quick Actions on Hover */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-between items-center">
+                  <Link
+                    href={`/campaign/${campaign._id}`}
+                    className="text-white font-medium text-sm flex items-center hover:underline"
                   >
-                    Support
+                    View Details <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Link>
                   <div className="flex gap-3">
-                    <button className="text-gray-600 hover:text-blue-600 transition-colors">
-                      <FaXTwitter size={20} />
+                    <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Twitter">
+                      <FaXTwitter size={16} />
                     </button>
-                    <button className="text-gray-600 hover:text-blue-600 transition-colors">
-                      <FaFacebookF size={20} />
+                    <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Facebook">
+                      <FaFacebookF size={16} />
                     </button>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-6 py-4">
-                <Link 
-                  href="/campaign/1" 
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  <button>
-                    learn more.....
-                  </button>
-                </Link>
+
+              {/* Campaign Content */}
+              <div className="p-5 flex-grow flex flex-col">
+                <h3 className="font-bold text-lg text-blue-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+                  {campaign.campaignName}
+                </h3>
+                <p className="text-blue-700 text-sm mb-4 line-clamp-2">{campaign.campaignDescription}</p>
+
+                {/* Funding Progress */}
+                <div className="mt-auto">
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="font-medium text-blue-800">
+                      NLe{campaign.moneyReceived?.toLocaleString() || "0"}
+                    </span>
+                    <span className="text-blue-600">of NLe{campaign.amountNeeded?.toLocaleString() || "0"}</span>
+                  </div>
+
+                  {/* Progress Bar with Animation */}
+                  <div className="w-full h-2 bg-blue-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width: `${Math.min(((campaign?.moneyReceived || 0) / (campaign?.amountNeeded || 1)) * 100, 100)}%`,
+                      }}
+                    ></div>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-4">
+                    <Link
+                      href={`/campaign/${campaign._id}`}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      Support Now
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="text-center mt-12">
-          <Link 
-            href="/campaign" 
-            className="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-8 rounded-full hover:bg-gray-300 transition-colors"
+
+        <div className="text-center mt-14">
+          <Link
+            href="/campaign"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-medium py-3 px-8 rounded-lg border border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all shadow-sm"
           >
-            Explore More Campaigns
+            Explore All Campaigns
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default FeaturedCampaign;
