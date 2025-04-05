@@ -1,7 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
 import type React from "react"
-
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -18,12 +17,12 @@ import {
   ArrowUpRight,
   ChevronLeft,
   DollarSign,
+  Plus,
 } from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
@@ -36,8 +35,15 @@ import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
 import { addComment, fetchComment } from "@/core/store/features/comments/commentSlice"
 import { selectAllComment } from "@/core/store/features/comments/commentSlice"
 import { formatDistanceToNow } from "date-fns"
+import { Label } from "@/components/ui/label"
+import { jwtDecode } from "jwt-decode"
+import Cookies from "js-cookie"
+import { User } from "@/core/types/types"
+import { fetchUpdate, selectAllUpdate } from "@/core/store/features/update/updateSlice"
+import { addUpdate } from "@/core/store/features/update/updateSlice"
 
-const CampaignDetails = () => {
+export default function CampaignDetails(){
+
   const [activeTab, setActiveTab] = useState("about")
   const [commentText, setCommentText] = useState("")
   const [isLiked, setIsLiked] = useState(false)
@@ -49,6 +55,46 @@ const CampaignDetails = () => {
   const campaign = useAppSelector((state) => selectCampaignById(state, id as string)) as Campaign
   const allComment = useAppSelector(selectAllComment)
   const campaignComment = allComment.filter((comment) => comment.campaignId === (id as string))
+
+  //getting the user from the client cookie
+  const token = Cookies.get("userToken")
+  const user = token ? jwtDecode(token) as User : null
+
+  //geting the update from the server
+  const allUpdate = useAppSelector(selectAllUpdate)
+  const campaignUpdate = allUpdate.filter((update) => update.campaignId === (id as string))
+
+
+  //update state
+  const isCreator = campaign?.creatorName === user?.username;
+  const hasUpdates = campaign?.update && campaign?.update?.length > 0
+  
+
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [isAddingUpdate, setIsAddingUpdate] = useState(false)
+
+  //add update fuunction
+  const handleAddUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try{
+      const data = {
+        title,
+        description,
+        campaignId:id as string
+      }
+      const action = await dispatch(addUpdate(data))
+      if(addUpdate.fulfilled.match(action)){
+        setIsAddingUpdate(false)
+        await dispatch(fetchUpdate())
+        await dispatch(fetchCampaigns())
+        setTitle("")
+        setDescription("")
+      }
+    }catch(error){
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -113,7 +159,7 @@ const CampaignDetails = () => {
 
   if (!campaign) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse text-blue-600">Loading campaign details...</div>
       </div>
     )
@@ -313,28 +359,93 @@ const CampaignDetails = () => {
 
                   {/* Updates Tab */}
                   <TabsContent value="updates" className="p-6 space-y-6 animate-in fade-in-50">
-                    <div className="text-center py-12 px-4 bg-blue-50/50 rounded-lg border border-blue-100">
-                      <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="28"
-                          height="28"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path>
-                        </svg>
+                  <div className="space-y-6 animate-in fade-in-50">
+                    {isCreator && (
+                      <div className="flex justify-end">
+                        {!isAddingUpdate ? (
+                          <Button  className="flex items-center gap-2" onClick={() => setIsAddingUpdate(true)}>
+                            <Plus className="h-4 w-4" />
+                            Add Update
+                          </Button>
+                        ) : (
+                          <form onSubmit={handleAddUpdate} className="w-full space-y-4 bg-card p-6 rounded-lg border">
+                            <div className="space-y-2">
+                              <Label htmlFor="update-title">Update Title</Label>
+                              <Input
+                                id="update-title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="What's new with your campaign?"
+                                required
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="update-description">Description</Label>
+                              <Textarea
+                                id="update-description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Share details about your campaign's progress..."
+                                rows={5}
+                                required
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setIsAddingUpdate(false)} >
+                                Cancel
+                              </Button>
+                              <Button type="submit">Publish Update</Button>
+                            </div>
+                          </form>
+                        )}
                       </div>
-                      <h4 className="text-xl font-medium text-blue-800 mb-2">No Updates Yet</h4>
-                      <p className="text-gray-600 max-w-md mx-auto">
-                        The campaign creator hasn&apos;t posted any updates yet. Check back soon for news about this
-                        campaign&apos;s progress!
-                      </p>
-                    </div>
+                    )}
+
+                    {hasUpdates ? (
+                      <div className="space-y-4">
+                        {campaignUpdate.map((update) => (
+                          <Card key={update?._id} className="overflow-hidden">
+                            <CardHeader className="bg-muted/30">
+                              <div className="flex justify-between items-start">
+                                <CardTitle className="text-xl">{update?.title}</CardTitle>
+                                <div className="flex items-center text-muted-foreground text-sm">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  {formatDate(update?.createdAt as string)}
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pt-4">
+                              <CardDescription className="text-foreground whitespace-pre-line">{update?.description}</CardDescription>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 px-4 bg-blue-50/50 rounded-lg border border-blue-100">
+                        <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="28"
+                            height="28"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path>
+                          </svg>
+                        </div>
+                        <h4 className="text-xl font-medium text-blue-800 mb-2">No Updates Yet</h4>
+                        <p className="text-gray-600 max-w-md mx-auto">
+                          {isCreator
+                            ? "You haven't posted any updates yet. Keep your supporters informed by adding updates about your campaign's progress!"
+                            : "The campaign creator hasn't posted any updates yet. Check back soon for news about this campaign's progress!"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   </TabsContent>
 
                   {/* Comments Tab */}
@@ -580,5 +691,4 @@ const CampaignDetails = () => {
   )
 }
 
-export default CampaignDetails
 
