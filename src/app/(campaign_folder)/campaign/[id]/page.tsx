@@ -26,7 +26,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { selectCampaignById } from "@/core/store/features/campaigns/campaignSlice"
+import { fetchCampaigns, selectCampaignById } from "@/core/store/features/campaigns/campaignSlice"
 import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
 import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
@@ -76,6 +76,7 @@ const CampaignDetails = () => {
       const action = await dispatch(addComment({description:commentText, campaignId:id as string}))
       if(addComment.fulfilled.match(action)){
         await dispatch(fetchComment())
+        await dispatch(fetchCampaigns())
         setCommentText("")
       }
     }catch(error){
@@ -228,46 +229,90 @@ const CampaignDetails = () => {
                       <div className="text-center py-8 text-gray-500">No updates have been posted yet.</div>
                     )} */}
                   </TabsContent>
-
                   {/* Comments Tab */}
-                  <TabsContent value="comments" className="p-6 space-y-6">
+                  <TabsContent value="comments" className="p-0 sm:p-6">
                     <div className="space-y-6">
-                      {campaign?.comments && campaign?.comments?.length > 0 ? (
-                        campaignComment.map((comment) => (
-                          <div key={comment._id} className="flex gap-3 md:gap-4 pb-4 border-b border-blue-100">
-                            <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
-                              <AvatarImage src={comment?.username} alt={comment?._id} />
-                              <AvatarFallback className="bg-blue-100 text-blue-800">
-                                {comment?.username?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                                <span className="text-xs text-gray-500">{comment?.createdAt}</span>
+                      <div className="flex items-center justify-between border-b border-blue-100 pb-4">
+                        <h3 className="text-lg font-semibold text-blue-800">Comments ({campaign?.comments?.length || 0})</h3>
+                      </div>
+
+                      <div className="space-y-6">
+                        {campaign?.comments && campaign?.comments?.length > 0 ? (
+                          <div className="space-y-6">
+                            {campaignComment.map((comment) => (
+                              <div
+                                key={comment._id}
+                                className="flex gap-3 md:gap-4 pb-6 border-b border-blue-100 transition-all hover:bg-blue-50/30 p-3 rounded-lg -mx-3"
+                              >
+                                <Avatar className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0 border-2 border-blue-50 ring-2 ring-blue-100/50">
+                                  <AvatarImage src={`https://avatar.vercel.sh/${comment._id}`} alt={comment?.username} />
+                                  <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 font-medium">
+                                    {comment?.username?.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+
+                                <div className="flex-1 min-w-0 space-y-1.5">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-medium text-blue-900">{comment?.username}</span>
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span className="text-xs text-gray-500">{comment?.createdAt}</span>
+                                  </div>
+
+                                  <p className="text-gray-700 text-sm md:text-base break-words leading-relaxed">
+                                    {comment.description}
+                                  </p>
+                                </div>
                               </div>
-                              <p className="mt-1 text-gray-700 text-sm md:text-base break-words">{comment.description}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-10 px-4 bg-blue-50/50 rounded-lg border border-blue-100">
+                            <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-4">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                              </svg>
+                            </div>
+                            <h4 className="text-lg font-medium text-blue-800 mb-2">Join the conversation</h4>
+                            <p className="text-gray-600 max-w-md mx-auto">
+                              No comments yet. Be the first to share your thoughts about this campaign!
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-6 mt-6 border-t border-blue-100">
+                        <h4 className="font-semibold text-blue-800 mb-3">Add a Comment</h4>
+                        <form onSubmit={handleCommentSubmit} className="space-y-4">
+                          <div className="relative">
+                            <Textarea
+                              value={commentText}
+                              onChange={(e) => setCommentText(e.target.value)}
+                              placeholder="Share your thoughts about this campaign..."
+                              className="min-h-[120px] border-blue-200 focus-visible:ring-blue-400 pr-12 resize-y"
+                              maxLength={4}
+                            />
+                            <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                              {commentText.length}/{5}
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">No comments yet. Be the first to comment!</div>
-                      )}
 
-                      <div className="pt-4">
-                        <h4 className="font-semibold text-blue-800 mb-2">Add a Comment</h4>
-                        <form onSubmit={handleCommentSubmit}>
-                        <Textarea
-                          value={commentText}
-                          onChange={(e) => setCommentText(e.target.value)}
-                          placeholder="Share your thoughts about this campaign..."
-                          className="min-h-[100px] border-blue-200 focus-visible:ring-blue-400"
-                        />
-                        <Button
-                          className="mt-3 bg-blue-600 hover:bg-blue-700 transition-colors"
-                          disabled={!commentText.trim()}
-                        >
-                          Post Comment
-                        </Button>
+                          <Button
+                            type="submit"
+                            className="bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-2 h-auto"
+                            disabled={!commentText.trim()}
+                          >
+                            Post Comment
+                          </Button>
                         </form>
                       </div>
                     </div>

@@ -15,6 +15,7 @@ import useIsCampaign from "@/core/hooks/useIsCampaign"
 import {Minus, Plus, List} from "lucide-react"
 import CampaignPicturePreview from "@/components/campaign-picture-preview"
 import { axiosInstance } from "@/core/api/axiosInstance"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 
 export default function AddCampaign() {
@@ -181,14 +182,18 @@ export default function AddCampaign() {
                   <Label htmlFor="category" className="text-lg font-semibold text-blue-800 mb-2">
                     Category
                   </Label>
-                  <Input
-                    id="category"
-                    placeholder="Select or enter a category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white"
-                    required
-                  />
+                  <Select onValueChange={setCategory} value={category}>
+                    <SelectTrigger id="gender" className="border-blue-200 focus:border-blue-400 bg-white">
+                      <SelectValue placeholder="Select your category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Health">Health</SelectItem>
+                      <SelectItem value="College">College</SelectItem>
+                      <SelectItem value="School">School</SelectItem>
+                      <SelectItem value="Business">Business</SelectItem>
+                      <SelectItem value="Startup">Startup</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
