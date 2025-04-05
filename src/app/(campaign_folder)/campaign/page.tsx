@@ -33,7 +33,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     text: "text-green-800",
     border: "border-green-200",
   },
-  Education: {
+  School: {
     bg: "bg-blue-100",
     text: "text-blue-800",
     border: "border-blue-200",
@@ -43,7 +43,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     text: "text-emerald-800",
     border: "border-emerald-200",
   },
-  Healthcare: {
+  Health: {
     bg: "bg-red-100",
     text: "text-red-800",
     border: "border-red-200",
@@ -58,7 +58,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
     text: "text-amber-800",
     border: "border-amber-200",
   },
-  Arts: {
+  Startup: {
     bg: "bg-pink-100",
     text: "text-pink-800",
     border: "border-pink-200",
