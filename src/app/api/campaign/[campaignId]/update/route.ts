@@ -8,13 +8,13 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers";
 
-export async function POST(req:NextRequest, {params}:{params:{campaignId:string}}){
+export async function POST(req:NextRequest, {params}:{params:Promise<{campaignId:string}>}){
     try{
         //database connection
         await ConnectDB()
 
         //getting the accessToken from the cookies
-        const token =  (await cookies()).get("accessToken") as string | undefined
+        const token =  (await cookies()).get("accessToken")?.value as string | undefined
         if(!token){
             return errorHandler(401, "unauthorized", null)
         }
@@ -22,7 +22,7 @@ export async function POST(req:NextRequest, {params}:{params:{campaignId:string}
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string};
         const decodedUser = decodedToken;
 
-        const { campaignId } = params;
+        const campaignId  = (await params).campaignId;
 
         const reqBody = await req.json()
         const result = addUpdateSchema.safeParse(reqBody)

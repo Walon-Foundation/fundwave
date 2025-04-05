@@ -6,12 +6,12 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 
 
 
-export async function DELETE({params}: {params:{commentId:string}}){
+export async function DELETE(req:NextRequest,{params}: {params:Promise<{commentId:string}>}){
     try{
         //database connection
         await ConnectDB()
 
-        const { commentId } = params
+        const  commentId  = (await params).commentId
         const comment = await Comment.findByIdAndDelete({id:commentId})
         if(!comment){
             return errorHandler(404, "invalid comment", null)
@@ -22,13 +22,13 @@ export async function DELETE({params}: {params:{commentId:string}}){
     }
 }
 
-export async function PATCH(req:NextRequest, {params}:{params:{commentId:string}}){
+export async function PATCH(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
     try{
         //database connection
         await ConnectDB()
 
         //params
-        const { commentId } = params
+        const commentId  = (await params).commentId
         
         //data from the user
         const reqBody = await req.json()

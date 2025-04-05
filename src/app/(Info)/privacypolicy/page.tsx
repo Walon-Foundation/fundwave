@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 
+type PolicyTab = 'general' | 'fundraising' | 'donations' | 'privacy';
 export default function PolicyPage() {
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState<PolicyTab>("general");
 
-  const policies = {
+  const policies:Record<PolicyTab, { title: string; content: string }[]> = {
     general: [
       {
         title: "Platform Overview",
@@ -92,7 +93,7 @@ export default function PolicyPage() {
               className={`py-2 px-3 sm:px-4 text-sm sm:text-base font-semibold whitespace-nowrap ${
                 activeTab === tab ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"
               }`}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => setActiveTab(tab as PolicyTab)}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>

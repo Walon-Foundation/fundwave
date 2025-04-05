@@ -6,13 +6,13 @@ import Update from "@/core/models/updateModel";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
 
-export async function DELETE(req:NextRequest, {params}:{params:{updateId:string}}){
+export async function DELETE(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
     try{
         //database connection
         await ConnectDB()
 
         //getting the accessToken from the cookies
-        const token =  (await cookies()).get("accessToken") as string | undefined
+        const token =  (await cookies()).get("accessToken")?.value as string | undefined
         if(!token){
             return errorHandler(401, "unauthorized", null)
         }
@@ -24,7 +24,7 @@ export async function DELETE(req:NextRequest, {params}:{params:{updateId:string}
             return errorHandler(401, "unauthorized", "not admin")
         }
 
-        const { updateId } = params
+        const updateId  = (await params).updateId
         const update = await Update.findByIdAndDelete({id:updateId})
         if(!update){
             return errorHandler(404, "invalid update", null)
@@ -35,13 +35,13 @@ export async function DELETE(req:NextRequest, {params}:{params:{updateId:string}
     }
 }
 
-export async function PATCH(req:NextRequest, {params}:{params:{updateId:string}}){
+export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
     try{
         //database connection
         await ConnectDB()
 
         //getting the accessToken from the cookies
-        const token =  (await cookies()).get("accessToken") as string | undefined
+        const token =  (await cookies()).get("accessToken")?.value as string | undefined
         if(!token){
             return errorHandler(401, "unauthorized", null)
         }
@@ -54,7 +54,7 @@ export async function PATCH(req:NextRequest, {params}:{params:{updateId:string}}
         }
 
         //params
-        const { updateId } = params
+        const updateId  = (await params).updateId
         
         //data from the user
         const reqBody = await req.json()

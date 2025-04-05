@@ -6,13 +6,13 @@ import { errorHandler } from "@/core/helpers/errorHandler";
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers";
 
-export async function GET(req:NextRequest,{params}:{params:{campaignId:string}}){
+export async function GET(req:NextRequest,{params}:{params:Promise<{campaignId:string}>}){
     try{
         //connecting to the database
         await ConnectDB()
 
         //getting campaignId from the request url
-        const { campaignId } = params
+        const campaignId = (await params).campaignId
 
         //getting the campaign based on the given Id
         const campaign = await Campaign.findOne({_id:campaignId})
@@ -30,7 +30,7 @@ export async function GET(req:NextRequest,{params}:{params:{campaignId:string}})
 
 
 
-export async function DELETE(req:NextRequest,{params}:{params:{campaignId:string}}){
+export async function DELETE(req:NextRequest,{params}:{params:Promise<{campaignId:string}>}){
     try{
         //connecting to database
         await ConnectDB()
@@ -47,7 +47,7 @@ export async function DELETE(req:NextRequest,{params}:{params:{campaignId:string
         }
 
         //gettiing params from the url
-        const { campaignId} = params
+        const campaignId = (await params).campaignId
 
         //getting and deleting the campaign based on the given Id
         const campaign = await Campaign.findByIdAndUpdate({_id:campaignId})

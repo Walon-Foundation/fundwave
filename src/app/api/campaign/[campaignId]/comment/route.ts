@@ -60,13 +60,13 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{campaignId:
     }
 }
 
-export async function GET(req:NextRequest,{params}:{params:{campaignId:string}}){
+export async function GET(req:NextRequest,{params}:{params:Promise<{campaignId:string}>}){
     try {
         // connect to database
         await ConnectDB();
 
         //get params from the url
-        const { campaignId } = params
+        const  campaignId  = (await params).campaignId
         
         //get the comments
         const comments = await Comment.find({campaignId})
