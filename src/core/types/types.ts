@@ -30,6 +30,13 @@ export interface Comment {
   createdAt?:string;
 }
 
+export interface Update {
+  _id?: string;
+  description: string;
+  title:string;
+  campaignId: string;
+  createdAt?:string;
+}
 
 
 export interface User {
