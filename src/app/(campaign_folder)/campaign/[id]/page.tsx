@@ -4,7 +4,6 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
-  ExternalLink,
   Heart,
   Info,
   MessageCircle,
@@ -14,33 +13,33 @@ import {
   Target,
   Award,
   Clock,
-  ArrowUpRight,
   ChevronLeft,
   DollarSign,
-  Plus,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import { fetchCampaigns, selectCampaignById } from "@/core/store/features/campaigns/campaignSlice"
 import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
 import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
 import { addComment, fetchComment } from "@/core/store/features/comments/commentSlice"
 import { selectAllComment } from "@/core/store/features/comments/commentSlice"
-import { formatDistanceToNow } from "date-fns"
-import { Label } from "@/components/ui/label"
 import { jwtDecode } from "jwt-decode"
 import Cookies from "js-cookie"
 import { User } from "@/core/types/types"
 import { fetchUpdate, selectAllUpdate } from "@/core/store/features/update/updateSlice"
 import { addUpdate } from "@/core/store/features/update/updateSlice"
+import { calculateDaysRemaining } from "@/core/helpers/calculateDayRemaining"
+import ShareCard from "@/components/campaign/designSection/shareCard"
+import CreatorCard from "@/components/campaign/designSection/creatorCard"
+import CommentSection from "@/components/campaign/designSection/commentSection"
+import UpdateSection from "@/components/campaign/designSection/updateSection"
 
 export default function CampaignDetails(){
 
@@ -108,27 +107,8 @@ export default function CampaignDetails(){
   // Calculate milestone progress percentage
   const milestoneProgress = Math.min(Math.round(((campaign?.moneyReceived || 0) / campaign?.amountNeeded) * 100), 100)
 
-  // Calculate days remaining
-  const calculateDaysRemaining = () => {
-    if (!campaign?.completionDate) return 0
-    const endDate = new Date(campaign.completionDate)
-    const today = new Date()
-    const diffTime = endDate.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays > 0 ? diffDays : 0
-  }
 
-  const daysRemaining = calculateDaysRemaining()
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-    } catch (e) {
-      console.error(e)
-      return dateString
-    }
-  }
+  const daysRemaining = calculateDaysRemaining(campaign?.completionDate as string)
 
   // Handle comment submission
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -358,189 +338,21 @@ export default function CampaignDetails(){
                   </TabsContent>
 
                   {/* Updates Tab */}
-                  <TabsContent value="updates" className="p-6 space-y-6 animate-in fade-in-50">
-                  <div className="space-y-6 animate-in fade-in-50">
-                    {isCreator && (
-                      <div className="flex justify-end">
-                        {!isAddingUpdate ? (
-                          <Button  className="flex items-center gap-2" onClick={() => setIsAddingUpdate(true)}>
-                            <Plus className="h-4 w-4" />
-                            Add Update
-                          </Button>
-                        ) : (
-                          <form onSubmit={handleAddUpdate} className="w-full space-y-4 bg-card p-6 rounded-lg border">
-                            <div className="space-y-2">
-                              <Label htmlFor="update-title">Update Title</Label>
-                              <Input
-                                id="update-title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="What's new with your campaign?"
-                                required
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="update-description">Description</Label>
-                              <Textarea
-                                id="update-description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Share details about your campaign's progress..."
-                                rows={5}
-                                required
-                              />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                              <Button variant="outline" onClick={() => setIsAddingUpdate(false)} >
-                                Cancel
-                              </Button>
-                              <Button type="submit">Publish Update</Button>
-                            </div>
-                          </form>
-                        )}
-                      </div>
-                    )}
-
-                    {hasUpdates ? (
-                      <div className="space-y-4">
-                        {campaignUpdate.map((update) => (
-                          <Card key={update?._id} className="overflow-hidden">
-                            <CardHeader className="bg-muted/30">
-                              <div className="flex justify-between items-start">
-                                <CardTitle className="text-xl">{update?.title}</CardTitle>
-                                <div className="flex items-center text-muted-foreground text-sm">
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  {formatDate(update?.createdAt as string)}
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="pt-4">
-                              <CardDescription className="text-foreground whitespace-pre-line">{update?.description}</CardDescription>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 px-4 bg-blue-50/50 rounded-lg border border-blue-100">
-                        <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="28"
-                            height="28"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path>
-                          </svg>
-                        </div>
-                        <h4 className="text-xl font-medium text-blue-800 mb-2">No Updates Yet</h4>
-                        <p className="text-gray-600 max-w-md mx-auto">
-                          {isCreator
-                            ? "You haven't posted any updates yet. Keep your supporters informed by adding updates about your campaign's progress!"
-                            : "The campaign creator hasn't posted any updates yet. Check back soon for news about this campaign's progress!"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  </TabsContent>
+                  <UpdateSection
+                    campaignUpdate={campaignUpdate}
+                    hasUpdates={hasUpdates as boolean}
+                    isCreator={isCreator}
+                    isAddingUpdate={isAddingUpdate}
+                    setIsAddingUpdate={setIsAddingUpdate}
+                    title={title}
+                    description={description}
+                    setTitle={setTitle}
+                    setDescription={setDescription}
+                    handleAddUpdate={handleAddUpdate}
+                  />
 
                   {/* Comments Tab */}
-                  <TabsContent value="comments" className="p-0 sm:p-6 animate-in fade-in-50">
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between border-b border-blue-100 pb-4 px-6 sm:px-0">
-                        <h3 className="text-lg font-semibold text-blue-800">
-                          Comments ({campaign.comments?.length || 0})
-                        </h3>
-                      </div>
-
-                      <div className="space-y-6 px-6 sm:px-0">
-                        {campaign?.comments && campaign?.comments?.length > 0 ? (
-                          <div className="space-y-6">
-                            {campaignComment?.map((comment) => (
-                              <div
-                                key={comment._id}
-                                className="flex gap-3 md:gap-4 pb-6 border-b border-blue-100 transition-all hover:bg-blue-50/30 p-3 rounded-lg -mx-3"
-                              >
-                                <Avatar className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0 border-2 border-blue-50 ring-2 ring-blue-100/50">
-                                  <AvatarImage
-                                    src={`https://avatar.vercel.sh/${comment?._id}`}
-                                    alt={comment?.username}
-                                  />
-                                  <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 font-medium">
-                                    {comment?.username?.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
-
-                                <div className="flex-1 min-w-0 space-y-1.5">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className="font-medium text-blue-900">{comment?.username}</span>
-                                    <span className="text-xs text-gray-400">•</span>
-                                    <span className="text-xs text-gray-500">{formatDate(comment?.createdAt as string)}</span>
-                                  </div>
-
-                                  <p className="text-gray-700 text-sm md:text-base break-words leading-relaxed">
-                                    {comment?.description}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-10 px-4 bg-blue-50/50 rounded-lg border border-blue-100">
-                            <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-4">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                              </svg>
-                            </div>
-                            <h4 className="text-lg font-medium text-blue-800 mb-2">Join the conversation</h4>
-                            <p className="text-gray-600 max-w-md mx-auto">
-                              No comments yet. Be the first to share your thoughts about this campaign!
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="pt-6 mt-6 border-t border-blue-100 px-6 sm:px-0">
-                        <h4 className="font-semibold text-blue-800 mb-3">Add a Comment</h4>
-                        <form onSubmit={handleCommentSubmit} className="space-y-4">
-                          <div className="relative">
-                            <Textarea
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder="Share your thoughts about this campaign..."
-                              className="min-h-[120px] border-blue-200 focus-visible:ring-blue-400 pr-12 resize-y"
-                              maxLength={500}
-                            />
-                            <div className="absolute bottom-2 right-2 text-xs text-gray-400">
-                              {commentText.length}/500
-                            </div>
-                          </div>
-
-                          <Button
-                            type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-2 h-auto"
-                            disabled={!commentText.trim() || isLoading}
-                          >
-                            {isLoading ? "Posting..." : "Post Comment"}
-                          </Button>
-                        </form>
-                      </div>
-                    </div>
-                  </TabsContent>
+                  <CommentSection campaign={campaign} campaignComment={campaignComment} handleCommentSubmit={handleCommentSubmit} commentText={commentText} setCommentText={setCommentText} isLoading={isLoading} />
                 </Tabs>
               </Card>
             </div>
@@ -634,55 +446,10 @@ export default function CampaignDetails(){
               </Card>
 
               {/* Creator Card */}
-              <Card className="border-blue-100 shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-100 to-blue-50 px-6 py-3 border-b border-blue-100">
-                  <h3 className="text-lg font-semibold text-blue-800">Campaign Creator</h3>
-                </div>
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Avatar className="h-12 w-12 border-2 border-blue-100">
-                      <AvatarImage
-                        src={`https://avatar.vercel.sh/${campaign?.creatorName}`}
-                        alt={campaign.creatorName}
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800">
-                        {campaign.creatorName?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4 className="font-semibold text-blue-800">{campaign?.creatorName}</h4>
-                      <p className="text-sm text-gray-500">Campaign Organizer</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Visit Creator Profile
-                  </Button>
-                </CardContent>
-              </Card>
+             <CreatorCard campaign={campaign}/>
 
               {/* Share Card */}
-              <Card className="border-blue-100 shadow-sm">
-                <CardContent className="pt-4">
-                  <div className="flex flex-col gap-2">
-                    <Button variant="outline" className="w-full border-blue-200 text-blue-700 justify-between">
-                      Share on Facebook
-                      <ArrowUpRight className="h-4 w-4 ml-2" />
-                    </Button>
-                    <Button variant="outline" className="w-full border-blue-200 text-blue-700 justify-between">
-                      Share on Twitter
-                      <ArrowUpRight className="h-4 w-4 ml-2" />
-                    </Button>
-                    <Button variant="outline" className="w-full border-blue-200 text-blue-700 justify-between">
-                      Copy Link
-                      <ArrowUpRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+             <ShareCard/>
             </div>
           </div>
         </div>
