@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import User from "@/core/models/userModel";
 import bcrypt from "bcryptjs";
 import jwt  from "jsonwebtoken"
@@ -9,13 +9,11 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 
 
 
-
-export async function POST(req:NextRequest){
+export async function POST(req:NextRequest): Promise<NextResponse>{
     try{
         //database connection
         await ConnectDB()
 
-        
         const reqBody  = await req.json()
         const result = loginSchema.safeParse(reqBody)
         if(!result.success){
