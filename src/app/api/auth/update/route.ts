@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken"
 import { cookies } from "next/headers";
 import { supabase } from "@/core/configs/supabase";
 
+
 export async function PATCH(req:NextRequest){
     try{
         //connecting to the database
@@ -47,21 +48,35 @@ export async function PATCH(req:NextRequest){
             return errorHandler(400, "invalid request body","no profile picture found")
         }
 
+        const maxSizeBytes = 400 * 1024
+        const fileSize = profilePicture.size
         const buffer = await  profilePicture.arrayBuffer()
         const bytes = Buffer.from(buffer)
+
+        if(fileSize > maxSizeBytes){
+            return errorHandler(400, "image file to large","file size too large",)
+        }
+
         const filename = `${profilePicture.name} - ${Date.now()} - ${decodedUser.id}`
 
         const {error} = await supabase.storage.from("profiles").upload(filename, bytes, {
             cacheControl: '3600',
             upsert: false,
             contentType: profilePicture.type,
+            
         })
 
         if(error){
             return errorHandler(400, "invalid request body",error)
         }
 
-        const {data:urlData} = supabase.storage.from("profiles").getPublicUrl(filename)
+        const {data:urlData} = supabase.storage.from("profiles").getPublicUrl(filename,{
+            transform:{
+                width:400,
+                height:400,
+                quality:70
+            }
+        })
         const profilePictureUrl = urlData.publicUrl
 
         const user = await User.findOne({_id:decodedUser.id})
@@ -115,3 +130,5 @@ export async function PATCH(req:NextRequest){
         return errorHandler(500,"server error",error)
     }
 }
+
+

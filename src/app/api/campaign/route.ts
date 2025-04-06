@@ -84,6 +84,12 @@ export async function POST(req: NextRequest) {
     const buffer = await campaignPicture.arrayBuffer();
     const bytes = Buffer.from(buffer);
 
+    const maxFileSize = 400 * 1024
+    if(campaignPicture.size > maxFileSize){
+      return errorHandler(404, "campaign picture too large", "campaign picture too large")
+    }
+
+    
     //sending to supabase
     const filename = `${campaignPicture.name} - ${Date.now()} - ${campaignName}`
 
@@ -98,7 +104,13 @@ export async function POST(req: NextRequest) {
       return errorHandler(500, "failed to upload to supabase", error.message)
     }
 
-    const { data:urlData} = supabase.storage.from("campaigns").getPublicUrl(filename)
+    const { data:urlData} = supabase.storage.from("campaigns").getPublicUrl(filename,{
+      transform: {
+        width:5000,
+        height:500,
+        quality:70
+      }
+    })
     const campaignPictureUrl = urlData.publicUrl
 
 
