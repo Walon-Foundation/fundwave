@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
 
 export default {
@@ -8,6 +9,13 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+	container: {
+	center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+	},
   	extend: {
   		colors: {
   			background: 'hsl(var(--background))',
@@ -51,11 +59,40 @@ export default {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+		  keyframes: {
+			"accordion-down": {
+			  from: { height: "0" },
+			  to: { height: "var(--radix-accordion-content-height)" },
+			},
+			"accordion-up": {
+			  from: { height: "var(--radix-accordion-content-height)" },
+			  to: { height: "0" },
+			},
+			"fade-in": {
+			  from: { opacity: "0" },
+			  to: { opacity: "1" },
+			},
+		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+		  animation: {
+			"accordion-down": "accordion-down 0.2s ease-out",
+			"accordion-up": "accordion-up 0.2s ease-out",
+			"fade-in": "fade-in 0.3s ease-out",
+		  },
+		  utilities: {
+			".no-scrollbar": {
+			  "-ms-overflow-style": "none",
+			  "scrollbar-width": "none",
+			  "&::-webkit-scrollbar": {
+				display: "none",
+			  },
+			},
+		  },
   	}
   },
+  plugins: [require("tailwindcss-animate")],
 }satisfies Config;

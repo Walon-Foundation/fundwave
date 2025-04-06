@@ -25,11 +25,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback,} from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
+
 
 // Define types for our data
 interface Campaign {
@@ -264,6 +266,8 @@ export default function AdminDashboard() {
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [searchTerm, setSearchTerm] = useState("")
+  const [activeTab, setActiveTab] = useState("overview")
+  // No need for this state anymore
 
   const itemsPerPage = 5
   const totalPages = Math.ceil(placeholderCampaigns.length / itemsPerPage)
@@ -351,174 +355,191 @@ export default function AdminDashboard() {
     )
   }
 
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+  }
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation Tabs */}
+    <div className="min-h-screen items-center justify-center flex flex-col bg-white">
+      {/* Navigation Tabs - Desktop */}
       <div className="bg-white border-b shadow-sm">
         <div className="container mx-auto">
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="h-14 w-full justify-start bg-white border-b gap-2 px-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="h-14 w-full justify-start bg-white border-b gap-1 md:gap-2 px-2 md:px-4 overflow-x-auto no-scrollbar">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <Home className="h-4 w-4 mr-2" />
-                Overview
+                <span className="hidden sm:inline">Overview</span>
               </TabsTrigger>
               <TabsTrigger
                 value="campaigns"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <Folder className="h-4 w-4 mr-2" />
-                Campaigns
+                <span className="hidden sm:inline">Campaigns</span>
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <Users className="h-4 w-4 mr-2" />
-                Users
+                <span className="hidden sm:inline">Users</span>
               </TabsTrigger>
               <TabsTrigger
                 value="comments"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Comments
+                <span className="hidden sm:inline">Comments</span>
               </TabsTrigger>
               <TabsTrigger
                 value="updates"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <Bell className="h-4 w-4 mr-2" />
-                Updates
+                <span className="hidden sm:inline">Updates</span>
               </TabsTrigger>
               <TabsTrigger
                 value="insights"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-4"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
               >
                 <BarChart className="h-4 w-4 mr-2" />
-                Insights
+                <span className="hidden sm:inline">Insights</span>
               </TabsTrigger>
             </TabsList>
+          </Tabs>
+        </div>
+      </div>
 
-            {/* Main content */}
-            <div className="container mx-auto p-6">
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-8 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-2">
-                          <Calendar className="h-4 w-4" />
-                          This Month
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Today</DropdownMenuItem>
-                        <DropdownMenuItem>This Week</DropdownMenuItem>
-                        <DropdownMenuItem>This Month</DropdownMenuItem>
-                        <DropdownMenuItem>This Year</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-500">Total Campaigns</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                        <Folder className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-3xl font-bold text-gray-800">{totalCampaigns}</div>
-                        <p className="text-xs text-green-600 flex items-center">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          +12% from last month
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                        <Users className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-3xl font-bold text-gray-800">{totalUsers}</div>
-                        <p className="text-xs text-green-600 flex items-center">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          +8% from last month
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-500">Total Comments</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                        <MessageSquare className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-3xl font-bold text-gray-800">{totalComments}</div>
-                        <p className="text-xs text-green-600 flex items-center">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          +15% from last month
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-500">Total Funds Raised</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                        <DollarSign className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-3xl font-bold text-gray-800">${totalFundsRaised.toLocaleString()}</div>
-                        <p className="text-xs text-green-600 flex items-center">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          +20% from last month
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Recent Campaigns */}
-                <Card className="border-none shadow-lg">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-xl text-gray-800">Recent Campaigns</CardTitle>
-                      <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50">
-                        View All
+      {/* Main content */}
+      <div className="flex-1">
+        <div className="container mx-auto p-4 md:p-6">
+          {/* Overview Tab */}
+          {activeTab === "overview" && (
+            <div className="space-y-8 mt-2 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2 hidden md:flex">
+                        <Calendar className="h-4 w-4" />
+                        This Month
+                        <ChevronDown className="h-4 w-4" />
                       </Button>
-                    </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>Today</DropdownMenuItem>
+                      <DropdownMenuItem>This Week</DropdownMenuItem>
+                      <DropdownMenuItem>This Month</DropdownMenuItem>
+                      <DropdownMenuItem>This Year</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4">
+                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Campaigns</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="rounded-lg overflow-hidden border border-gray-100">
+                  <CardContent className="flex items-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
+                      <Folder className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalCampaigns}</div>
+                      <p className="text-xs text-green-600 flex items-center">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        +12% from last month
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalUsers}</div>
+                      <p className="text-xs text-green-600 flex items-center">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        +8% from last month
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Comments</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
+                      <MessageSquare className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalComments}</div>
+                      <p className="text-xs text-green-600 flex items-center">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        +15% from last month
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Funds Raised</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
+                      <DollarSign className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800">
+                        ${totalFundsRaised.toLocaleString()}
+                      </div>
+                      <p className="text-xs text-green-600 flex items-center">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        +20% from last month
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Campaigns */}
+              <Card className="border-none shadow-lg overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-xl text-gray-800">Recent Campaigns</CardTitle>
+                    <Button
+                      variant="outline"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      onClick={() => handleTabChange("campaigns")}
+                    >
+                      View All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="overflow-auto">
+                  <div className="rounded-lg overflow-hidden border border-gray-100">
+                    <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-blue-50 hover:bg-blue-50">
                             <TableHead className="text-blue-600">Title</TableHead>
-                            <TableHead className="text-blue-600">Creator</TableHead>
+                            <TableHead className="text-blue-600 hidden md:table-cell">Creator</TableHead>
                             <TableHead className="text-blue-600">Status</TableHead>
                             <TableHead className="text-blue-600 text-right">Raised</TableHead>
                           </TableRow>
@@ -527,7 +548,7 @@ export default function AdminDashboard() {
                           {placeholderCampaigns.slice(0, 5).map((campaign) => (
                             <TableRow key={campaign.id} className="hover:bg-blue-50/50">
                               <TableCell className="font-medium">{campaign.title}</TableCell>
-                              <TableCell>{campaign.creator}</TableCell>
+                              <TableCell className="hidden md:table-cell">{campaign.creator}</TableCell>
                               <TableCell>
                                 <Badge
                                   variant={campaign.status === "Active" ? "default" : "secondary"}
@@ -548,104 +569,108 @@ export default function AdminDashboard() {
                         </TableBody>
                       </Table>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Additional Insights */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-gray-800">Campaign Performance</CardTitle>
+                    <CardDescription>Key metrics for all campaigns</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid gap-6 grid-cols-2">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
+                        <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
+                        <p className="text-xs text-gray-500">
+                          {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
+                        <p className="text-2xl font-bold text-gray-800">
+                          ${Math.round(avgFundsPerCampaign).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h3 className="text-sm font-medium text-gray-500 mb-4">Most Funded Campaign</h3>
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                          <DollarSign className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-800">{mostFundedCampaign.title}</p>
+                          <p className="text-blue-600 font-bold">${mostFundedCampaign.raised.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Additional Insights */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="border-none shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-gray-800">Campaign Performance</CardTitle>
-                      <CardDescription>Key metrics for all campaigns</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid gap-6 grid-cols-2">
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
-                          <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
-                          <p className="text-xs text-gray-500">
-                            {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
-                          <p className="text-2xl font-bold text-gray-800">
-                            ${Math.round(avgFundsPerCampaign).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t">
-                        <h3 className="text-sm font-medium text-gray-500 mb-4">Most Funded Campaign</h3>
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                            <DollarSign className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800">{mostFundedCampaign.title}</p>
-                            <p className="text-blue-600 font-bold">${mostFundedCampaign.raised.toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-gray-800">Recent Activity</CardTitle>
-                      <CardDescription>Latest updates and comments</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {[...placeholderComments, ...placeholderUpdates]
-                          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                          .slice(0, 4)
-                          .map((item, index) => (
-                            <div key={index} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback className="bg-blue-100 text-blue-600">
-                                  {"userEmail" in item ? item.userEmail.charAt(0).toUpperCase() : "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-medium text-gray-800">
-                                    {"userEmail" in item ? item.userEmail : "Unknown"}
-                                  </p>
-                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
-                                    {"text" in item ? "Comment" : "Update"}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">{truncateText(item.text, 60)}</p>
-                                <p className="text-xs text-gray-400 mt-1">{formatDate(item.timestamp)}</p>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              {/* Campaigns Tab */}
-              <TabsContent value="campaigns" className="space-y-6 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">All Campaigns</h2>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2">
-                      <Filter className="h-4 w-4" />
-                      Filter
-                    </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700">Add Campaign</Button>
-                  </div>
-                </div>
-
                 <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    {placeholderCampaigns.length > 0 ? (
-                      <>
-                        <div className="rounded-lg overflow-hidden border border-gray-100">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-gray-800">Recent Activity</CardTitle>
+                    <CardDescription>Latest updates and comments</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[...placeholderComments, ...placeholderUpdates]
+                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                        .slice(0, 4)
+                        .map((item, index) => (
+                          <div key={index} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {"userEmail" in item ? item.userEmail.charAt(0).toUpperCase() : "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-gray-800">
+                                  {"userEmail" in item ? item.userEmail : "Unknown"}
+                                </p>
+                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                                  {"text" in item ? "Comment" : "Update"}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">{truncateText(item.text, 60)}</p>
+                              <p className="text-xs text-gray-400 mt-1">{formatDate(item.timestamp)}</p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Campaigns Tab */}
+          {activeTab === "campaigns" && (
+            <div className="space-y-6 mt-2 animate-in fade-in duration-300">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">All Campaigns</h2>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+                  <Button variant="outline" className="gap-2 w-full md:w-auto">
+                    <Filter className="h-4 w-4" />
+                    Filter
+                  </Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">Add Campaign</Button>
+                </div>
+              </div>
+
+              <Card className="border-none shadow-lg overflow-hidden">
+                <CardContent className="p-4 md:p-6">
+                  {placeholderCampaigns.length > 0 ? (
+                    <>
+                      <div className="rounded-lg overflow-hidden border border-gray-100">
+                        <div className="overflow-x-auto">
                           <Table>
                             <TableHeader>
                               <TableRow className="bg-blue-50 hover:bg-blue-50">
@@ -662,13 +687,13 @@ export default function AdminDashboard() {
                                   Title <SortIndicator column="title" />
                                 </TableHead>
                                 <TableHead
-                                  className="cursor-pointer hover:text-blue-600"
+                                  className="cursor-pointer hover:text-blue-600 hidden md:table-cell"
                                   onClick={() => handleSort("creator")}
                                 >
                                   Creator <SortIndicator column="creator" />
                                 </TableHead>
                                 <TableHead
-                                  className="cursor-pointer hover:text-blue-600 text-right"
+                                  className="cursor-pointer hover:text-blue-600 text-right hidden md:table-cell"
                                   onClick={() => handleSort("goal")}
                                 >
                                   Goal ($) <SortIndicator column="goal" />
@@ -686,7 +711,7 @@ export default function AdminDashboard() {
                                   Status <SortIndicator column="status" />
                                 </TableHead>
                                 <TableHead
-                                  className="cursor-pointer hover:text-blue-600"
+                                  className="cursor-pointer hover:text-blue-600 hidden md:table-cell"
                                   onClick={() => handleSort("createdAt")}
                                 >
                                   Created At <SortIndicator column="createdAt" />
@@ -699,8 +724,10 @@ export default function AdminDashboard() {
                                 <TableRow key={campaign.id} className="hover:bg-blue-50/50">
                                   <TableCell className="font-medium">{campaign.id}</TableCell>
                                   <TableCell>{campaign.title}</TableCell>
-                                  <TableCell>{campaign.creator}</TableCell>
-                                  <TableCell className="text-right">${campaign.goal.toLocaleString()}</TableCell>
+                                  <TableCell className="hidden md:table-cell">{campaign.creator}</TableCell>
+                                  <TableCell className="text-right hidden md:table-cell">
+                                    ${campaign.goal.toLocaleString()}
+                                  </TableCell>
                                   <TableCell className="text-right">${campaign.raised.toLocaleString()}</TableCell>
                                   <TableCell>
                                     <Badge
@@ -714,7 +741,9 @@ export default function AdminDashboard() {
                                       {campaign.status}
                                     </Badge>
                                   </TableCell>
-                                  <TableCell>{formatDate(campaign.createdAt)}</TableCell>
+                                  <TableCell className="hidden md:table-cell">
+                                    {formatDate(campaign.createdAt)}
+                                  </TableCell>
                                   <TableCell className="text-right">
                                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
                                       <Eye className="h-4 w-4" />
@@ -726,78 +755,82 @@ export default function AdminDashboard() {
                             </TableBody>
                           </Table>
                         </div>
-
-                        {/* Pagination */}
-                        <div className="flex items-center justify-between mt-6">
-                          <div className="text-sm text-gray-500">
-                            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                            {Math.min(currentPage * itemsPerPage, placeholderCampaigns.length)} of{" "}
-                            {placeholderCampaigns.length} campaigns
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                              disabled={currentPage === 1}
-                              className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                              <span className="ml-1">Previous</span>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                              disabled={currentPage === totalPages}
-                              className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                            >
-                              <span className="mr-1">Next</span>
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                        <Folder className="h-8 w-8 mb-2 text-blue-300" />
-                        <p>No campaigns yet</p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
-              {/* Users Tab */}
-              <TabsContent value="users" className="space-y-6 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">All Users</h2>
-                  <div className="flex items-center gap-2">
-                    <div className="relative w-64">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="search"
-                        placeholder="Search by email..."
-                        className="pl-8 border-blue-200 focus-visible:ring-blue-500"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
+                      {/* Pagination */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mt-6 gap-4">
+                        <div className="text-sm text-gray-500 order-2 md:order-1 text-center md:text-left">
+                          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                          {Math.min(currentPage * itemsPerPage, placeholderCampaigns.length)} of{" "}
+                          {placeholderCampaigns.length} campaigns
+                        </div>
+                        <div className="flex items-center justify-center md:justify-end space-x-2 order-1 md:order-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="ml-1">Previous</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                          >
+                            <span className="mr-1">Next</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+                      <Folder className="h-8 w-8 mb-2 text-blue-300" />
+                      <p>No campaigns yet</p>
                     </div>
-                    <Button className="bg-blue-600 hover:bg-blue-700">Add User</Button>
-                  </div>
-                </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-                <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    {filteredUsers.length > 0 ? (
-                      <div className="rounded-lg overflow-hidden border border-gray-100">
+          {/* Users Tab */}
+          {activeTab === "users" && (
+            <div className="space-y-6 mt-2 animate-in fade-in duration-300">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">All Users</h2>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+                  <div className="relative w-full md:w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="search"
+                      placeholder="Search by email..."
+                      className="pl-8 border-blue-200 focus-visible:ring-blue-500 w-full"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">Add User</Button>
+                </div>
+              </div>
+
+              <Card className="border-none shadow-lg overflow-hidden">
+                <CardContent className="p-4 md:p-6">
+                  {filteredUsers.length > 0 ? (
+                    <div className="rounded-lg overflow-hidden border border-gray-100">
+                      <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow className="bg-blue-50 hover:bg-blue-50">
                               <TableHead>ID</TableHead>
                               <TableHead>Email</TableHead>
-                              <TableHead className="text-center">Campaigns Created</TableHead>
-                              <TableHead>Joined At</TableHead>
+                              <TableHead className="text-center">Campaigns</TableHead>
+                              <TableHead className="hidden md:table-cell">Joined At</TableHead>
                               <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -807,7 +840,7 @@ export default function AdminDashboard() {
                                 <TableCell className="font-medium">{user.id}</TableCell>
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell className="text-center">{user.campaignsCreated}</TableCell>
-                                <TableCell>{formatDate(user.joinedAt)}</TableCell>
+                                <TableCell className="hidden md:table-cell">{formatDate(user.joinedAt)}</TableCell>
                                 <TableCell className="text-right">
                                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
                                     <Eye className="h-4 w-4" />
@@ -819,274 +852,278 @@ export default function AdminDashboard() {
                           </TableBody>
                         </Table>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                        <Users className="h-8 w-8 mb-2 text-blue-300" />
-                        <p>No users found</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Comments Tab */}
-              <TabsContent value="comments" className="space-y-6 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Recent Comments</h2>
-                  <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter Comments
-                  </Button>
-                </div>
-
-                <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    {placeholderComments.length > 0 ? (
-                      <div className="space-y-6">
-                        {placeholderComments.map((comment) => (
-                          <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Link
-                                href={`/campaigns/${comment.campaignId}`}
-                                className="font-medium text-blue-600 hover:underline"
-                              >
-                                {comment.campaignTitle}
-                              </Link>
-                              <span className="text-xs text-gray-500">{formatDate(comment.timestamp)}</span>
-                            </div>
-                            <div className="flex items-start gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-blue-100 text-blue-600">
-                                  {comment.userEmail.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="bg-blue-50 p-3 rounded-lg flex-1">
-                                <p className="text-sm font-medium mb-1 text-gray-800">{comment.userEmail}</p>
-                                <p className="text-sm text-gray-700">{comment.text}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                        <MessageSquare className="h-8 w-8 mb-2 text-blue-300" />
-                        <p>No comments yet</p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t border-gray-100 px-6 py-4">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">View All Comments</Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-
-              {/* Updates Tab */}
-              <TabsContent value="updates" className="space-y-6 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Recent Updates</h2>
-                  <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter Updates
-                  </Button>
-                </div>
-
-                <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    {placeholderUpdates.length > 0 ? (
-                      <div className="space-y-6">
-                        {placeholderUpdates.map((update) => (
-                          <div key={update.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Link
-                                href={`/campaigns/${update.campaignId}`}
-                                className="font-medium text-blue-600 hover:underline"
-                              >
-                                {update.campaignTitle}
-                              </Link>
-                              <span className="text-xs text-gray-500">{formatDate(update.timestamp)}</span>
-                            </div>
-                            <div className="flex items-start gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-blue-100 text-blue-600">
-                                  {update.userEmail.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="bg-blue-50 p-3 rounded-lg flex-1">
-                                <p className="text-sm font-medium mb-1 text-gray-800">{update.userEmail}</p>
-                                <p className="text-sm text-gray-700">{update.text}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                        <Bell className="h-8 w-8 mb-2 text-blue-300" />
-                        <p>No updates yet</p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t border-gray-100 px-6 py-4">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">View All Updates</Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-
-              {/* Insights Tab */}
-              <TabsContent value="insights" className="space-y-6 mt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Campaign Insights</h2>
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-2">
-                          <Calendar className="h-4 w-4" />
-                          This Month
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Today</DropdownMenuItem>
-                        <DropdownMenuItem>This Week</DropdownMenuItem>
-                        <DropdownMenuItem>This Month</DropdownMenuItem>
-                        <DropdownMenuItem>This Year</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="border-none shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-gray-800">Campaign Performance</CardTitle>
-                      <CardDescription>Key metrics for all campaigns</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid gap-6 grid-cols-2">
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
-                          <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
-                          <p className="text-xs text-gray-500">
-                            {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
-                          <p className="text-2xl font-bold text-gray-800">
-                            ${Math.round(avgFundsPerCampaign).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-gray-100">
-                        <h3 className="text-lg font-medium text-gray-800 mb-4">Top Performing Campaigns</h3>
-                        <div className="space-y-4">
-                          {[...placeholderCampaigns]
-                            .sort((a, b) => b.raised - a.raised)
-                            .slice(0, 3)
-                            .map((campaign, index) => (
-                              <div key={campaign.id} className="flex items-center">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-3">
-                                  {index + 1}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate text-gray-800">{campaign.title}</p>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                      {Math.round((campaign.raised / campaign.goal) * 100)}% funded
-                                    </span>
-                                    <span className="text-blue-600 font-medium">
-                                      ${campaign.raised.toLocaleString()}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-none shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-gray-800">User Statistics</CardTitle>
-                      <CardDescription>User engagement and activity</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-6 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Most Active Creator</h3>
-                          <div className="flex items-center">
-                            <Avatar className="h-10 w-10 mr-3">
-                              <AvatarFallback className="bg-blue-600 text-white">
-                                {placeholderUsers
-                                  .reduce((prev, current) =>
-                                    prev.campaignsCreated > current.campaignsCreated ? prev : current,
-                                  )
-                                  .email.charAt(0)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {
-                                  placeholderUsers.reduce((prev, current) =>
-                                    prev.campaignsCreated > current.campaignsCreated ? prev : current,
-                                  ).email
-                                }
-                              </p>
-                              <p className="text-sm text-blue-600">
-                                {
-                                  placeholderUsers.reduce((prev, current) =>
-                                    prev.campaignsCreated > current.campaignsCreated ? prev : current,
-                                  ).campaignsCreated
-                                }{" "}
-                                campaigns
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-gray-500">Newest User</h3>
-                          <div className="flex items-center">
-                            <Avatar className="h-10 w-10 mr-3">
-                              <AvatarFallback className="bg-green-600 text-white">
-                                {placeholderUsers
-                                  .reduce((prev, current) =>
-                                    new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
-                                  )
-                                  .email.charAt(0)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {
-                                  placeholderUsers.reduce((prev, current) =>
-                                    new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
-                                  ).email
-                                }
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Joined{" "}
-                                {formatDate(
-                                  placeholderUsers.reduce((prev, current) =>
-                                    new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
-                                  ).joinedAt,
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+                      <Users className="h-8 w-8 mb-2 text-blue-300" />
+                      <p>No users found</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </Tabs>
+          )}
+
+          {/* Comments Tab */}
+          {activeTab === "comments" && (
+            <div className="space-y-6 mt-2 animate-in fade-in duration-300">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">Recent Comments</h2>
+                <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full md:w-auto">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter Comments
+                </Button>
+              </div>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 md:p-6">
+                  {placeholderComments.length > 0 ? (
+                    <div className="space-y-6">
+                      {placeholderComments.map((comment) => (
+                        <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Link
+                              href={`/campaigns/${comment.campaignId}`}
+                              className="font-medium text-blue-600 hover:underline"
+                            >
+                              {comment.campaignTitle}
+                            </Link>
+                            <span className="text-xs text-gray-500">{formatDate(comment.timestamp)}</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {comment.userEmail.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="bg-blue-50 p-3 rounded-lg flex-1">
+                              <p className="text-sm font-medium mb-1 text-gray-800">{comment.userEmail}</p>
+                              <p className="text-sm text-gray-700">{comment.text}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+                      <MessageSquare className="h-8 w-8 mb-2 text-blue-300" />
+                      <p>No comments yet</p>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="border-t border-gray-100 px-6 py-4">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">View All Comments</Button>
+                </CardFooter>
+              </Card>
+            </div>
+          )}
+
+          {/* Updates Tab */}
+          {activeTab === "updates" && (
+            <div className="space-y-6 mt-2 animate-in fade-in duration-300">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">Recent Updates</h2>
+                <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full md:w-auto">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter Updates
+                </Button>
+              </div>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 md:p-6">
+                  {placeholderUpdates.length > 0 ? (
+                    <div className="space-y-6">
+                      {placeholderUpdates.map((update) => (
+                        <div key={update.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Link
+                              href={`/campaigns/${update.campaignId}`}
+                              className="font-medium text-blue-600 hover:underline"
+                            >
+                              {update.campaignTitle}
+                            </Link>
+                            <span className="text-xs text-gray-500">{formatDate(update.timestamp)}</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {update.userEmail.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="bg-blue-50 p-3 rounded-lg flex-1">
+                              <p className="text-sm font-medium mb-1 text-gray-800">{update.userEmail}</p>
+                              <p className="text-sm text-gray-700">{update.text}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+                      <Bell className="h-8 w-8 mb-2 text-blue-300" />
+                      <p>No updates yet</p>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="border-t border-gray-100 px-6 py-4">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">View All Updates</Button>
+                </CardFooter>
+              </Card>
+            </div>
+          )}
+
+          {/* Insights Tab */}
+          {activeTab === "insights" && (
+            <div className="space-y-6 mt-2 animate-in fade-in duration-300">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">Campaign Insights</h2>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2 w-full md:w-auto">
+                        <Calendar className="h-4 w-4" />
+                        This Month
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>Today</DropdownMenuItem>
+                      <DropdownMenuItem>This Week</DropdownMenuItem>
+                      <DropdownMenuItem>This Month</DropdownMenuItem>
+                      <DropdownMenuItem>This Year</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-gray-800">Campaign Performance</CardTitle>
+                    <CardDescription>Key metrics for all campaigns</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid gap-6 grid-cols-2">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
+                        <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
+                        <p className="text-xs text-gray-500">
+                          {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
+                        <p className="text-2xl font-bold text-gray-800">
+                          ${Math.round(avgFundsPerCampaign).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100">
+                      <h3 className="text-lg font-medium text-gray-800 mb-4">Top Performing Campaigns</h3>
+                      <div className="space-y-4">
+                        {[...placeholderCampaigns]
+                          .sort((a, b) => b.raised - a.raised)
+                          .slice(0, 3)
+                          .map((campaign, index) => (
+                            <div key={campaign.id} className="flex items-center">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-3">
+                                {index + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate text-gray-800">{campaign.title}</p>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-500">
+                                    {Math.round((campaign.raised / campaign.goal) * 100)}% funded
+                                  </span>
+                                  <span className="text-blue-600 font-medium">${campaign.raised.toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-gray-800">User Statistics</CardTitle>
+                    <CardDescription>User engagement and activity</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-1">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Most Active Creator</h3>
+                        <div className="flex items-center">
+                          <Avatar className="h-10 w-10 mr-3">
+                            <AvatarFallback className="bg-blue-600 text-white">
+                              {placeholderUsers
+                                .reduce((prev, current) =>
+                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
+                                )
+                                .email.charAt(0)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {
+                                placeholderUsers.reduce((prev, current) =>
+                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
+                                ).email
+                              }
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              {
+                                placeholderUsers.reduce((prev, current) =>
+                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
+                                ).campaignsCreated
+                              }{" "}
+                              campaigns
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-500">Newest User</h3>
+                        <div className="flex items-center">
+                          <Avatar className="h-10 w-10 mr-3">
+                            <AvatarFallback className="bg-green-600 text-white">
+                              {placeholderUsers
+                                .reduce((prev, current) =>
+                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
+                                )
+                                .email.charAt(0)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {
+                                placeholderUsers.reduce((prev, current) =>
+                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
+                                ).email
+                              }
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Joined{" "}
+                              {formatDate(
+                                placeholderUsers.reduce((prev, current) =>
+                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
+                                ).joinedAt,
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
