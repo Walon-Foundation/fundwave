@@ -100,7 +100,7 @@ export async function PATCH(req:NextRequest){
         //returning the user
         const userToken = jwt.sign({
             profilePicture:user.profilePicture,
-            id:user._id,
+            _id:user._id,
             username:user.username, 
             firstName:user.firstName,
             lastName:user.lastName,

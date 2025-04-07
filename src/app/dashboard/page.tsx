@@ -115,12 +115,17 @@ export default function UserDashboard() {
               </Button>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {userCampaign.map((campaign) => (
-                <CampaignCard key={campaign._id} campaign={campaign} />
-              ))}
+              {userCampaign.length > 0 ? (
+                userCampaign.map((campaign) => (
+                  <CampaignCard key={campaign._id} campaign={campaign} />
+                ))
+              ) : (
+                <p className="text-gray-500 text-center text-xl py-10 flex flex-col items-center justify-center col-span-full">
+                  No campaigns found.
+                </p>
+              )}
             </div>
           </TabsContent>
-
           {/* Comments Tab */}
           <TabsContent value="comments" className="space-y-6">
             <div className="flex items-center justify-between">
@@ -154,7 +159,7 @@ export default function UserDashboard() {
                         <p className="text-sm">{update.description}</p>
                         <div className="mt-2 flex justify-end">
                           <Link
-                            href={`/campaigns/${update.campaignId}`}
+                            href={`/campaign/${update.campaignId}`}
                             className="text-xs text-blue-500 hover:underline flex items-center"
                           >
                             View Campaign <ChevronRight className="h-3 w-3 ml-1" />

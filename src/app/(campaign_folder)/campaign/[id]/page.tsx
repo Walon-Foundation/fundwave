@@ -359,6 +359,7 @@ export default function CampaignDetails(){
                     setTitle={setTitle}
                     setDescription={setDescription}
                     handleAddUpdate={handleAddUpdate}
+                    isLoading={isLoading}
                   />
 
                   {/* Comments Tab */}

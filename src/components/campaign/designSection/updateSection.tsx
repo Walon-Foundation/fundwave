@@ -16,7 +16,8 @@ export default function UpdateSection({
     description,
     setTitle,
     setDescription,
-    handleAddUpdate
+    handleAddUpdate,
+    isLoading
 }:{
     campaignUpdate: Update[],
     hasUpdates: boolean,
@@ -27,7 +28,8 @@ export default function UpdateSection({
     description: string,
     setTitle: React.Dispatch<React.SetStateAction<string>>,
     setDescription: React.Dispatch<React.SetStateAction<string>>,
-    handleAddUpdate: (e: React.FormEvent<HTMLFormElement>) => Promise<void>
+    handleAddUpdate: (e: React.FormEvent<HTMLFormElement>) => Promise<void>,
+    isLoading: boolean
 }) {
   return (
     <TabsContent
@@ -54,6 +56,7 @@ export default function UpdateSection({
                 setDescription={setDescription}
                 setIsAddingUpdate={setIsAddingUpdate}
                 handleAddUpdate={handleAddUpdate}
+                isLoading={isLoading}
               />
             )}
           </div>

@@ -9,7 +9,8 @@ export default function UpdateForm({
     setTitle,
     setDescription,
     setIsAddingUpdate,
-    handleAddUpdate
+    handleAddUpdate,
+    isLoading
 }: {
     title: string;
     description: string;
@@ -17,6 +18,7 @@ export default function UpdateForm({
     setDescription: React.Dispatch<React.SetStateAction<string>>;
     setIsAddingUpdate: React.Dispatch<React.SetStateAction<boolean>>;
     handleAddUpdate: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+    isLoading: boolean
 }) {
   return (
     <form
@@ -48,7 +50,7 @@ export default function UpdateForm({
         <Button variant="outline" onClick={() => setIsAddingUpdate(false)}>
           Cancel
         </Button>
-        <Button type="submit">Publish Update</Button>
+        <Button type="submit" disabled={isLoading}>{isLoading ? "Posting..." : "Post Update"}</Button>
       </div>
     </form>
   );
