@@ -25,7 +25,7 @@ export interface Comment {
   _id?: string;
   description: string;
   campaignId?: string | undefined;
-  campaignName:string;
+  campaignName?:string;
   username?: string;
   userId?: string | undefined;
   createdAt?:string;
@@ -35,7 +35,7 @@ export interface Update {
   _id?: string;
   description: string;
   title:string;
-  campaignName: string;
+  campaignName?: string;
   campaignId: string;
   createdAt?:string;
 }
