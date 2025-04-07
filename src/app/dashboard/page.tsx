@@ -29,6 +29,7 @@ import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 import { User } from "@/core/types/types"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 
 
@@ -38,9 +39,13 @@ export default function UserDashboard() {
   }
 
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter()
+  const token = Cookies.get("userToken");
 
   useEffect(() => {
-    const token = Cookies.get("userToken");
+    if(!token){
+      return router.push('/login')
+    }
 
     if (token) {
       try {
@@ -51,7 +56,7 @@ export default function UserDashboard() {
         setUser(null);
       }
     }
-  }, []);
+  }, [token, router]);
 
   const allCampaign = useAppSelector(selectAllCampaign)
   const allComments = useAppSelector(selectAllComment)
