@@ -28,6 +28,8 @@ import { selectAllUpdate } from "@/core/store/features/update/updateSlice"
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 import { User } from "@/core/types/types"
+import { useEffect, useState } from "react"
+
 
 
 export default function UserDashboard() {
@@ -35,16 +37,28 @@ export default function UserDashboard() {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true })
   }
 
-  //getting the user
-  const token = Cookies.get("userToken")
-  const user = jwtDecode(token!) as User
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = Cookies.get("userToken");
+
+    if (token) {
+      try {
+        const decoded = jwtDecode<User>(token);
+        setUser(decoded);
+      } catch (error) {
+        console.error("Invalid token", error);
+        setUser(null);
+      }
+    }
+  }, []);
 
   const allCampaign = useAppSelector(selectAllCampaign)
   const allComments = useAppSelector(selectAllComment)
   const allUpdates = useAppSelector(selectAllUpdate)
 
   //data from the server
-  const userCampaign = allCampaign.filter((campaign) => campaign.creatorId === user._id)
+  const userCampaign = allCampaign.filter((campaign) => campaign.creatorId === user?._id)
   const campaignComment = userCampaign.map((campaign) => allComments.filter((comment) => comment.campaignId === campaign._id)).flat()
   const campaignUpdate = userCampaign.map((campaign) => allUpdates.filter((update) => update.campaignId === campaign._id)).flat()
 

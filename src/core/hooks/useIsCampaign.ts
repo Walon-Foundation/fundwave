@@ -8,7 +8,7 @@ const useIsCampaign = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get("userToken");
+    const token = Cookies.get("userToken") as string;
     console.log(token)
 
     if (!token) {
