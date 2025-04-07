@@ -35,6 +35,7 @@ export interface Update {
   _id?: string;
   description: string;
   title:string;
+  campaignName: string;
   campaignId: string;
   createdAt?:string;
 }

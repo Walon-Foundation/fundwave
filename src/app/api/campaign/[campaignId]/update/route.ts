@@ -45,7 +45,8 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{campaignId
         const newUpdate = new Update({
             title,
             description,
-            campaignId
+            campaignId,
+            campaignName: campaign.campaignName
         })
 
         campaign.update.push(newUpdate._id)

@@ -15,123 +15,47 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent,  CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import CampaignCard from "@/components/campaign/designSection/dashboardUI/campaignCard"
+import CommentCard from "@/components/campaign/designSection/dashboardUI/commentCard"
+import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice"
+import { useAppSelector } from "@/core/hooks/storeHooks"
+import { selectAllComment } from "@/core/store/features/comments/commentSlice"
+import { selectAllUpdate } from "@/core/store/features/update/updateSlice"
+import Cookies from "js-cookie"
+import { jwtDecode } from "jwt-decode"
+import { User } from "@/core/types/types"
 
-// Define types based on the provided interfaces
-interface Campaign {
-  _id: string
-  campaignName: string
-  campaignDescription: string
-  amountNeeded: number
-  moneyReceived: number
-  campaignPicture: string
-  backers: number
-  createdAt: string
-}
-
-interface Comment {
-  _id: string
-  description: string
-  campaignId: string
-  campaignName: string
-  createdAt: string
-}
-
-interface Update {
-  _id: string
-  description: string
-  title: string
-  campaignId: string
-  campaignName: string
-  createdAt: string
-}
-
-// Placeholder data
-const placeholderCampaigns: Campaign[] = [
-  {
-    _id: "1",
-    campaignName: "Clean Water Initiative",
-    campaignDescription:
-      "Providing clean water solutions to communities in need through sustainable infrastructure projects.",
-    amountNeeded: 1000,
-    moneyReceived: 500,
-    campaignPicture: "/placeholder.svg?height=200&width=300",
-    backers: 12,
-    createdAt: "2023-03-15T12:00:00Z",
-  },
-  {
-    _id: "2",
-    campaignName: "Education for All",
-    campaignDescription:
-      "Supporting education initiatives for underprivileged children with books, supplies, and scholarships.",
-    amountNeeded: 2000,
-    moneyReceived: 750,
-    campaignPicture: "/placeholder.svg?height=200&width=300",
-    backers: 18,
-    createdAt: "2023-02-20T12:00:00Z",
-  },
-  {
-    _id: "3",
-    campaignName: "Green Energy Project",
-    campaignDescription: "Developing renewable energy solutions for rural communities to reduce carbon footprint.",
-    amountNeeded: 1500,
-    moneyReceived: 0,
-    campaignPicture: "/placeholder.svg?height=200&width=300",
-    backers: 0,
-    createdAt: "2023-04-01T12:00:00Z",
-  },
-]
-
-const placeholderComments: Comment[] = [
-  {
-    _id: "1",
-    description: "This is an amazing initiative! I'm excited to see how it develops over time.",
-    campaignId: "1",
-    campaignName: "Clean Water Initiative",
-    createdAt: "2023-04-01T12:00:00Z",
-  },
-  {
-    _id: "2",
-    description: "I have some questions about the implementation. Can you provide more details?",
-    campaignId: "2",
-    campaignName: "Education for All",
-    createdAt: "2023-04-03T15:30:00Z",
-  },
-]
-
-const placeholderUpdates: Update[] = [
-  {
-    _id: "1",
-    title: "Progress Update",
-    description: "We've reached our first milestone! The first water well has been completed.",
-    campaignId: "1",
-    campaignName: "Clean Water Initiative",
-    createdAt: "2023-04-02T10:15:00Z",
-  },
-  {
-    _id: "2",
-    title: "New Partnership",
-    description: "We're excited to announce a new partnership with a local school to expand our reach.",
-    campaignId: "2",
-    campaignName: "Education for All",
-    createdAt: "2023-04-04T09:45:00Z",
-  },
-]
-
-// Calculate total money received
-const totalMoneyReceived = placeholderCampaigns.reduce((sum, campaign) => sum + campaign.moneyReceived, 0)
-const totalBackers = placeholderCampaigns.reduce((sum, campaign) => sum + campaign.backers, 0)
-const totalGoals = placeholderCampaigns.reduce((sum, campaign) => sum + campaign.amountNeeded, 0)
-const percentFunded = (totalMoneyReceived / totalGoals) * 100
 
 export default function UserDashboard() {
-  // Format date to "X days/hours ago" format
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true })
   }
+
+  //getting the user
+  const token = Cookies.get("userToken")
+  const user = jwtDecode(token!) as User
+
+  const allCampaign = useAppSelector(selectAllCampaign)
+  const allComments = useAppSelector(selectAllComment)
+  const allUpdates = useAppSelector(selectAllUpdate)
+
+  //data from the server
+  const userCampaign = allCampaign.filter((campaign) => campaign.creatorId === user._id)
+  const campaignComment = userCampaign.map((campaign) => allComments.filter((comment) => comment.campaignId === campaign._id)).flat()
+  const campaignUpdate = userCampaign.map((campaign) => allUpdates.filter((update) => update.campaignId === campaign._id)).flat()
+
+
+  // Calculate total money received
+  const totalMoneyReceived = userCampaign.reduce((sum, campaign) => sum + (campaign.moneyReceived ?? 0), 0)
+  const totalBackers = userCampaign.reduce((sum, campaign) => sum + (campaign.backers ?? 0), 0)
+  const totalGoals = userCampaign.reduce((sum, campaign) => sum + campaign.amountNeeded, 0)
+  const percentFunded = (totalMoneyReceived / totalGoals) * 100
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -172,46 +96,8 @@ export default function UserDashboard() {
               </Button>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {placeholderCampaigns.map((campaign) => (
-                <Card key={campaign._id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="aspect-video w-full overflow-hidden">
-                    <Image
-                      src={campaign.campaignPicture || "/placeholder.svg"}
-                      alt={campaign.campaignName}
-                      width={300}
-                      height={200}
-                      className="h-full w-full object-cover transition-transform hover:scale-105"
-                    />
-                  </div>
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-lg">{campaign.campaignName}</CardTitle>
-                    <CardDescription className="text-xs text-gray-500">
-                      Created {formatDate(campaign.createdAt)}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <p className="text-sm text-gray-500 line-clamp-2 mb-4">{campaign.campaignDescription}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>${campaign.moneyReceived} raised</span>
-                        <span className="font-medium">
-                          {Math.round((campaign.moneyReceived / campaign.amountNeeded) * 100)}%
-                        </span>
-                      </div>
-                      <Progress
-                        value={(campaign.moneyReceived / campaign.amountNeeded) * 100}
-                        className="h-2 bg-gray-200"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>{campaign.backers} backers</span>
-                        <span>Goal: ${campaign.amountNeeded}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <Button className="w-full bg-blue-500 hover:bg-blue-600">View Details</Button>
-                  </CardFooter>
-                </Card>
+              {userCampaign.map((campaign) => (
+                <CampaignCard key={campaign._id} campaign={campaign} />
               ))}
             </div>
           </TabsContent>
@@ -221,38 +107,7 @@ export default function UserDashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">My Comments</h2>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                {placeholderComments.length > 0 ? (
-                  <div className="space-y-6">
-                    {placeholderComments.map((comment) => (
-                      <div key={comment._id} className="border-b pb-6 last:border-0 last:pb-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="text-blue-500 bg-blue-50">
-                            {comment.campaignName}
-                          </Badge>
-                          <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
-                        </div>
-                        <p className="text-sm">{comment.description}</p>
-                        <div className="mt-2 flex justify-end">
-                          <Link
-                            href={`/campaigns/${comment.campaignId}`}
-                            className="text-xs text-blue-500 hover:underline flex items-center"
-                          >
-                            View Campaign <ChevronRight className="h-3 w-3 ml-1" />
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <MessageSquare className="h-8 w-8 mb-2 text-gray-300" />
-                    <p>No comments yet</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <CommentCard comments={campaignComment} />
           </TabsContent>
 
           {/* Updates Tab */}
@@ -266,15 +121,15 @@ export default function UserDashboard() {
             </div>
             <Card>
               <CardContent className="p-6">
-                {placeholderUpdates.length > 0 ? (
+                {campaignUpdate.length > 0 ? (
                   <div className="space-y-6">
-                    {placeholderUpdates.map((update) => (
+                    {campaignUpdate.map((update) => (
                       <div key={update._id} className="border-b pb-6 last:border-0 last:pb-0">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant="outline" className="text-blue-500 bg-blue-50">
                             {update.campaignName}
                           </Badge>
-                          <span className="text-xs text-gray-500">{formatDate(update.createdAt)}</span>
+                          <span className="text-xs text-gray-500">{formatDate(update.createdAt as string)}</span>
                         </div>
                         <h4 className="text-sm font-medium mb-1">{update.title}</h4>
                         <p className="text-sm">{update.description}</p>
@@ -312,7 +167,7 @@ export default function UserDashboard() {
                   <CardTitle className="text-sm font-medium opacity-80">Total Raised</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">${totalMoneyReceived}</div>
+                  <div className="text-3xl font-bold">NLe{totalMoneyReceived}</div>
                   <p className="text-xs mt-1 opacity-80">Across all campaigns</p>
                 </CardContent>
               </Card>
@@ -322,7 +177,7 @@ export default function UserDashboard() {
                   <CardTitle className="text-sm font-medium text-gray-500">Total Goal</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">${totalGoals}</div>
+                  <div className="text-3xl font-bold">NLe{totalGoals}</div>
                   <div className="flex items-center mt-1 text-xs text-gray-500">
                     <Progress value={percentFunded} className="h-1 flex-1 mr-2" />
                     <span>{Math.round(percentFunded)}% funded</span>
@@ -351,7 +206,7 @@ export default function UserDashboard() {
                   <TrendingUp className="h-8 w-8 text-green-500 mr-3" />
                   <div>
                     <div className="text-3xl font-bold">
-                      ${totalBackers > 0 ? Math.round(totalMoneyReceived / totalBackers) : 0}
+                      NLe{totalBackers > 0 ? Math.round(totalMoneyReceived / totalBackers) : 0}
                     </div>
                     <p className="text-xs text-gray-500">Per backer</p>
                   </div>
@@ -367,7 +222,7 @@ export default function UserDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {placeholderCampaigns.map((campaign) => (
+                  {userCampaign.map((campaign) => (
                     <div key={campaign._id} className="border-b pb-4 last:border-0 last:pb-0">
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center">
@@ -386,14 +241,14 @@ export default function UserDashboard() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-blue-500">${campaign.moneyReceived}</div>
+                          <div className="font-bold text-blue-500">NLe{campaign.moneyReceived}</div>
                           <div className="text-xs text-gray-500">
-                            {Math.round((campaign.moneyReceived / campaign.amountNeeded) * 100)}% of $
+                            {Math.round(((campaign.moneyReceived ?? 0) / campaign.amountNeeded) * 100)}% of NLe
                             {campaign.amountNeeded}
                           </div>
                         </div>
                       </div>
-                      <Progress value={(campaign.moneyReceived / campaign.amountNeeded) * 100} className="h-2" />
+                      <Progress value={((campaign.moneyReceived ?? 0 ) / campaign.amountNeeded) * 100} className="h-2" />
                       <div className="flex justify-end mt-2">
                         <Button variant="ghost" size="sm" className="h-7 text-xs text-blue-500 hover:text-blue-600">
                           View Details <ArrowUpRight className="ml-1 h-3 w-3" />
