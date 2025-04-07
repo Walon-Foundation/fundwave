@@ -20,6 +20,8 @@ export default function KycForm() {
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false) 
+  const [error, setError] = useState<string | null>(null)
 
 
   const dispatch = useDispatch()
@@ -38,6 +40,7 @@ export default function KycForm() {
       formData.append("profilePicture", profilePicture);
     }  
     try {
+      setIsLoading(true)
       const response = await axiosInstance.patch("/auth/update", formData)
       if (response.status === 200) {
         dispatch(kycUpdate({ userToken: response.data.data.userToken }))
@@ -47,9 +50,14 @@ export default function KycForm() {
         setGender("")
         setPhoneNumber("")
         setQualification("")
+      }else {
+        setError(response.data.error)
       }
     } catch (error) {
       console.error(error)
+      setError("KYC verification failed")
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -57,7 +65,7 @@ export default function KycForm() {
     <div className="mx-2 flex flex-col items-center justify-center min-h-screen my-10">
       <Card className="max-w-2xl w-full">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-t-lg">
-          <CardTitle className="text-2xl">KYC Verification</CardTitle>
+          <CardTitle className={`${error ? "text-red-500" : ""}text-2xl`}>{error ? error : "KYC Verification"}</CardTitle>
           <CardDescription className="text-blue-100">
             Please fill out the form below to complete your KYC verification.
           </CardDescription>
@@ -132,8 +140,8 @@ export default function KycForm() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              Submit KYC Information
+            <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              {isLoading ? "Loading...." : "Submit KYC"}
             </Button>
           </form>
         </CardContent>

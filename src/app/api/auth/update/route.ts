@@ -48,7 +48,7 @@ export async function PATCH(req:NextRequest){
             return errorHandler(400, "invalid request body","no profile picture found")
         }
 
-        const maxSizeBytes = 400 * 1024
+        const maxSizeBytes = 2 * 1024 * 1024
         const fileSize = profilePicture.size
         const buffer = await  profilePicture.arrayBuffer()
         const bytes = Buffer.from(buffer)

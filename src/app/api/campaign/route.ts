@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const buffer = await campaignPicture.arrayBuffer();
     const bytes = Buffer.from(buffer);
 
-    const maxFileSize = 400 * 1024
+    const maxFileSize = 2 * 1024 * 1024
     if(campaignPicture.size > maxFileSize){
       return errorHandler(404, "campaign picture too large", "campaign picture too large")
     }

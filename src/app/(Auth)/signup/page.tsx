@@ -26,11 +26,14 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   useAuthRedirect();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
+      setIsLoading(true)
       e.preventDefault();
       const formData = new FormData();
       formData.append("firstName", firstName);
@@ -44,9 +47,14 @@ export default function SignUp() {
       const response = await axiosInstance.post("auth/register", formData);
       if (response.status === 201) {
         router.push("/login");
+      }else {
+        setError(response.data.error)
       }
     } catch (error) {
       console.error(error);
+      setError("Registration failed");
+    }finally{
+      setIsLoading(false)
     }
   };
 
@@ -55,8 +63,8 @@ export default function SignUp() {
       <div className="w-full max-w-md mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-800 mb-2">
-            Create Your Account
+          <h1 className={`${error ? "text-red-600" : ""}text-3xl font-bold text-blue-800 mb-2`}>
+            {error ? error : "Sign Up"}
           </h1>
           <p className="text-blue-500">Join our community today</p>
         </div>
@@ -175,9 +183,10 @@ export default function SignUp() {
 
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Create Account
+                {isLoading ? "Signing Up..." : "Sign Up"}
               </Button>
             </form>
 

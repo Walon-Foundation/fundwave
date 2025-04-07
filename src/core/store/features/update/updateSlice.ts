@@ -20,19 +20,6 @@ export const fetchUpdate = createAsyncThunk("comment/fetchUpdate", async(_,{reje
     }
 })
 
-export const addUpdate = createAsyncThunk("update/addUpdate", async(data:Update, {rejectWithValue}) => {
-    try{
-        if(Object.keys(data).length === 0){
-            return rejectWithValue("All field required")
-        }
-        const response = await  axiosInstance.post(`/campaign/${data.campaignId}/update/`, data)
-        return response.data.data as Update
-    }catch(error){
-        console.error(error);
-        return rejectWithValue("Failed to add update")
-    }
-})
-
 export const deleteUpdate = createAsyncThunk("update/deleteUpdate", async(id:string, {rejectWithValue}) => {
     try{
         const response = await axiosInstance.delete(`update/${id}`)
@@ -76,19 +63,6 @@ const updateSlice = createSlice({
             state.error = null;
         })
         .addCase(fetchUpdate.rejected, (state, action) => {
-            state.status = "failed";
-            state.error = action.error.message as string;
-        })
-        .addCase(addUpdate.pending, (state) => {
-            state.status = "loading";
-            state.error = null
-        })
-        .addCase(addUpdate.fulfilled, (state, action) => {
-            state.status = "success";
-            updateAdaptor.upsertOne(state, action.payload);
-            state.error = null
-        })
-        .addCase(addUpdate.rejected, (state, action) => {
             state.status = "failed";
             state.error = action.error.message as string;
         })

@@ -20,18 +20,6 @@ export const fetchComment = createAsyncThunk("comment/fetchComment", async(_,{re
     }
 })
 
-export const addComment = createAsyncThunk("comment/addComment", async(data:Comment, {rejectWithValue}) => {
-    try{
-        if(Object.keys(data).length === 0){
-            return rejectWithValue("All field required")
-        }
-        const response = await  axiosInstance.post(`/campaign/${data.campaignId}/comment/`, data)
-        return response.data.data as Comment
-    }catch(error){
-        console.error(error);
-        return rejectWithValue("Failed to add comment")
-    }
-})
 
 export const deleteComment = createAsyncThunk("comment/deleteComment", async(id:string, {rejectWithValue}) => {
     try{
@@ -76,19 +64,6 @@ const commentSlice = createSlice({
             state.error = null;
         })
         .addCase(fetchComment.rejected, (state, action) => {
-            state.status = "failed";
-            state.error = action.error.message as string;
-        })
-        .addCase(addComment.pending, (state) => {
-            state.status = "loading";
-            state.error = null
-        })
-        .addCase(addComment.fulfilled, (state, action) => {
-            state.status = "success";
-            commentAdaptor.upsertOne(state, action.payload);
-            state.error = null
-        })
-        .addCase(addComment.rejected, (state, action) => {
             state.status = "failed";
             state.error = action.error.message as string;
         })

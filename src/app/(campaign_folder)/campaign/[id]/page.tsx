@@ -28,18 +28,18 @@ import { fetchCampaigns, selectCampaignById } from "@/core/store/features/campai
 import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
 import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
-import { addComment, fetchComment } from "@/core/store/features/comments/commentSlice"
+import {fetchComment } from "@/core/store/features/comments/commentSlice"
 import { selectAllComment } from "@/core/store/features/comments/commentSlice"
 import { jwtDecode } from "jwt-decode"
 import Cookies from "js-cookie"
 import { User } from "@/core/types/types"
 import { fetchUpdate, selectAllUpdate } from "@/core/store/features/update/updateSlice"
-import { addUpdate } from "@/core/store/features/update/updateSlice"
 import { calculateDaysRemaining } from "@/core/helpers/calculateDayRemaining"
 import ShareCard from "@/components/campaign/designSection/shareCard"
 import CreatorCard from "@/components/campaign/designSection/creatorCard"
 import CommentSection from "@/components/campaign/designSection/commentSection"
 import UpdateSection from "@/components/campaign/designSection/updateSection"
+import { axiosInstance } from "@/core/api/axiosInstance"
 
 export default function CampaignDetails(){
 
@@ -69,21 +69,25 @@ export default function CampaignDetails(){
   const hasUpdates = campaign?.update && campaign?.update?.length > 0
   
 
+  //update state
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isAddingUpdate, setIsAddingUpdate] = useState(false)
+
+  
 
   //add update fuunction
   const handleAddUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
+      setIsLoading(true)
       const data = {
         title,
         description,
         campaignId:id as string
       }
-      const action = await dispatch(addUpdate(data))
-      if(addUpdate.fulfilled.match(action)){
+      const response = await axiosInstance.post(`/campaign/${id}/update`,data)
+      if(response.status === 201){
         setIsAddingUpdate(false)
         await dispatch(fetchUpdate())
         await dispatch(fetchCampaigns())
@@ -92,6 +96,8 @@ export default function CampaignDetails(){
       }
     }catch(error){
       console.error(error)
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -117,8 +123,12 @@ export default function CampaignDetails(){
 
     setIsLoading(true)
     try {
-      const action = await dispatch(addComment({ description: commentText, campaignId: id as string }))
-      if (addComment.fulfilled.match(action)) {
+      const data = {
+        id,
+        description:commentText
+      }
+      const response = await axiosInstance.post(`/campaign/${id}/comment`, data)
+      if (response.status === 201) {
         await dispatch(fetchComment())
         await dispatch(fetchCampaigns())
         setCommentText("")

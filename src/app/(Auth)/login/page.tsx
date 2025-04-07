@@ -22,6 +22,8 @@ import { logo } from "@/assets/assets"
 export default function SignIn() {
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
+  const [error, setError] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const router = useRouter()
   const dispatch = useDispatch()
 
@@ -31,6 +33,7 @@ export default function SignIn() {
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
+      setIsLoading(false)
       const data = {
         username,
         password
@@ -43,9 +46,14 @@ export default function SignIn() {
           userToken:response.data.data.userToken
         }))
         router.push("/");
+      }else {
+        setError(response.data.error)
       }
     }catch(error){
       console.error(error)
+      setError("Login failed")
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -66,7 +74,7 @@ export default function SignIn() {
 
         <Card className="border-blue-100 shadow-lg">
           <CardHeader className="space-y-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-t-lg">
-            <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+            <CardTitle className={`${error ? "text-red-600" : ""} text-2xl text-center`}>{error ? error : "Welcome back"}</CardTitle>
             <CardDescription className="text-blue-100 text-center">Sign in to your account</CardDescription>
           </CardHeader>
 
@@ -109,8 +117,8 @@ export default function SignIn() {
 
               <Separator className="w-full "/>
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                Sign In
+              <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
 

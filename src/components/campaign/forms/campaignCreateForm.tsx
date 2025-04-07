@@ -37,6 +37,8 @@ export default function CampaignCreateForm() {
   const [solution, setSolution] = useState<string[]>([])
   const [problem, setProblem] = useState("")
   const [campaignPicture, setCampaignPicture] = useState<File | null >(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const router = useRouter()
   const dispatch = useAppDispatch()
@@ -81,6 +83,7 @@ export default function CampaignCreateForm() {
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
+      setIsLoading(true)
       const formData = new FormData()
       formData.append("campaignName",campaignName)
       formData.append("campaignDescription", campaignDescription)
@@ -101,9 +104,14 @@ export default function CampaignCreateForm() {
         await dispatch(fetchCampaigns())
         console.log(response.data)
         router.push('/campaign')
+      }else{
+        setError(response.data.error)
       }
     }catch(error){
       console.error(error)
+      setError("An error occurred while creating the campaign.")
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -124,7 +132,7 @@ export default function CampaignCreateForm() {
       <div className="flex flex-col justify-center min-h-screen items-center mx-auto max-w-3xl">
         <div className="p-6 sm:p-8 w-full bg-white rounded-xl shadow-md border border-blue-100">
           <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-800">Create Your Campaign</h1>
+            <h1 className={`${error ? "text-red-600" : "text-blue-600"} text-2xl sm:text-3xl lg:text-4xl font-bold`}>{error ? error : "Create a Campaign"}</h1>
             <p className="text-base sm:text-lg text-blue-600 mt-2">
               Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
             </p>
@@ -374,10 +382,11 @@ export default function CampaignCreateForm() {
                   </Button>
                 ) : (
                   <Button
+                    disabled={isLoading}
                     type="submit"
                     className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold"
                   >
-                    Submit Campaign <Send className="w-4 h-4 ml-2" />
+                    {isLoading ? "Submitting..." : "Submit Campaign"} <Send className="w-4 h-4 ml-2" />
                   </Button>
                 )}
               </div>
