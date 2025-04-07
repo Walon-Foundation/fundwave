@@ -45,7 +45,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{campaignId:
             campaignId,
             description,
             userId:userId.id,
-            username: userId.username
+            username: userId.username,
+            campaignName: campaign.campaignName
         })
 
         campaign.comments.push(newComment._id)

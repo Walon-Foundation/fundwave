@@ -25,6 +25,7 @@ export interface Comment {
   _id?: string;
   description: string;
   campaignId?: string | undefined;
+  campaignName:string;
   username?: string;
   userId?: string | undefined;
   createdAt?:string;

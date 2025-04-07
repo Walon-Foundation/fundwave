@@ -3,6 +3,7 @@ import{ Schema,models, model, Document } from "mongoose";
 interface Comment extends Document{
     description:string,
     campaignId:string | undefined,
+    campaignName:string,
     username:string,
     userId:string | undefined
 }
@@ -15,6 +16,10 @@ const commentSchema = new Schema<Comment>({
     campaignId: {
         type:Schema.Types.ObjectId,
         ref:"Campaign",
+        required:true
+    },
+    campaignName:{
+        type:String,
         required:true
     },
     username:{
