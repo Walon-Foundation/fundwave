@@ -40,14 +40,14 @@ export default function SignIn() {
       }
       const response = await axiosInstance.post('/auth/login',data)
       console.log(response.data)
-      if(response.status === 200){
+      if(response.status === 200 && !response.data.data.isAdmin){
         dispatch(login({
           sessionToken:response.data.data.sessionToken,
           userToken:response.data.data.userToken
         }))
         router.push("/");
       }else {
-        setError(response.data.error)
+        setError("Login Failed")
       }
     }catch(error){
       console.error(error)

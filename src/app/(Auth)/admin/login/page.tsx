@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { useDispatch } from "react-redux"
 import { login } from "@/core/store/features/user/userSlice"
+import { useRouter } from "next/navigation"
 
 export default function AdminLogin() {
   const [username, setUsername] = useState<string>("")
@@ -23,6 +24,7 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const dispatch = useDispatch()
+  const router = useRouter()
 
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -33,8 +35,9 @@ export default function AdminLogin() {
         password
       }
       const response = await axiosInstance.post("/auth/login",data)
-      if(response.status === 200){
+      if(response.status === 200 && response.data.data.isAdmin){
         console.log(response.data)
+        router.push("/admin/dashboard")
         dispatch(login({
           sessionToken:response.data.data.sessionToken,
           userToken:response.data.data.userToken
@@ -145,15 +148,6 @@ export default function AdminLogin() {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 bg-blue-50 rounded-b-lg border-t border-blue-100">
-            <div className="text-center w-full">
-              <p className="text-sm text-blue-800">
-                Need an admin account?{" "}
-                <Link href="/admin/register" className="font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                  Request Access
-                </Link>
-              </p>
-            </div>
-
             <div className="text-center w-full">
               <Link href="/" className="text-xs text-blue-600 hover:text-blue-800 hover:underline">
                 Return to main site

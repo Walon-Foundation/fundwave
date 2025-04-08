@@ -48,8 +48,13 @@ export async function POST(req:NextRequest): Promise<NextResponse>{
         },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
 
         const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles, iscampaign:user.isCampaign},process.env.ACCESS_TOKEN_SECRET!)
+        let isAdmin;
 
-        const response = apiResponse("Login successful",200,{userToken, sessionToken});
+        if(user.roles === "Admin"){
+            isAdmin = true;
+        }
+
+        const response = apiResponse("Login successful",200,{userToken, sessionToken,isAdmin});
 
         response.cookies.set("accessToken",accessToken, {
             httpOnly:true,
