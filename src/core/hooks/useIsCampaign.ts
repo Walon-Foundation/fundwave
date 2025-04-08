@@ -12,7 +12,7 @@ const useIsCampaign = () => {
     console.log(token)
 
     if (!token) {
-      router.replace("/login"); 
+      router.replace("/"); 
       return;
     }
 
@@ -24,7 +24,7 @@ const useIsCampaign = () => {
       }
     } catch (err) {
       console.error("Token decoding error:", err);
-      router.replace("/login");
+      router.replace("/");
     }
   }, [router]); 
 };

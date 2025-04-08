@@ -39,6 +39,7 @@ export interface Update {
   campaignName?: string;
   campaignId: string;
   createdAt?:string;
+  username?:string
 }
 
 

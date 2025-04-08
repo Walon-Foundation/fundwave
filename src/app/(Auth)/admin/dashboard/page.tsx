@@ -45,9 +45,9 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [user, setUser] = useState<User[] | []>([])
 
-  const allCampaigns = useAppSelector(selectAllCampaign)
-  const allComments = useAppSelector(selectAllComment)
-  const allUpdate = useAppSelector(selectAllUpdate)
+  const allCampaigns = useAppSelector(selectAllCampaign) || []
+  const allComments = useAppSelector(selectAllComment) || []
+  const allUpdate = useAppSelector(selectAllUpdate) || []
   const totalFundsRaised = allCampaigns.reduce((sum, campaign) => sum + (campaign.moneyReceived ?? 0), 0)
   const activeCampaigns = allCampaigns.filter((campaign) => campaign.status === "Active").length
   const avgFundsPerCampaign = allCampaigns.length > 0 ? totalFundsRaised / allCampaigns.length : 0
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
   const paginatedCampaigns = sortedCampaigns.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   // Filter users by search term
-  const filteredUsers = user.filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredUsers = user?.filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase())) || []
 
   // Truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
                       <Users className="h-7 w-7 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">{user.length}</div>
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">{user?.length}</div>
                       <p className="text-xs text-green-600 flex items-center font-medium mt-1">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         +8% from last month
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {allCampaigns.slice(0, 5).map((campaign) => (
+                          {allCampaigns?.slice(0, 5).map((campaign) => (
                             <TableRow key={campaign._id} className="hover:bg-blue-50/50 transition-colors">
                               <TableCell className="font-medium">{campaign.campaignName}</TableCell>
                               <TableCell className="hidden md:table-cell">{campaign.creatorName}</TableCell>
@@ -437,19 +437,19 @@ export default function AdminDashboard() {
                           >
                             <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
                               <AvatarFallback className="bg-blue-600 text-white font-medium">
-                                {"userEmail" in item ? item?.campaignName?.charAt(0).toUpperCase() : "U"}
+                                {"username" in item ? item?.username?.charAt(0).toUpperCase() : "U"}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium text-gray-800">
-                                  {"userEmail" in item ? item?.campaignName : "Unknown"}
+                                  {"username" in item ? item?.username : "Unknown"}
                                 </p>
                                 <Badge
                                   variant="outline"
                                   className="text-xs bg-blue-50 text-blue-600 border-blue-200 font-medium ml-1"
                                 >
-                                  {"text" in item ? "Comment" : "Update"}
+                                  {"title" in item ? "Update" : "Comment"}
                                 </Badge>
                               </div>
                               <p className="text-sm text-gray-600 mt-1 leading-relaxed">
@@ -768,9 +768,9 @@ export default function AdminDashboard() {
 
               <Card className="border-none shadow-lg">
                 <CardContent className="p-4 md:p-6">
-                  {allUpdate.length > 0 ? (
+                  {allUpdate?.length > 0 ? (
                     <div className="space-y-6">
-                      {allUpdate.map((update) => (
+                      {allUpdate?.map((update) => (
                         <div key={update._id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Link
@@ -898,8 +898,7 @@ export default function AdminDashboard() {
                         <div className="flex items-center">
                           <Avatar className="h-10 w-10 mr-3">
                             <AvatarFallback className="bg-blue-600 text-white">
-                              {user
-                                .reduce((prev, current) =>
+                              {user?.reduce((prev, current) =>
                                   (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0) ? prev : current,
                                 )
                                 .email.charAt(0)
@@ -909,14 +908,14 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-medium text-gray-800">
                               {
-                                user.reduce((prev, current) =>
+                                user?.reduce((prev, current) =>
                                   (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0)  ? prev : current,
                                 ).email
                               }
                             </p>
                             <p className="text-sm text-blue-600">
                               {
-                                user.reduce((prev, current) =>
+                                user?.reduce((prev, current) =>
                                   (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0)  ? prev : current,
                                 ).campaigns?.length
                               }{" "}
@@ -931,7 +930,7 @@ export default function AdminDashboard() {
                           <Avatar className="h-10 w-10 mr-3">
                             <AvatarFallback className="bg-green-600 text-white">
                               {user
-                                .reduce((prev, current) =>
+                                ?.reduce((prev, current) =>
                                   new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
                                 )
                                 .email.charAt(0)
@@ -941,7 +940,7 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-medium text-gray-800">
                               {
-                                user.reduce((prev, current) =>
+                                user?.reduce((prev, current) =>
                                   new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
                                 ).email
                               }
@@ -949,7 +948,7 @@ export default function AdminDashboard() {
                             <p className="text-sm text-gray-500">
                               Joined{" "}
                               {formatDate(
-                                user.reduce((prev, current) =>
+                                user?.reduce((prev, current) =>
                                   new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
                                 ).createdAt,
                               )}

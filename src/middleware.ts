@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 export  async function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
   if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
   try {
     const decoded = jwtDecode(token) as { id:string, roles:string, iscampaign:boolean};
@@ -22,11 +22,11 @@ export  async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
      else {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL("/", req.url));
     }
   } catch (error) {
     console.error(error);
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 }
 

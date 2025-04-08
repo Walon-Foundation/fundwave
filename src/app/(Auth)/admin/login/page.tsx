@@ -23,6 +23,7 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
   const dispatch = useDispatch()
   const router = useRouter()
 
@@ -42,9 +43,12 @@ export default function AdminLogin() {
           sessionToken:response.data.data.sessionToken,
           userToken:response.data.data.userToken
         }))
+      }else{
+        setError(response.data.message)
       }
     }catch(error){
       setIsLoading(false)
+      setError("admin login failed")
       console.error(error)
     }
   }
@@ -63,7 +67,7 @@ export default function AdminLogin() {
           <CardHeader className="space-y-1 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-t-lg">
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-5 w-5" />
-              <CardTitle className="text-2xl font-bold">Admin Portal</CardTitle>
+              <CardTitle className={`${error ? "text-red-600" : ""} text-2xl font-bold`}>{error ? error : "Admin Portal"}</CardTitle>
             </div>
             <CardDescription className="text-blue-100">Secure access for administrative users</CardDescription>
           </CardHeader>

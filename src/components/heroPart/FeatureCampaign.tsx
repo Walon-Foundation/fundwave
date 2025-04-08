@@ -34,94 +34,100 @@ export default function FeaturedCampaign() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {campaignList.map((campaign) => (
-            <div
-              key={campaign._id}
-              className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-blue-100"
-            >
-              {/* Campaign Image with Overlay */}
-              <div className="relative overflow-hidden">
-                <Image
-                  src={campaign?.campaignPicture || "/placeholder.svg"}
-                  alt={campaign.campaignName}
-                  height={300}
-                  width={500}
-                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4 bg-blue-600/90 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-                  {campaign.category || "Campaign"}
-                </div>
-
-                {/* Days Left Badge */}
-                <div className="absolute top-4 right-4 bg-white/90 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center backdrop-blur-sm">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {calculateDaysRemaining(campaign.completionDate)} days left
-                </div>
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                {/* Quick Actions on Hover */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-between items-center">
-                  <Link
-                    href={`/campaign/${campaign._id}`}
-                    className="text-white font-medium text-sm flex items-center hover:underline"
-                  >
-                    View Details <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Link>
-                  <div className="flex gap-3">
-                    <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Twitter">
-                      <FaXTwitter size={16} />
-                    </button>
-                    <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Facebook">
-                      <FaFacebookF size={16} />
-                    </button>
+          {campaignList.length > 0 ? (
+            campaignList.map((campaign) => (
+              <div
+                key={campaign._id}
+                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-blue-100"
+              >
+                {/* Campaign Image with Overlay */}
+                <div className="relative overflow-hidden">
+                  <Image
+                    src={campaign?.campaignPicture || "/placeholder.svg"}
+                    alt={campaign.campaignName}
+                    height={300}
+                    width={500}
+                    className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+  
+                  {/* Category Badge */}
+                  <div className="absolute top-4 left-4 bg-blue-600/90 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
+                    {campaign.category || "Campaign"}
                   </div>
-                </div>
-              </div>
-
-              {/* Campaign Content */}
-              <div className="p-5 flex-grow flex flex-col">
-                <h3 className="font-bold text-lg text-blue-900 mb-2 line-clamp-2 min-h-[3.5rem]">
-                  {campaign.campaignName}
-                </h3>
-                <p className="text-blue-700 text-sm mb-4 line-clamp-2">{campaign.campaignDescription}</p>
-
-                {/* Funding Progress */}
-                <div className="mt-auto">
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="font-medium text-blue-800">
-                      NLe{campaign.moneyReceived?.toLocaleString() || "0"}
-                    </span>
-                    <span className="text-blue-600">of NLe{campaign.amountNeeded?.toLocaleString() || "0"}</span>
+  
+                  {/* Days Left Badge */}
+                  <div className="absolute top-4 right-4 bg-white/90 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center backdrop-blur-sm">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {calculateDaysRemaining(campaign.completionDate)} days left
                   </div>
-
-                  {/* Progress Bar with Animation */}
-                  <div className="w-full h-2 bg-blue-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500 ease-out"
-                      style={{
-                        width: `${Math.min(((campaign?.moneyReceived || 0) / (campaign?.amountNeeded || 1)) * 100, 100)}%`,
-                      }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-4">
-                   <Button className="bg-blue-600 hover:bg-blue-700 ">
-                   <Link
+  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+  
+                  {/* Quick Actions on Hover */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-between items-center">
+                    <Link
                       href={`/campaign/${campaign._id}`}
-                      className=" text-white text-sm font-medium  transition-colors"
+                      className="text-white font-medium text-sm flex items-center hover:underline"
                     >
-                      Support Now
+                      View Details <ArrowRight className="w-3.5 h-3.5 ml-1" />
                     </Link>
-                   </Button>
+                    <div className="flex gap-3">
+                      <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Twitter">
+                        <FaXTwitter size={16} />
+                      </button>
+                      <button className="text-white hover:text-blue-200 transition-colors" aria-label="Share on Facebook">
+                        <FaFacebookF size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+  
+                {/* Campaign Content */}
+                <div className="p-5 flex-grow flex flex-col">
+                  <h3 className="font-bold text-lg text-blue-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+                    {campaign.campaignName}
+                  </h3>
+                  <p className="text-blue-700 text-sm mb-4 line-clamp-2">{campaign.campaignDescription}</p>
+  
+                  {/* Funding Progress */}
+                  <div className="mt-auto">
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="font-medium text-blue-800">
+                        NLe{campaign.moneyReceived?.toLocaleString() || "0"}
+                      </span>
+                      <span className="text-blue-600">of NLe{campaign.amountNeeded?.toLocaleString() || "0"}</span>
+                    </div>
+  
+                    {/* Progress Bar with Animation */}
+                    <div className="w-full h-2 bg-blue-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width: `${Math.min(((campaign?.moneyReceived || 0) / (campaign?.amountNeeded || 1)) * 100, 100)}%`,
+                        }}
+                      ></div>
+                    </div>
+  
+                    <div className="flex justify-between items-center mt-4">
+                     <Button className="bg-blue-600 hover:bg-blue-700 ">
+                     <Link
+                        href={`/campaign/${campaign._id}`}
+                        className=" text-white text-sm font-medium  transition-colors"
+                      >
+                        Support Now
+                      </Link>
+                     </Button>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="grid grid-flow-row grid-rows-1 place-items-center">
+              <p className="text-center font-thin text-red-600 text-xl">No campaign yet</p>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center mt-14">

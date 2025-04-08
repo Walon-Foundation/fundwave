@@ -44,7 +44,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if(!token){
-      return router.push('/login')
+      return router.push('/')
     }
 
     if (token) {
