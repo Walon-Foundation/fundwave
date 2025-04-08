@@ -23,7 +23,7 @@ export default function CommentCard({comments}:{comments:Comment[]}) {
               <p className="text-sm">{comment.description}</p>
               <div className="mt-2 flex justify-end">
                 <Link
-                  href={`/campaigns/${comment.campaignId}`}
+                  href={`/campaign/${comment.campaignId}`}
                   className="text-xs text-blue-500 hover:underline flex items-center"
                 >
                   View Campaign <ChevronRight className="h-3 w-3 ml-1" />

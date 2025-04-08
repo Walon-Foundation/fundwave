@@ -69,8 +69,8 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Link href="/profile">
-                <Button variant="ghost" size="sm">Profile</Button>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">Dashboard</Button>
               </Link>
               <Button variant="outline" size="sm" onClick={() => dispatch(logout())}>Logout</Button>
             </div>
@@ -110,9 +110,9 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <Link href="/profile" className="w-full">
+                    <Link href="/dashboard" className="w-full">
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start">Profile</Button>
+                        <Button variant="ghost" className="w-full justify-start">Dashboard</Button>
                       </SheetClose>
                     </Link>
                     <SheetClose asChild>

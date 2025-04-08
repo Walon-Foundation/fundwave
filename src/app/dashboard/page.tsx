@@ -81,7 +81,14 @@ export default function UserDashboard() {
 
       {/* Main content */}
       <main className="container mx-auto p-4 md:p-6">
+        <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold mb-6">My Dashboard</h1>
+        <Button className="text-md font-medium px-4 mb-6 bg-blue-500 hover:bg-blue-600">
+          <Link href='/profile'>
+          View Profile  
+          </Link>
+        </Button>
+        </div>
 
         <Tabs defaultValue="campaigns" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 mb-6">
