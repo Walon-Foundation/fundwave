@@ -900,7 +900,7 @@ export default function AdminDashboard() {
                             <AvatarFallback className="bg-blue-600 text-white">
                               {user
                                 .reduce((prev, current) =>
-                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0) ? prev : current,
+                                  (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0) ? prev : current,
                                 )
                                 .email.charAt(0)
                                 .toUpperCase()}
@@ -910,14 +910,14 @@ export default function AdminDashboard() {
                             <p className="font-medium text-gray-800">
                               {
                                 user.reduce((prev, current) =>
-                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0)  ? prev : current,
+                                  (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0)  ? prev : current,
                                 ).email
                               }
                             </p>
                             <p className="text-sm text-blue-600">
                               {
                                 user.reduce((prev, current) =>
-                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0)  ? prev : current,
+                                  (prev.campaigns?.length ?? 0) > (current.campaigns?.length ?? 0)  ? prev : current,
                                 ).campaigns?.length
                               }{" "}
                               campaigns
