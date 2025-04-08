@@ -2,23 +2,26 @@ import User from "@/core/models/userModel";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import jwt from "jsonwebtoken"
-import { NextRequest } from "next/server";
 import { ConnectDB } from "@/core/configs/mongoDB";
+import { cookies } from "next/headers";
 
-export async function GET(req:NextRequest){
+export async function GET(){
     try{
         //database connection
         await ConnectDB()
 
-        //geting the roles from the header
-        const authHeader = req.headers.get("authorization")
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return errorHandler(404, "invalid token", "error with the token")
+        const token =  (await cookies()).get("accessToken")?.value as string | undefined
+        if(!token){
+            return errorHandler(401, "unauthorized", null)
         }
-        const token  = authHeader.split("")[1]
-        const decodeUser = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!,) as {roles:string}
-        if(decodeUser.roles === "Admin"){
-            return errorHandler(401, "unauthorized", "not an admin")
+        
+        //verifing the cookie
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET! as string) as {id:string, username:string, roles:string};
+    
+        const decodedUser = decodedToken;
+    
+        if(decodedUser.roles != "Admin"){
+            return errorHandler(401, "Unauthorized", "not eligible to get all users")
         }
         const user = await User.find({})
         if(user.length === 0){

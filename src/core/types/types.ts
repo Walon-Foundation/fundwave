@@ -13,6 +13,7 @@ export interface Campaign  {
   creatorName?: string;
   creatorId?: string ;
   moneyReceived?: number;
+  status:string;
   comments?: string[];
   problem:string,
   solution:string[]

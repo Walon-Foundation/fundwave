@@ -15,6 +15,7 @@ interface Campaign extends Document {
   creatorId: string | undefined;
   moneyReceived: number;
   comments: string[];
+  status:string;
   problem:string,
   solution:string[],
   update:string[];
@@ -47,6 +48,11 @@ const campaignSchema = new Schema<Campaign>(
       type:String,
       required:true
     }],
+    status:{
+      type:String,
+      enum: ["Active", "Completed"],
+      default: "Active"
+    },
     milestone: {
       type: String,
       required: true

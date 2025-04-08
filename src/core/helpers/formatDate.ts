@@ -1,11 +1,14 @@
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow } from "date-fns";
 
-// Format date
+// Format date safely
 export const formatDate = (dateString: string) => {
-    try {
-        return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-    } catch (e) {
-        console.error(e)
-        return dateString
-    }
-}
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    console.error("Invalid date:", dateString);
+    return "Invalid date";
+  }
+
+  return formatDistanceToNow(date, { addSuffix: true });
+};

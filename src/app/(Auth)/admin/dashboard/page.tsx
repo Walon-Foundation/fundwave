@@ -1,8 +1,6 @@
 "use client"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { format } from "date-fns"
 import {
   Folder,
   Users,
@@ -27,239 +25,17 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback,} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { selectAllCampaign } from "@/core/store/features/campaigns/campaignSlice"
+import { selectAllComment } from "@/core/store/features/comments/commentSlice"
+import { useAppSelector } from "@/core/hooks/storeHooks"
+import { axiosInstance } from "@/core/api/axiosInstance"
+import { selectAllUpdate } from "@/core/store/features/update/updateSlice"
+import { formatDate } from "@/core/helpers/formatDate"
+import { User } from "@/core/types/types"
 
-
-
-// Define types for our data
-interface Campaign {
-  id: string
-  title: string
-  creator: string
-  goal: number
-  raised: number
-  status: "Active" | "Completed"
-  createdAt: string
-}
-
-interface User {
-  id: string
-  email: string
-  campaignsCreated: number
-  joinedAt: string
-}
-
-interface Comment {
-  id: string
-  campaignId: string
-  campaignTitle: string
-  userEmail: string
-  text: string
-  timestamp: string
-}
-
-interface Update {
-  id: string
-  campaignId: string
-  campaignTitle: string
-  userEmail: string
-  text: string
-  timestamp: string
-}
-
-// Placeholder data
-const placeholderCampaigns: Campaign[] = [
-  {
-    id: "CAM001",
-    title: "Clean Water Initiative",
-    creator: "john.doe@example.com",
-    goal: 5000,
-    raised: 3500,
-    status: "Active",
-    createdAt: "2023-01-15T12:00:00Z",
-  },
-  {
-    id: "CAM002",
-    title: "Education for All",
-    creator: "jane.smith@example.com",
-    goal: 10000,
-    raised: 7500,
-    status: "Active",
-    createdAt: "2023-02-20T12:00:00Z",
-  },
-  {
-    id: "CAM003",
-    title: "Green Energy Project",
-    creator: "mark.wilson@example.com",
-    goal: 15000,
-    raised: 15000,
-    status: "Completed",
-    createdAt: "2023-03-10T12:00:00Z",
-  },
-  {
-    id: "CAM004",
-    title: "Animal Shelter Support",
-    creator: "sarah.johnson@example.com",
-    goal: 3000,
-    raised: 1200,
-    status: "Active",
-    createdAt: "2023-03-25T12:00:00Z",
-  },
-  {
-    id: "CAM005",
-    title: "Tech for Schools",
-    creator: "david.brown@example.com",
-    goal: 8000,
-    raised: 4200,
-    status: "Active",
-    createdAt: "2023-04-05T12:00:00Z",
-  },
-  {
-    id: "CAM006",
-    title: "Community Garden",
-    creator: "lisa.taylor@example.com",
-    goal: 2000,
-    raised: 2000,
-    status: "Completed",
-    createdAt: "2023-04-15T12:00:00Z",
-  },
-  {
-    id: "CAM007",
-    title: "Homeless Support Fund",
-    creator: "robert.miller@example.com",
-    goal: 12000,
-    raised: 6800,
-    status: "Active",
-    createdAt: "2023-04-22T12:00:00Z",
-  },
-  {
-    id: "CAM008",
-    title: "Medical Research",
-    creator: "emily.clark@example.com",
-    goal: 25000,
-    raised: 18000,
-    status: "Active",
-    createdAt: "2023-05-01T12:00:00Z",
-  },
-  {
-    id: "CAM009",
-    title: "Arts & Culture Festival",
-    creator: "michael.white@example.com",
-    goal: 7500,
-    raised: 3200,
-    status: "Active",
-    createdAt: "2023-05-10T12:00:00Z",
-  },
-  {
-    id: "CAM010",
-    title: "Disaster Relief",
-    creator: "jennifer.lee@example.com",
-    goal: 20000,
-    raised: 20000,
-    status: "Completed",
-    createdAt: "2023-05-15T12:00:00Z",
-  },
-]
-
-const placeholderUsers: User[] = [
-  {
-    id: "USR001",
-    email: "john.doe@example.com",
-    campaignsCreated: 2,
-    joinedAt: "2023-01-01T12:00:00Z",
-  },
-  {
-    id: "USR002",
-    email: "jane.smith@example.com",
-    campaignsCreated: 1,
-    joinedAt: "2023-01-15T12:00:00Z",
-  },
-  {
-    id: "USR003",
-    email: "mark.wilson@example.com",
-    campaignsCreated: 1,
-    joinedAt: "2023-02-05T12:00:00Z",
-  },
-  {
-    id: "USR004",
-    email: "sarah.johnson@example.com",
-    campaignsCreated: 1,
-    joinedAt: "2023-03-10T12:00:00Z",
-  },
-  {
-    id: "USR005",
-    email: "david.brown@example.com",
-    campaignsCreated: 5,
-    joinedAt: "2023-03-20T12:00:00Z",
-  },
-]
-
-const placeholderComments: Comment[] = [
-  {
-    id: "COM001",
-    campaignId: "CAM001",
-    campaignTitle: "Clean Water Initiative",
-    userEmail: "user1@example.com",
-    text: "This is an amazing initiative! I'm excited to see how it develops over time and the impact it will have.",
-    timestamp: "2023-05-01T14:30:00Z",
-  },
-  {
-    id: "COM002",
-    campaignId: "CAM002",
-    campaignTitle: "Education for All",
-    userEmail: "user2@example.com",
-    text: "I have some questions about the implementation. Can you provide more details about how the funds will be used?",
-    timestamp: "2023-05-02T10:15:00Z",
-  },
-  {
-    id: "COM003",
-    campaignId: "CAM003",
-    campaignTitle: "Green Energy Project",
-    userEmail: "user3@example.com",
-    text: "Great project! I'm interested in learning more about the technology being used.",
-    timestamp: "2023-05-03T16:45:00Z",
-  },
-]
-
-const placeholderUpdates: Update[] = [
-  {
-    id: "UPD001",
-    campaignId: "CAM001",
-    campaignTitle: "Clean Water Initiative",
-    userEmail: "john.doe@example.com",
-    text: "We've reached our first milestone! The first water well has been completed and is now operational.",
-    timestamp: "2023-04-20T09:00:00Z",
-  },
-  {
-    id: "UPD002",
-    campaignId: "CAM002",
-    campaignTitle: "Education for All",
-    userEmail: "jane.smith@example.com",
-    text: "We're excited to announce a new partnership with a local school to expand our reach and impact.",
-    timestamp: "2023-04-25T11:30:00Z",
-  },
-  {
-    id: "UPD003",
-    campaignId: "CAM003",
-    campaignTitle: "Green Energy Project",
-    userEmail: "mark.wilson@example.com",
-    text: "Project completed! All solar panels have been installed and are now generating clean energy.",
-    timestamp: "2023-05-01T15:45:00Z",
-  },
-]
-
-// Calculate stats
-const totalCampaigns = placeholderCampaigns.length
-const totalUsers = placeholderUsers.length
-const totalComments = placeholderComments.length
-const totalFundsRaised = placeholderCampaigns.reduce((sum, campaign) => sum + campaign.raised, 0)
-const activeCampaigns = placeholderCampaigns.filter((campaign) => campaign.status === "Active").length
-const avgFundsPerCampaign = totalCampaigns > 0 ? totalFundsRaised / totalCampaigns : 0
-const mostFundedCampaign = placeholderCampaigns.reduce((prev, current) =>
-  prev.raised > current.raised ? prev : current,
-)
 
 export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -267,15 +43,34 @@ export default function AdminDashboard() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("overview")
-  // No need for this state anymore
+  const [user, setUser] = useState<User[] | []>([])
+
+  const allCampaigns = useAppSelector(selectAllCampaign)
+  const allComments = useAppSelector(selectAllComment)
+  const allUpdate = useAppSelector(selectAllUpdate)
+  const totalFundsRaised = allCampaigns.reduce((sum, campaign) => sum + (campaign.moneyReceived ?? 0), 0)
+  const activeCampaigns = allCampaigns.filter((campaign) => campaign.status === "Active").length
+  const avgFundsPerCampaign = allCampaigns.length > 0 ? totalFundsRaised / allCampaigns.length : 0
+  let mostFundedCampaign = null
+
+  if (allCampaigns.length > 0) {
+    mostFundedCampaign = allCampaigns.reduce((prev, current) =>
+      (prev.moneyReceived ?? 0) > (current.moneyReceived ?? 0) ? prev : current,
+    )
+  }
+
+  useEffect(() => {
+    const getAllUsers = async () => {
+      const response = await axiosInstance.get("auth/users")
+      if (response.status === 200) {
+        setUser(response.data.data)
+      }
+    }
+    getAllUsers()
+  }, [])
 
   const itemsPerPage = 5
-  const totalPages = Math.ceil(placeholderCampaigns.length / itemsPerPage)
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "MMM d, yyyy")
-  }
+  const totalPages = Math.ceil(allCampaigns.length / itemsPerPage)
 
   // Handle sorting
   const handleSort = (column: string) => {
@@ -288,47 +83,47 @@ export default function AdminDashboard() {
   }
 
   // Sort campaigns
-  const sortedCampaigns = [...placeholderCampaigns].sort((a, b) => {
+  const sortedCampaigns = [...allCampaigns].sort((a, b) => {
     if (!sortColumn) return 0
 
-    let valueA
-    let valueB
+    let valueA: string | undefined | number
+    let valueB: string | undefined | number
 
     switch (sortColumn) {
       case "id":
-        valueA = a.id
-        valueB = b.id
+        valueA = a._id
+        valueB = b._id
         break
       case "title":
-        valueA = a.title
-        valueB = b.title
+        valueA = a.campaignName
+        valueB = b.campaignName
         break
       case "creator":
-        valueA = a.creator
-        valueB = b.creator
+        valueA = a.creatorName
+        valueB = b.creatorName
         break
       case "goal":
-        valueA = a.goal
-        valueB = b.goal
+        valueA = a.amountNeeded
+        valueB = b.amountNeeded
         break
       case "raised":
-        valueA = a.raised
-        valueB = b.raised
+        valueA = a.moneyReceived
+        valueB = b.moneyReceived
         break
       case "status":
         valueA = a.status
         valueB = b.status
         break
       case "createdAt":
-        valueA = new Date(a.createdAt).getTime()
-        valueB = new Date(b.createdAt).getTime()
+        valueA = new Date(a.createdAt as string).getTime()
+        valueB = new Date(b.createdAt as string).getTime()
         break
       default:
         return 0
     }
 
-    if (valueA < valueB) return sortDirection === "asc" ? -1 : 1
-    if (valueA > valueB) return sortDirection === "asc" ? 1 : -1
+    if (valueA! < valueB!) return sortDirection === "asc" ? -1 : 1
+    if (valueA! > valueB!) return sortDirection === "asc" ? 1 : -1
     return 0
   })
 
@@ -336,7 +131,7 @@ export default function AdminDashboard() {
   const paginatedCampaigns = sortedCampaigns.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   // Filter users by search term
-  const filteredUsers = placeholderUsers.filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredUsers = user.filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
 
   // Truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -361,53 +156,53 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen items-center justify-center flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Navigation Tabs - Desktop */}
-      <div className="bg-white border-b shadow-sm">
+      <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="h-14 w-full justify-start bg-white border-b gap-1 md:gap-2 px-2 md:px-4 overflow-x-auto no-scrollbar">
+            <TabsList className="h-16 w-full justify-start bg-white border-b gap-2 md:gap-4 px-4 md:px-6 overflow-x-auto no-scrollbar">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <Home className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Overview</span>
+                <Home className="h-5 w-5 mr-2" />
+                <span className="inline">Overview</span>
               </TabsTrigger>
               <TabsTrigger
                 value="campaigns"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <Folder className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Campaigns</span>
+                <Folder className="h-5 w-5 mr-2" />
+                <span className="inline">Campaigns</span>
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <Users className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Users</span>
+                <Users className="h-5 w-5 mr-2" />
+                <span className="inline">Users</span>
               </TabsTrigger>
               <TabsTrigger
                 value="comments"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Comments</span>
+                <MessageSquare className="h-5 w-5 mr-2" />
+                <span className="inline">Comments</span>
               </TabsTrigger>
               <TabsTrigger
                 value="updates"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <Bell className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Updates</span>
+                <Bell className="h-5 w-5 mr-2" />
+                <span className="inline">Updates</span>
               </TabsTrigger>
               <TabsTrigger
                 value="insights"
-                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-2 md:px-4 transition-all whitespace-nowrap"
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-3 md:px-5 py-2 transition-all whitespace-nowrap font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
               >
-                <BarChart className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Insights</span>
+                <BarChart className="h-5 w-5 mr-2" />
+                <span className="inline">Insights</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -416,12 +211,14 @@ export default function AdminDashboard() {
 
       {/* Main content */}
       <div className="flex-1">
-        <div className="container mx-auto p-4 md:p-6">
+        <div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-8 mt-2 animate-in fade-in duration-300">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <BarChart className="h-6 w-6 mr-2 text-blue-600" /> Dashboard Overview
+                </h2>
                 <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -442,18 +239,20 @@ export default function AdminDashboard() {
               </div>
 
               {/* Stats Cards */}
-              <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4">
-                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <CardHeader className="pb-2">
+              <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white overflow-hidden">
+                  <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium text-gray-500">Total Campaigns</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                      <Folder className="h-6 w-6 text-blue-600" />
+                  <CardContent className="flex items-center p-4 pt-0">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 mr-4 shadow-inner">
+                      <Folder className="h-7 w-7 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalCampaigns}</div>
-                      <p className="text-xs text-green-600 flex items-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
+                        {allCampaigns?.length}
+                      </div>
+                      <p className="text-xs text-green-600 flex items-center font-medium mt-1">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         +12% from last month
                       </p>
@@ -461,17 +260,17 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <CardHeader className="pb-2">
+                <Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white overflow-hidden">
+                  <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                      <Users className="h-6 w-6 text-blue-600" />
+                  <CardContent className="flex items-center p-4 pt-0">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 mr-4 shadow-inner">
+                      <Users className="h-7 w-7 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalUsers}</div>
-                      <p className="text-xs text-green-600 flex items-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">{user.length}</div>
+                      <p className="text-xs text-green-600 flex items-center font-medium mt-1">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         +8% from last month
                       </p>
@@ -479,17 +278,19 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <CardHeader className="pb-2">
+                <Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white overflow-hidden">
+                  <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium text-gray-500">Total Comments</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                      <MessageSquare className="h-6 w-6 text-blue-600" />
+                  <CardContent className="flex items-center p-4 pt-0">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 mr-4 shadow-inner">
+                      <MessageSquare className="h-7 w-7 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl md:text-3xl font-bold text-gray-800">{totalComments}</div>
-                      <p className="text-xs text-green-600 flex items-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
+                        {allComments?.length}
+                      </div>
+                      <p className="text-xs text-green-600 flex items-center font-medium mt-1">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         +15% from last month
                       </p>
@@ -497,19 +298,14 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <CardHeader className="pb-2">
+                <Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white overflow-hidden">
+                  <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm font-medium text-gray-500">Total Funds Raised</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mr-4">
-                      <DollarSign className="h-6 w-6 text-blue-600" />
-                    </div>
+                  <CardContent className="flex items-center p-4 pt-0">
                     <div>
-                      <div className="text-2xl md:text-3xl font-bold text-gray-800">
-                        ${totalFundsRaised.toLocaleString()}
-                      </div>
-                      <p className="text-xs text-green-600 flex items-center">
+                      <div className="text-xl md:text-3xl font-bold text-gray-800">NLe{totalFundsRaised}</div>
+                      <p className="text-xs text-green-600 flex items-center font-medium mt-1">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         +20% from last month
                       </p>
@@ -519,13 +315,15 @@ export default function AdminDashboard() {
               </div>
 
               {/* Recent Campaigns */}
-              <Card className="border-none shadow-lg overflow-hidden">
-                <CardHeader className="pb-2">
+              <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 bg-white overflow-hidden">
+                <CardHeader className="pb-2 pt-5 px-6">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl text-gray-800">Recent Campaigns</CardTitle>
+                    <CardTitle className="text-xl text-gray-800 flex items-center">
+                      <Folder className="h-5 w-5 mr-2 text-blue-600" /> Recent Campaigns
+                    </CardTitle>
                     <Button
                       variant="outline"
-                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 font-medium"
                       onClick={() => handleTabChange("campaigns")}
                     >
                       View All
@@ -533,36 +331,36 @@ export default function AdminDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="overflow-auto">
-                  <div className="rounded-lg overflow-hidden border border-gray-100">
+                  <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-blue-50 hover:bg-blue-50">
-                            <TableHead className="text-blue-600">Title</TableHead>
-                            <TableHead className="text-blue-600 hidden md:table-cell">Creator</TableHead>
-                            <TableHead className="text-blue-600">Status</TableHead>
-                            <TableHead className="text-blue-600 text-right">Raised</TableHead>
+                          <TableRow className="bg-blue-50/70 hover:bg-blue-50">
+                            <TableHead className="text-blue-700 font-semibold">Title</TableHead>
+                            <TableHead className="text-blue-700 font-semibold hidden md:table-cell">Creator</TableHead>
+                            <TableHead className="text-blue-700 font-semibold">Status</TableHead>
+                            <TableHead className="text-blue-700 font-semibold text-right">Raised</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {placeholderCampaigns.slice(0, 5).map((campaign) => (
-                            <TableRow key={campaign.id} className="hover:bg-blue-50/50">
-                              <TableCell className="font-medium">{campaign.title}</TableCell>
-                              <TableCell className="hidden md:table-cell">{campaign.creator}</TableCell>
+                          {allCampaigns.slice(0, 5).map((campaign) => (
+                            <TableRow key={campaign._id} className="hover:bg-blue-50/50 transition-colors">
+                              <TableCell className="font-medium">{campaign.campaignName}</TableCell>
+                              <TableCell className="hidden md:table-cell">{campaign.creatorName}</TableCell>
                               <TableCell>
                                 <Badge
                                   variant={campaign.status === "Active" ? "default" : "secondary"}
                                   className={
                                     campaign.status === "Active"
-                                      ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                      : "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                      ? "bg-green-100 text-green-800 hover:bg-green-100 font-medium"
+                                      : "bg-blue-100 text-blue-800 hover:bg-blue-100 font-medium"
                                   }
                                 >
                                   {campaign.status}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right font-medium">
-                                ${campaign.raised.toLocaleString()}
+                                NLe{campaign?.moneyReceived!.toLocaleString()}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -574,73 +372,90 @@ export default function AdminDashboard() {
               </Card>
 
               {/* Additional Insights */}
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card className="border-none shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-gray-800">Campaign Performance</CardTitle>
-                    <CardDescription>Key metrics for all campaigns</CardDescription>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 bg-white">
+                  <CardHeader className="pt-5 pb-3">
+                    <CardTitle className="text-xl text-gray-800 flex items-center">
+                      <TrendingUp className="h-5 w-5 mr-2 text-blue-600" /> Campaign Performance
+                    </CardTitle>
+                    <CardDescription className="text-gray-500">Key metrics for all campaigns</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-6 grid-cols-2">
+                  <CardContent className="space-y-6 p-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
-                        <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
-                        <p className="text-xs text-gray-500">
-                          {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
+                        <h3 className="text-sm font-medium text-gray-600">Active Campaigns</h3>
+                        <p className="text-2xl font-bold text-gray-800 tracking-tight">{activeCampaigns}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {Math.round((activeCampaigns / allCampaigns.length) * 100)}% of total
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
-                        <p className="text-2xl font-bold text-gray-800">
-                          ${Math.round(avgFundsPerCampaign).toLocaleString()}
+                        <h3 className="text-sm font-medium text-gray-600">Average Funds per Campaign</h3>
+                        <p className="text-2xl font-bold text-gray-800 tracking-tight">
+                          NLe{Math.round(avgFundsPerCampaign).toLocaleString()}
                         </p>
-                        <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
+                        <p className="text-xs text-gray-500 mt-1">Based on {allCampaigns.length} campaigns</p>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t">
-                      <h3 className="text-sm font-medium text-gray-500 mb-4">Most Funded Campaign</h3>
+                    <div className="pt-5 border-t border-gray-100">
+                      <h3 className="text-sm font-medium text-gray-600 mb-4">Most Funded Campaign</h3>
                       <div className="flex items-center">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                           <DollarSign className="h-5 w-5 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800">{mostFundedCampaign.title}</p>
-                          <p className="text-blue-600 font-bold">${mostFundedCampaign.raised.toLocaleString()}</p>
+                          <p className="font-medium text-gray-800">{mostFundedCampaign?.campaignName}</p>
+                          <p className="text-blue-600 font-bold">
+                            NLe{mostFundedCampaign?.moneyReceived!.toLocaleString()}
+                          </p>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-lg">
+                <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 bg-white">
                   <CardHeader>
-                    <CardTitle className="text-xl text-gray-800">Recent Activity</CardTitle>
+                    <CardTitle className="text-xl text-gray-800 flex items-center">
+                      <Bell className="h-5 w-5 mr-2 text-blue-600" /> Recent Activity
+                    </CardTitle>
                     <CardDescription>Latest updates and comments</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {[...placeholderComments, ...placeholderUpdates]
-                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                      {[...allComments, ...allUpdate]
+                        .sort(
+                          (a, b) =>
+                            new Date(b?.createdAt as string).getTime() - new Date(a?.createdAt as string).getTime(),
+                        )
                         .slice(0, 4)
                         .map((item, index) => (
-                          <div key={index} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-blue-100 text-blue-600">
-                                {"userEmail" in item ? item.userEmail.charAt(0).toUpperCase() : "U"}
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0 hover:bg-blue-50/30 p-2 rounded-md transition-colors"
+                          >
+                            <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                              <AvatarFallback className="bg-blue-600 text-white font-medium">
+                                {"userEmail" in item ? item?.campaignName?.charAt(0).toUpperCase() : "U"}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium text-gray-800">
-                                  {"userEmail" in item ? item.userEmail : "Unknown"}
+                                  {"userEmail" in item ? item?.campaignName : "Unknown"}
                                 </p>
-                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs bg-blue-50 text-blue-600 border-blue-200 font-medium ml-1"
+                                >
                                   {"text" in item ? "Comment" : "Update"}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">{truncateText(item.text, 60)}</p>
-                              <p className="text-xs text-gray-400 mt-1">{formatDate(item.timestamp)}</p>
+                              <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                                {truncateText(item?.description, 60)}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">{formatDate(item?.createdAt as string)}</p>
                             </div>
                           </div>
                         ))}
@@ -655,25 +470,32 @@ export default function AdminDashboard() {
           {activeTab === "campaigns" && (
             <div className="space-y-6 mt-2 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">All Campaigns</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <Folder className="h-6 w-6 mr-2 text-blue-600" /> All Campaigns
+                </h2>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
-                  <Button variant="outline" className="gap-2 w-full md:w-auto">
+                  <Button
+                    variant="outline"
+                    className="gap-2 w-full md:w-auto border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
                     <Filter className="h-4 w-4" />
                     Filter
                   </Button>
-                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">Add Campaign</Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto font-medium shadow-md">
+                    Add Campaign
+                  </Button>
                 </div>
               </div>
 
-              <Card className="border-none shadow-lg overflow-hidden">
+              <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 bg-white overflow-hidden">
                 <CardContent className="p-4 md:p-6">
-                  {placeholderCampaigns.length > 0 ? (
+                  {allCampaigns.length > 0 ? (
                     <>
-                      <div className="rounded-lg overflow-hidden border border-gray-100">
+                      <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                         <div className="overflow-x-auto">
                           <Table>
                             <TableHeader>
-                              <TableRow className="bg-blue-50 hover:bg-blue-50">
+                              <TableRow className="bg-blue-50/70 hover:bg-blue-50">
                                 <TableHead
                                   className="cursor-pointer hover:text-blue-600"
                                   onClick={() => handleSort("id")}
@@ -721,28 +543,30 @@ export default function AdminDashboard() {
                             </TableHeader>
                             <TableBody>
                               {paginatedCampaigns.map((campaign) => (
-                                <TableRow key={campaign.id} className="hover:bg-blue-50/50">
-                                  <TableCell className="font-medium">{campaign.id}</TableCell>
-                                  <TableCell>{campaign.title}</TableCell>
-                                  <TableCell className="hidden md:table-cell">{campaign.creator}</TableCell>
+                                <TableRow key={campaign._id} className="hover:bg-blue-50/50 transition-colors">
+                                  <TableCell className="font-medium">{campaign._id?.slice(0, 4)}</TableCell>
+                                  <TableCell>{campaign.campaignName}</TableCell>
+                                  <TableCell className="hidden md:table-cell">{campaign.creatorName}</TableCell>
                                   <TableCell className="text-right hidden md:table-cell">
-                                    ${campaign.goal.toLocaleString()}
+                                    NLe{campaign?.amountNeeded.toLocaleString()}
                                   </TableCell>
-                                  <TableCell className="text-right">${campaign.raised.toLocaleString()}</TableCell>
+                                  <TableCell className="text-right">
+                                    NLe{campaign?.moneyReceived!.toLocaleString()}
+                                  </TableCell>
                                   <TableCell>
                                     <Badge
                                       variant={campaign.status === "Active" ? "default" : "secondary"}
                                       className={
                                         campaign.status === "Active"
-                                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                          : "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                          ? "bg-green-100 text-green-800 hover:bg-green-100 font-medium"
+                                          : "bg-blue-100 text-blue-800 hover:bg-blue-100 font-medium"
                                       }
                                     >
                                       {campaign.status}
                                     </Badge>
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">
-                                    {formatDate(campaign.createdAt)}
+                                    {formatDate(campaign.createdAt as string)}
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
@@ -758,11 +582,11 @@ export default function AdminDashboard() {
                       </div>
 
                       {/* Pagination */}
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mt-6 gap-4">
-                        <div className="text-sm text-gray-500 order-2 md:order-1 text-center md:text-left">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mt-8 gap-4">
+                        <div className="text-sm text-gray-600 order-2 md:order-1 text-center md:text-left">
                           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                          {Math.min(currentPage * itemsPerPage, placeholderCampaigns.length)} of{" "}
-                          {placeholderCampaigns.length} campaigns
+                          {Math.min(currentPage * itemsPerPage, allCampaigns.length)} of{" "}
+                          {allCampaigns.length} campaigns
                         </div>
                         <div className="flex items-center justify-center md:justify-end space-x-2 order-1 md:order-2">
                           <Button
@@ -770,7 +594,7 @@ export default function AdminDashboard() {
                             size="sm"
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                            className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium shadow-sm"
                           >
                             <ChevronLeft className="h-4 w-4" />
                             <span className="ml-1">Previous</span>
@@ -780,7 +604,7 @@ export default function AdminDashboard() {
                             size="sm"
                             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                             disabled={currentPage === totalPages}
-                            className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                            className="border-blue-200 text-blue-600 hover:bg-blue-50 font-medium shadow-sm"
                           >
                             <span className="mr-1">Next</span>
                             <ChevronRight className="h-4 w-4" />
@@ -789,9 +613,9 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                      <Folder className="h-8 w-8 mb-2 text-blue-300" />
-                      <p>No campaigns yet</p>
+                    <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50/50 rounded-lg border border-dashed border-gray-300 p-8">
+                      <Folder className="h-12 w-12 mb-4 text-blue-300 opacity-70" />
+                      <p className="text-gray-600 font-medium">No campaigns yet</p>
                     </div>
                   )}
                 </CardContent>
@@ -803,19 +627,23 @@ export default function AdminDashboard() {
           {activeTab === "users" && (
             <div className="space-y-6 mt-2 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">All Users</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <Users className="h-6 w-6 mr-2 text-blue-600" /> All Users
+                </h2>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
-                  <div className="relative w-full md:w-64">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                  <div className="relative w-full md:w-72">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       type="search"
                       placeholder="Search by email..."
-                      className="pl-8 border-blue-200 focus-visible:ring-blue-500 w-full"
+                      className="pl-9 h-10 border-blue-200 focus-visible:ring-blue-500 w-full shadow-sm"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">Add User</Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto font-medium shadow-md">
+                    Add User
+                  </Button>
                 </div>
               </div>
 
@@ -836,11 +664,11 @@ export default function AdminDashboard() {
                           </TableHeader>
                           <TableBody>
                             {filteredUsers.map((user) => (
-                              <TableRow key={user.id} className="hover:bg-blue-50/50">
-                                <TableCell className="font-medium">{user.id}</TableCell>
+                              <TableRow key={user._id} className="hover:bg-blue-50/50">
+                                <TableCell className="font-medium">{user._id?.slice(0,6)}...</TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell className="text-center">{user.campaignsCreated}</TableCell>
-                                <TableCell className="hidden md:table-cell">{formatDate(user.joinedAt)}</TableCell>
+                                <TableCell className="text-center">{user?.campaigns?.length}</TableCell>
+                                <TableCell className="hidden md:table-cell">{formatDate(user.createdAt as string)}</TableCell>
                                 <TableCell className="text-right">
                                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
                                     <Eye className="h-4 w-4" />
@@ -868,7 +696,9 @@ export default function AdminDashboard() {
           {activeTab === "comments" && (
             <div className="space-y-6 mt-2 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">Recent Comments</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <MessageSquare className="h-6 w-6 mr-2 text-blue-600" /> Recent Comments
+                </h2>
                 <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full md:w-auto">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter Comments
@@ -877,28 +707,31 @@ export default function AdminDashboard() {
 
               <Card className="border-none shadow-lg">
                 <CardContent className="p-4 md:p-6">
-                  {placeholderComments.length > 0 ? (
+                  {allComments.length > 0 ? (
                     <div className="space-y-6">
-                      {placeholderComments.map((comment) => (
-                        <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                      {allComments?.map((comment) => (
+                        <div
+                          key={comment._id}
+                          className="border-b border-gray-100 pb-6 last:border-0 last:pb-0 hover:bg-blue-50/30 p-3 rounded-md -mx-3 transition-colors"
+                        >
                           <div className="flex items-center gap-2 mb-2">
                             <Link
-                              href={`/campaigns/${comment.campaignId}`}
-                              className="font-medium text-blue-600 hover:underline"
+                              href={`/campaign/${comment.campaignId}`}
+                              className="font-medium text-blue-600 hover:underline hover:text-blue-700 transition-colors"
                             >
-                              {comment.campaignTitle}
+                              {comment.campaignName}
                             </Link>
-                            <span className="text-xs text-gray-500">{formatDate(comment.timestamp)}</span>
+                            <span className="text-xs text-gray-500">{formatDate(comment.createdAt as string)}</span>
                           </div>
                           <div className="flex items-start gap-3">
                             <Avatar className="h-10 w-10">
                               <AvatarFallback className="bg-blue-100 text-blue-600">
-                                {comment.userEmail.charAt(0).toUpperCase()}
+                                {comment?.username?.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="bg-blue-50 p-3 rounded-lg flex-1">
-                              <p className="text-sm font-medium mb-1 text-gray-800">{comment.userEmail}</p>
-                              <p className="text-sm text-gray-700">{comment.text}</p>
+                            <div className="bg-blue-50 p-4 rounded-lg flex-1 shadow-sm border border-blue-100">
+                              <p className="text-sm font-medium mb-1 text-gray-800">{comment?.username}</p>
+                              <p className="text-sm text-gray-700">{comment?.description}</p>
                             </div>
                           </div>
                         </div>
@@ -911,8 +744,10 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="border-t border-gray-100 px-6 py-4">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">View All Comments</Button>
+                <CardFooter className="border-t border-gray-100 px-6 py-5 bg-gray-50/50">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 font-medium shadow-md">
+                    View All Comments
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
@@ -922,7 +757,9 @@ export default function AdminDashboard() {
           {activeTab === "updates" && (
             <div className="space-y-6 mt-2 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">Recent Updates</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <Bell className="h-6 w-6 mr-2 text-blue-600" /> Recent Updates
+                </h2>
                 <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full md:w-auto">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter Updates
@@ -931,28 +768,28 @@ export default function AdminDashboard() {
 
               <Card className="border-none shadow-lg">
                 <CardContent className="p-4 md:p-6">
-                  {placeholderUpdates.length > 0 ? (
+                  {allUpdate.length > 0 ? (
                     <div className="space-y-6">
-                      {placeholderUpdates.map((update) => (
-                        <div key={update.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                      {allUpdate.map((update) => (
+                        <div key={update._id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Link
                               href={`/campaigns/${update.campaignId}`}
                               className="font-medium text-blue-600 hover:underline"
                             >
-                              {update.campaignTitle}
+                              {update.campaignName}
                             </Link>
-                            <span className="text-xs text-gray-500">{formatDate(update.timestamp)}</span>
+                            <span className="text-xs text-gray-500">{formatDate(update.createdAt as string)}</span>
                           </div>
                           <div className="flex items-start gap-3">
                             <Avatar className="h-10 w-10">
                               <AvatarFallback className="bg-blue-100 text-blue-600">
-                                {update.userEmail.charAt(0).toUpperCase()}
+                                {update.campaignName?.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="bg-blue-50 p-3 rounded-lg flex-1">
-                              <p className="text-sm font-medium mb-1 text-gray-800">{update.userEmail}</p>
-                              <p className="text-sm text-gray-700">{update.text}</p>
+                              <p className="text-sm font-medium mb-1 text-gray-800">{update.campaignName}</p>
+                              <p className="text-sm text-gray-700">{update.title}</p>
                             </div>
                           </div>
                         </div>
@@ -976,7 +813,9 @@ export default function AdminDashboard() {
           {activeTab === "insights" && (
             <div className="space-y-6 mt-2 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">Campaign Insights</h2>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <BarChart className="h-6 w-6 mr-2 text-blue-600" /> Campaign Insights
+                </h2>
                 <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1008,36 +847,36 @@ export default function AdminDashboard() {
                         <h3 className="text-sm font-medium text-gray-500">Active Campaigns</h3>
                         <p className="text-2xl font-bold text-gray-800">{activeCampaigns}</p>
                         <p className="text-xs text-gray-500">
-                          {Math.round((activeCampaigns / totalCampaigns) * 100)}% of total
+                          {Math.round((activeCampaigns / allCampaigns.length) * 100)}% of total
                         </p>
                       </div>
                       <div className="space-y-2">
                         <h3 className="text-sm font-medium text-gray-500">Average Funds per Campaign</h3>
                         <p className="text-2xl font-bold text-gray-800">
-                          ${Math.round(avgFundsPerCampaign).toLocaleString()}
+                          NLe{Math.round(avgFundsPerCampaign).toLocaleString()}
                         </p>
-                        <p className="text-xs text-gray-500">Based on {totalCampaigns} campaigns</p>
+                        <p className="text-xs text-gray-500">Based on {allCampaigns.length} campaigns</p>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t border-gray-100">
                       <h3 className="text-lg font-medium text-gray-800 mb-4">Top Performing Campaigns</h3>
                       <div className="space-y-4">
-                        {[...placeholderCampaigns]
-                          .sort((a, b) => b.raised - a.raised)
+                        {[...allCampaigns]
+                          .sort((a, b) => b.moneyReceived! - a.moneyReceived!)
                           .slice(0, 3)
                           .map((campaign, index) => (
-                            <div key={campaign.id} className="flex items-center">
+                            <div key={campaign._id} className="flex items-center">
                               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-3">
                                 {index + 1}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate text-gray-800">{campaign.title}</p>
+                                <p className="font-medium truncate text-gray-800">{campaign.campaignName}</p>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-gray-500">
-                                    {Math.round((campaign.raised / campaign.goal) * 100)}% funded
+                                    {Math.round(((campaign.moneyReceived ?? 0 ) / campaign.amountNeeded) * 100)}% funded
                                   </span>
-                                  <span className="text-blue-600 font-medium">${campaign.raised.toLocaleString()}</span>
+                                  <span className="text-blue-600 font-medium">NLe{campaign.moneyReceived?.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
@@ -1059,9 +898,9 @@ export default function AdminDashboard() {
                         <div className="flex items-center">
                           <Avatar className="h-10 w-10 mr-3">
                             <AvatarFallback className="bg-blue-600 text-white">
-                              {placeholderUsers
+                              {user
                                 .reduce((prev, current) =>
-                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
+                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0) ? prev : current,
                                 )
                                 .email.charAt(0)
                                 .toUpperCase()}
@@ -1070,16 +909,16 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-medium text-gray-800">
                               {
-                                placeholderUsers.reduce((prev, current) =>
-                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
+                                user.reduce((prev, current) =>
+                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0)  ? prev : current,
                                 ).email
                               }
                             </p>
                             <p className="text-sm text-blue-600">
                               {
-                                placeholderUsers.reduce((prev, current) =>
-                                  prev.campaignsCreated > current.campaignsCreated ? prev : current,
-                                ).campaignsCreated
+                                user.reduce((prev, current) =>
+                                  (prev.campaigns ?? 0) > (current.campaigns ?? 0)  ? prev : current,
+                                ).campaigns?.length
                               }{" "}
                               campaigns
                             </p>
@@ -1091,9 +930,9 @@ export default function AdminDashboard() {
                         <div className="flex items-center">
                           <Avatar className="h-10 w-10 mr-3">
                             <AvatarFallback className="bg-green-600 text-white">
-                              {placeholderUsers
+                              {user
                                 .reduce((prev, current) =>
-                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
+                                  new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
                                 )
                                 .email.charAt(0)
                                 .toUpperCase()}
@@ -1102,17 +941,17 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-medium text-gray-800">
                               {
-                                placeholderUsers.reduce((prev, current) =>
-                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
+                                user.reduce((prev, current) =>
+                                  new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
                                 ).email
                               }
                             </p>
                             <p className="text-sm text-gray-500">
                               Joined{" "}
                               {formatDate(
-                                placeholderUsers.reduce((prev, current) =>
-                                  new Date(prev.joinedAt) > new Date(current.joinedAt) ? prev : current,
-                                ).joinedAt,
+                                user.reduce((prev, current) =>
+                                  new Date(prev.createdAt as string) > new Date(current.createdAt as string) ? prev : current,
+                                ).createdAt,
                               )}
                             </p>
                           </div>
@@ -1129,4 +968,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
