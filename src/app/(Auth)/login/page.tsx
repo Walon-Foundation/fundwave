@@ -30,7 +30,7 @@ export default function SignIn() {
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try{
-      setIsLoading(false)
+      setIsLoading(true)
       const data = {
         username,
         password

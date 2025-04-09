@@ -61,4 +61,5 @@ export interface User {
   createdAt:string,
   updatedAt:string,
   profilePicture?:string
+  isVerified:boolean
 }

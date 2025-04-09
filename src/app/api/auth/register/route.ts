@@ -5,6 +5,8 @@ import { registerSchema } from "@/core/validators/user.schema";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { ConnectDB } from "@/core/configs/mongoDB";
+import { generateVerificationToken } from "@/core/helpers/jwtHelpers";
+import { sendVerificationEmail } from "@/core/configs/nodemailer";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,9 +43,8 @@ export async function POST(req: NextRequest) {
     // Hash the password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create new user with the URL string
     let newUser;
-    if (role) { // Check if role is provided (empty string is falsy)
+    if (role) { 
       newUser = new User({
         firstName,
         lastName,
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
         email,
         password: passwordHash,
         roles: role,
+        isVerified:false
       });
     } else {
       newUser = new User({
@@ -60,11 +62,17 @@ export async function POST(req: NextRequest) {
         email,
         password: passwordHash,
         roles: "User", // Default role
+        isVerified:false
       });
     }
 
     // Save the user to MongoDB
     await newUser.save();
+
+    const token = generateVerificationToken(user._id as string)
+    const verifyUrl = `http://localhost:3000/api/auth/verify?token=${token}`
+
+    await sendVerificationEmail(email,verifyUrl)
 
     return apiResponse("User created successfully", 201, undefined);
   } catch (error) {

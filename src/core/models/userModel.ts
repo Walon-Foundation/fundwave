@@ -15,6 +15,7 @@ interface User extends Document {
   roles:string
   sex:string;
   profilePicture?:string
+  isVerified:boolean
 };
 
 const userSchema = new Schema<User>(
@@ -72,7 +73,11 @@ const userSchema = new Schema<User>(
     campaigns: [{
       type: Schema.Types.ObjectId,
       ref: 'Campaign'
-    }]
+    }],
+    isVerified:{
+      type:Boolean,
+      required:true
+    }
   },
   {
     timestamps: true,

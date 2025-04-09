@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import User from "@/core/models/userModel";
 import bcrypt from "bcryptjs";
-import jwt  from "jsonwebtoken"
 import { loginSchema } from "@/core/validators/user.schema";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { apiResponse } from "@/core/helpers/apiResponse";
 import { ConnectDB } from "@/core/configs/mongoDB";
+import { generateAccessToken, generateSessionToken, generateUserToken } from "@/core/helpers/jwtHelpers";
 
 
 
@@ -30,24 +30,10 @@ export async function POST(req:NextRequest): Promise<NextResponse>{
             return errorHandler(401,"Invalid password","invalid password")
         }
 
-        const sessionToken = jwt.sign({id:user._id},process.env.SESSION_TOKEN_SECRET!, { expiresIn: "1d"})
-        const userToken = jwt.sign({
-            profilePicture:user.profilePicture,
-            _id:user._id,
-            username:user.username, 
-            firstName:user.firstName,
-            lastName:user.lastName,
-            email:user.email,
-            phoneNumber: user.phoneNumber,
-            qualification:user.qualification,
-            DOE:user.DOB,
-            address:user.address,
-            roles:user.roles,
-            isCampaign:user.isCampaign,
-            createdAt:user.createdAt
-        },process.env.USER_TOKEN_SECRET!,{ expiresIn:"1d" })
+        const sessionToken = generateSessionToken(user._id)
+        const userToken = generateUserToken(user)
 
-        const accessToken = jwt.sign({id:user._id,username:user.username,roles:user.roles, iscampaign:user.isCampaign},process.env.ACCESS_TOKEN_SECRET!)
+        const accessToken = generateAccessToken(user)
         let isAdmin;
 
         if(user.roles === "Admin"){
