@@ -40,7 +40,7 @@ export const verifyUserToken = (token:string) => {
 }
 
 export const generateVerificationToken = (id:string) => {
-    return jwt.sign({id}, process.env.VERIFICAION_TOKEN_SECRET!, {expiresIn: '15m'})
+    return jwt.sign({id}, process.env.VERIFICATION_TOKEN_SECRET!, {expiresIn: '15m'})
 }
 
 export const verifyVerificationToken = (token:string) => {

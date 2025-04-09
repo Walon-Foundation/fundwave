@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     // Save the user to MongoDB
     await newUser.save();
 
-    const token = generateVerificationToken(user._id as string)
+    const token = generateVerificationToken(newUser._id as string)
     const verifyUrl = `http://localhost:3000/api/auth/verify?token=${token}`
 
     await sendVerificationEmail(email,verifyUrl)

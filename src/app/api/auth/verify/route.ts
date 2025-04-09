@@ -2,7 +2,7 @@ import { ConnectDB } from "@/core/configs/mongoDB";
 import User from "@/core/models/userModel";
 import { errorHandler } from "@/core/helpers/errorHandler";
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken } from "@/core/helpers/jwtHelpers";
+import { verifyVerificationToken } from "@/core/helpers/jwtHelpers";
 
 export async function GET(req: NextRequest){
     try{
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest){
             return errorHandler(400, "Token not found", null);
         }
 
-        const decodedToken = verifySessionToken(token) as { id :string};
+        const decodedToken = verifyVerificationToken(token) as { id :string};
         const user = await User.findById(decodedToken.id);
 
         if(!user){
