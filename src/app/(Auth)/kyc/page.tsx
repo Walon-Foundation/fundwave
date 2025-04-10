@@ -107,13 +107,19 @@ export default function KycForm() {
               <Label htmlFor="qualification" className="text-blue-800">
                 Qualification
               </Label>
-              <Input
-                id="qualification"
-                placeholder="Enter your highest qualification"
-                value={qualification}
-                onChange={(e) => setQualification(e.target.value)}
-                className="border-blue-200 focus:border-blue-400"
-              />
+              <Select onValueChange={setQualification} value={qualification}>
+                <SelectTrigger id="gender" className="border-blue-200 focus:border-blue-400">
+                  <SelectValue placeholder="Select your highest qualification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Degree">Degree</SelectItem>
+                  <SelectItem value="Master">Master</SelectItem>
+                  <SelectItem value="Phd">Phd</SelectItem>
+                  <SelectItem value="Diploma">Diploma</SelectItem>
+                  <SelectItem value="Wassce">Wassce</SelectItem>
+                  <SelectItem value="Bece">Bece</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
