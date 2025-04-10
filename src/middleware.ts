@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 export  async function middleware(req: NextRequest) {
   const token = req.cookies.get("accessToken")?.value;
   if (!token) {
-    return console.log("No token found");
+    return NextResponse.redirect(new URL("/login", req.url));
   }
   try {
     const decoded = jwtDecode(token) as { id:string, roles:string, iscampaign:boolean};
