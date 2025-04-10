@@ -46,7 +46,7 @@ export default function SignUp() {
       }
       const response = await axiosInstance.post("auth/register", formData);
       if (response.status === 201) {
-        router.push("/login");
+        router.push("/verifyemail");
       }else {
         setError(response.data.error)
       }

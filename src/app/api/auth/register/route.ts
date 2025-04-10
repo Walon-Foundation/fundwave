@@ -70,7 +70,14 @@ export async function POST(req: NextRequest) {
     await newUser.save();
 
     const token = generateVerificationToken(newUser._id as string)
-    const verifyUrl = `http://localhost:3000/api/auth/verify?token=${token}`
+    let verifyUrl;
+
+    if(process.env.NODE_ENV === "development"){
+      verifyUrl = `http://localhost:3000/api/auth/verify?token=${token}`
+    }else {
+      verifyUrl = `https://fundwavesl.vercel.app/api/auth/verify?token=${token}`
+    }
+    
 
     await sendVerificationEmail(email,verifyUrl)
 

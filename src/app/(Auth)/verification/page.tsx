@@ -8,12 +8,11 @@ export default function Verification() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
+            console.log("redirecting to login");
             router.push("/login");
-        },2000)
+        },5000)
         
-        return () => {
-            clearTimeout(timer);
-        }
+        return () => clearTimeout(timer);
     }, [router])
   return (
     <div>account verified</div>
