@@ -39,7 +39,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!token) {
-      return router.push("/");
+      return console.log("No token found");
     }
 
     if (token) {

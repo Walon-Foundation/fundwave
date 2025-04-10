@@ -26,7 +26,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (!token) {
-      router.push('/');
+      router.push('/login');
       return;
     }
 
@@ -36,7 +36,7 @@ export default function UserProfile() {
     } catch (err) {
       console.error(err);
       setError("Invalid token, redirecting...");
-      router.push('/');
+      router.push('/login');
     } finally {
       setLoading(false);
     }

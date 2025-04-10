@@ -16,6 +16,7 @@ interface User extends Document {
   sex:string;
   profilePicture?:string
   isVerified:boolean
+  emailSent:boolean
 };
 
 const userSchema = new Schema<User>(
@@ -77,6 +78,10 @@ const userSchema = new Schema<User>(
     isVerified:{
       type:Boolean,
       required:true
+    },
+    emailSent:{
+      type:Boolean,
+      default:false
     }
   },
   {

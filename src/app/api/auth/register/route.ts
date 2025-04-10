@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    
+    await newUser.save();
+
     const token = generateVerificationToken(newUser._id as string)
     let verifyUrl;
 
@@ -77,9 +78,15 @@ export async function POST(req: NextRequest) {
     }
     
 
-    await sendVerificationEmail(email,verifyUrl)
+    try{
+      await sendVerificationEmail(email, verifyUrl, username)
+
+      newUser.emailSent = true;
+      await newUser.save();
+    }catch(error){
+      console.error("Failed to send verification email: ",error)
+    }
     
-    await newUser.save();
     
     return apiResponse("User created successfully", 201, undefined);
   } catch (error) {

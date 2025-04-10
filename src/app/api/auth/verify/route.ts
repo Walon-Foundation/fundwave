@@ -22,6 +22,15 @@ export async function GET(req: NextRequest){
             return errorHandler(400, "User not found", null);
         }
 
+        if(user.isVerified){
+            const url = process.env.NODE_ENV === "development" ? 
+            "http://localhost:3000/login" 
+            : 
+            "https://fundwavesl.vercel.app/login";
+            
+            return NextResponse.redirect(url);
+        }
+
         user.isVerified = true;
 
         await user.save();
@@ -34,7 +43,7 @@ export async function GET(req: NextRequest){
             url = "https://fundwavesl.vercel.app/verification";
         }
 
-        return NextResponse.redirect((url));
+        return NextResponse.redirect(url);
     }catch(error){
         return errorHandler(500, "Internal server error", error);
     }
