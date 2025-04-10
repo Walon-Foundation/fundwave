@@ -66,9 +66,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Save the user to MongoDB
-    await newUser.save();
-
+    
     const token = generateVerificationToken(newUser._id as string)
     let verifyUrl;
 
@@ -80,7 +78,9 @@ export async function POST(req: NextRequest) {
     
 
     await sendVerificationEmail(email,verifyUrl)
-
+    
+    await newUser.save();
+    
     return apiResponse("User created successfully", 201, undefined);
   } catch (error) {
     return errorHandler(500, "Internal server error", error);

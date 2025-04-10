@@ -26,7 +26,15 @@ export async function GET(req: NextRequest){
 
         await user.save();
 
-        return NextResponse.redirect(("http://localhost:3000/verification"));
+        let url;
+
+        if(process.env.NODE_ENV === "development"){
+            url = "http://localhost:3000/verification";
+        }else{
+            url = "https://fundwavesl.vercel.app/verification";
+        }
+
+        return NextResponse.redirect((url));
     }catch(error){
         return errorHandler(500, "Internal server error", error);
     }
