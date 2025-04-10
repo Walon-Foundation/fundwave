@@ -363,7 +363,7 @@ export default function CampaignDetails(){
                   />
 
                   {/* Comments Tab */}
-                  <CommentSection campaign={campaign} campaignComment={campaignComment} handleCommentSubmit={handleCommentSubmit} commentText={commentText} setCommentText={setCommentText} isLoading={isLoading} />
+                  <CommentSection campaign={campaign} user={user!} campaignComment={campaignComment} handleCommentSubmit={handleCommentSubmit} commentText={commentText} setCommentText={setCommentText} isLoading={isLoading} />
                 </Tabs>
               </Card>
             </div>

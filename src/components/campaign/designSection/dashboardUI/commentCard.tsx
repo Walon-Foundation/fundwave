@@ -21,13 +21,16 @@ export default function CommentCard({comments}:{comments:Comment[]}) {
                 <span className="text-xs text-gray-500">{formatDate(comment.createdAt as string)}</span>
               </div>
               <p className="text-sm">{comment.description}</p>
-              <div className="mt-2 flex justify-end">
+              
+              <div className="mt-2 flex items-center justify-between">
+              <p className="text-xs text-gray-500 ">User: <b>{comment.username}</b></p>
                 <Link
                   href={`/campaign/${comment.campaignId}`}
                   className="text-xs text-blue-500 hover:underline flex items-center"
                 >
                   View Campaign <ChevronRight className="h-3 w-3 ml-1" />
                 </Link>
+                
               </div>
             </div>
           ))}

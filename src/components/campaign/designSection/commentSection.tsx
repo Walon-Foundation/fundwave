@@ -2,7 +2,9 @@ import { TabsContent } from "@/components/ui/tabs";
 import CommentForm from "../forms/commentForm";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDate } from "@/core/helpers/formatDate";
-import { Comment, Campaign } from "@/core/types/types";
+import { Comment, Campaign, User } from "@/core/types/types";
+import { Button } from "@/components/ui/button";
+import {  Trash, } from "lucide-react";
 
 export default function CommentSection({
   campaign,
@@ -11,6 +13,7 @@ export default function CommentSection({
   commentText,
   setCommentText,
   isLoading,
+  user
 }: {
   handleCommentSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   commentText: string;
@@ -18,6 +21,7 @@ export default function CommentSection({
   isLoading: boolean;
   campaign: Campaign;
   campaignComment: Comment[];
+  user:User
 }) {
   return (
     <TabsContent value="comments" className="p-0 sm:p-6 animate-in fade-in-50">
@@ -34,8 +38,9 @@ export default function CommentSection({
               {campaignComment?.map((comment) => (
                 <div
                   key={comment._id}
-                  className="flex gap-3 md:gap-4 pb-6 border-b border-blue-100 transition-all hover:bg-blue-50/30 p-3 rounded-lg -mx-3"
+                  className="flex items-center justify-between gap-3 md:gap-4 pb-6 border-b border-blue-100 transition-all hover:bg-blue-50/30 p-3 rounded-lg -mx-3"
                 >
+                  <div className="flex  gap-3 md:gap-4 pb-6 border-b border-blue-100 transition-all hover:bg-blue-50/30">
                   <Avatar className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0 border-2 border-blue-50 ring-2 ring-blue-100/50">
                     <AvatarImage
                       src={`https://avatar.vercel.sh/${comment?._id}`}
@@ -60,6 +65,12 @@ export default function CommentSection({
                     <p className="text-gray-700 text-sm md:text-base break-words leading-relaxed">
                       {comment?.description}
                     </p>
+                  </div>
+                  </div>
+                  <div>
+                    {user?.username === comment?.username && <Button variant="ghost" size="lg" className="h-10 w-10" onClick={() => console.log("delete")}>
+                      <Trash className="h-8 w-8 text-red-500"/>
+                    </Button>}  
                   </div>
                 </div>
               ))}

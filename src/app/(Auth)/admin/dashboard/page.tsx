@@ -14,10 +14,10 @@ import {
   ChevronDown,
   ChevronUp,
   Home,
-  Eye,
   TrendingUp,
   Calendar,
   Filter,
+  Trash,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -345,7 +345,9 @@ export default function AdminDashboard() {
                         <TableBody>
                           {allCampaigns?.slice(0, 5).map((campaign) => (
                             <TableRow key={campaign._id} className="hover:bg-blue-50/50 transition-colors">
-                              <TableCell className="font-medium">{campaign.campaignName}</TableCell>
+                              <TableCell className="font-medium">
+                                <Link href={`/campaign/${campaign._id}`}>{campaign.campaignName}</Link>
+                              </TableCell>
                               <TableCell className="hidden md:table-cell">{campaign.creatorName}</TableCell>
                               <TableCell>
                                 <Badge
@@ -545,7 +547,9 @@ export default function AdminDashboard() {
                               {paginatedCampaigns.map((campaign) => (
                                 <TableRow key={campaign._id} className="hover:bg-blue-50/50 transition-colors">
                                   <TableCell className="font-medium">{campaign._id?.slice(0, 4)}</TableCell>
-                                  <TableCell>{campaign.campaignName}</TableCell>
+                                  <TableCell>
+                                    <Link href={`/campaign/${campaign._id}`}>{campaign.campaignName}</Link>
+                                  </TableCell>
                                   <TableCell className="hidden md:table-cell">{campaign.creatorName}</TableCell>
                                   <TableCell className="text-right hidden md:table-cell">
                                     NLe{campaign?.amountNeeded.toLocaleString()}
@@ -569,8 +573,8 @@ export default function AdminDashboard() {
                                     {formatDate(campaign.createdAt as string)}
                                   </TableCell>
                                   <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
-                                      <Eye className="h-4 w-4" />
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => console.log("delete")}>
+                                      <Trash className="h-5 w-5 text-red-500"  />
                                       <span className="sr-only">View details</span>
                                     </Button>
                                   </TableCell>
@@ -671,7 +675,7 @@ export default function AdminDashboard() {
                                 <TableCell className="hidden md:table-cell">{formatDate(user.createdAt as string)}</TableCell>
                                 <TableCell className="text-right">
                                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
-                                    <Eye className="h-4 w-4" />
+                                    <Trash className="h-6 w-6 text-red-500" />
                                     <span className="sr-only">View details</span>
                                   </Button>
                                 </TableCell>

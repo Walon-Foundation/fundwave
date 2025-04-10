@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
 import UpdateForm from "../forms/updateForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Plus } from "lucide-react";
+import { Clock, Plus, Trash } from "lucide-react";
 import { formatDate } from "@/core/helpers/formatDate";
 import { Update } from "@/core/types/types";
 
@@ -75,9 +75,18 @@ export default function UpdateSection({
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="pt-4 flex items-center justify-between">
                   <CardDescription className="text-foreground whitespace-pre-line">
                     {update?.description}
+                  </CardDescription>
+                  <CardDescription>
+                    {
+                      isCreator && ( 
+                        <Button variant="ghost" size="lg" className="w-10 h-10">
+                      <Trash className="w-8 h-8 text-red-500"/>
+                    </Button>
+                      )
+                    }
                   </CardDescription>
                 </CardContent>
               </Card>
