@@ -2,7 +2,7 @@
 import { useState } from "react"
 import type React from "react"
 import { ToastContainer, toast } from "react-toastify"
-import { ArrowLeft, ArrowRight, Save, Send } from "lucide-react"
+import { ArrowLeft, ArrowRight, Briefcase, GraduationCap, Save, Send, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,18 +11,23 @@ import { Progress } from "@/components/ui/progress"
 import { useAppDispatch } from "@/core/hooks/storeHooks"
 import { fetchCampaigns } from "@/core/store/features/campaigns/campaignSlice"
 import { useRouter } from "next/navigation"
-import useIsCampaign from "@/core/hooks/useIsCampaign"
-import {Minus, Plus, List} from "lucide-react"
+import { Minus, Plus, List } from "lucide-react"
 import CampaignPicturePreview from "@/components/campaign-picture-preview"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+interface Team {
+  name: string
+  qualification: string
+  experience: string
+}
 
 export default function CampaignCreateForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 3
 
-  useIsCampaign()
+  // useIsCampaign()
 
   // Form state
   const [campaignName, setCampaignName] = useState("")
@@ -30,18 +35,38 @@ export default function CampaignCreateForm() {
   const [milestone, setMilestone] = useState("")
   const [amountNeeded, setAmountNeeded] = useState("")
   const [completionDate, setCompletionDate] = useState("")
-  const [teamInformation, setTeamInformation] = useState("")
+  const [teamMembers, setTeamMembers] = useState<Team[]>([{ name: "", qualification: "", experience: "" }])
   const [expectedImpact, setExpectedImpact] = useState("")
   const [risksAndChallenges, setRisksAndChallenges] = useState("")
   const [category, setCategory] = useState("")
   const [solution, setSolution] = useState<string[]>([])
   const [problem, setProblem] = useState("")
-  const [campaignPicture, setCampaignPicture] = useState<File | null >(null)
+  const [campaignPicture, setCampaignPicture] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const router = useRouter()
   const dispatch = useAppDispatch()
+
+  //team members
+  const handleMemberChange = (index: number, field: keyof Team, value: string) => {
+    const updatedMembers = [...teamMembers]
+    updatedMembers[index] = {
+      ...updatedMembers[index],
+      [field]: value,
+    }
+    setTeamMembers(updatedMembers)
+  }
+
+  const addMember = () => {
+    setTeamMembers([...teamMembers, { name: "", qualification: "", experience: "" }])
+  }
+
+  const removeMember = (index: number) => {
+    if (teamMembers.length === 1) return
+    const updatedMembers = teamMembers.filter((_, i) => i !== index)
+    setTeamMembers(updatedMembers)
+  }
 
   // Step navigation
   const nextStep = () => {
@@ -51,15 +76,12 @@ export default function CampaignCreateForm() {
     }
   }
 
-
-
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
       window.scrollTo(0, 0)
     }
   }
-
 
   //step to adding the solution
   const addSolution = () => {
@@ -80,37 +102,37 @@ export default function CampaignCreateForm() {
   }
 
   // Form submission
-  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    try{
+    try {
       setIsLoading(true)
       const formData = new FormData()
-      formData.append("campaignName",campaignName)
+      formData.append("campaignName", campaignName)
       formData.append("campaignDescription", campaignDescription)
-      formData.append("amountNeeded",amountNeeded)
-      formData.append("milestone",milestone)
-      formData.append("teamInformation",teamInformation)
+      formData.append("amountNeeded", amountNeeded)
+      formData.append("milestone", milestone)
+      formData.append("teamInformation", JSON.stringify(teamMembers))
       formData.append("problem", problem)
-      formData.append("solution",JSON.stringify(solution))
-      formData.append("risksAndChallenges",risksAndChallenges)
-      formData.append("expectedImpact",expectedImpact)
+      formData.append("solution", JSON.stringify(solution))
+      formData.append("risksAndChallenges", risksAndChallenges)
+      formData.append("expectedImpact", expectedImpact)
       formData.append("category", category)
-      formData.append("completionDate",completionDate)
-      if(campaignPicture){
-        formData.append("campaignPicture",campaignPicture)
+      formData.append("completionDate", completionDate)
+      if (campaignPicture) {
+        formData.append("campaignPicture", campaignPicture)
       }
-      const response = await axiosInstance.post('/campaign', formData)
-      if(response.status === 201){
+      const response = await axiosInstance.post("/campaign", formData)
+      if (response.status === 201) {
         await dispatch(fetchCampaigns())
         console.log(response.data)
-        router.push('/campaign')
-      }else{
+        router.push("/campaign")
+      } else {
         setError(response.data.error)
       }
-    }catch(error){
+    } catch (error) {
       console.error(error)
       setError("An error occurred while creating the campaign.")
-    }finally{
+    } finally {
       setIsLoading(false)
     }
   }
@@ -132,7 +154,9 @@ export default function CampaignCreateForm() {
       <div className="flex flex-col justify-center min-h-screen items-center mx-auto max-w-3xl">
         <div className="p-6 sm:p-8 w-full bg-white rounded-xl shadow-md border border-blue-100">
           <div className="text-center mb-8">
-            <h1 className={`${error ? "text-red-600" : "text-blue-600"} text-2xl sm:text-3xl lg:text-4xl font-bold`}>{error ? error : "Create a Campaign"}</h1>
+            <h1 className={`${error ? "text-red-600" : "text-blue-600"} text-2xl sm:text-3xl lg:text-4xl font-bold`}>
+              {error ? error : "Create a Campaign"}
+            </h1>
             <p className="text-base sm:text-lg text-blue-600 mt-2">
               Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
             </p>
@@ -158,7 +182,7 @@ export default function CampaignCreateForm() {
             {currentStep === 1 && (
               <div className="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 animate-in fade-in duration-300">
                 <div>
-                  <CampaignPicturePreview onImageChange={setCampaignPicture}/>
+                  <CampaignPicturePreview onImageChange={setCampaignPicture} />
                 </div>
                 <div>
                   <Label htmlFor="campaign_name" className="text-lg font-semibold text-blue-800 mb-2">
@@ -305,19 +329,86 @@ export default function CampaignCreateForm() {
                   <Button type="button" variant="outline" onClick={addSolution} className="w-full">
                     <Plus className="h-4 w-4 mr-2" /> Add Solution
                   </Button>
-              </div>
+                </div>
                 <div>
-                  <Label htmlFor="team_info" className="text-lg font-semibold text-blue-800 mb-2">
-                    Team Information
-                  </Label>
-                  <Textarea
-                    id="team_info"
-                    placeholder="Tell us about your team"
-                    value={teamInformation}
-                    onChange={(e) => setTeamInformation(e.target.value)}
-                    className="w-full border-blue-200 focus-visible:ring-blue-400 text-blue-900 bg-white min-h-[120px]"
-                    required
-                  />
+                  <Card className="w-full max-w-3xl mx-auto">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-semibold text-blue-800">Team Members</CardTitle>
+                    </CardHeader>
+
+                    <CardContent>
+                      {teamMembers.map((member, index) => (
+                        <div key={index} className="mb-8 border border-blue-100 rounded-lg p-4">
+                          <div className="text-sm font-medium text-blue-800 mb-2">Team Member {index + 1}</div>
+                          <div className="grid gap-4 py-2">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`name-${index}`} className="sr-only">
+                                Name
+                              </Label>
+                              <div className="relative flex-grow">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-900 bg-white h-5 w-5" />
+                                <Input
+                                  id={`name-${index}`}
+                                  value={member.name}
+                                  onChange={(e) => handleMemberChange(index, "name", e.target.value)}
+                                  placeholder="Team Member Name"
+                                  className="pl-10 bg-white text-blue-900"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`qualification-${index}`} className="sr-only">
+                                Qualification
+                              </Label>
+                              <div className="relative flex-grow">
+                                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-900 bg-white h-5 w-5" />
+                                <Input
+                                  id={`qualification-${index}`}
+                                  value={member.qualification}
+                                  onChange={(e) => handleMemberChange(index, "qualification", e.target.value)}
+                                  placeholder="Qualification"
+                                  className="pl-10 bg-white text-blue-900"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                              <div className="relative flex-grow">
+                                <Briefcase className="absolute left-3 top-3 text-blue-900 bg-white h-5 w-5" />
+                                <Textarea
+                                  id={`experience-${index}`}
+                                  value={member.experience}
+                                  onChange={(e) => handleMemberChange(index, "experience", e.target.value)}
+                                  placeholder="Experience"
+                                  className="pl-10 bg-white text-blue-900 min-h-[80px]"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removeMember(index)}
+                                disabled={teamMembers.length === 1}
+                                className="mt-1"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addMember}
+                        className="w-full mt-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                      >
+                        <Plus className="h-4 w-4 mr-2" /> Add Team Member
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
                 <div>
                   <Label htmlFor="expected_impact" className="text-lg font-semibold text-blue-800 mb-2">
@@ -398,4 +489,3 @@ export default function CampaignCreateForm() {
     </section>
   )
 }
-

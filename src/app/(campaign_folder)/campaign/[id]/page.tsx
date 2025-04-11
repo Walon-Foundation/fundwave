@@ -28,11 +28,11 @@ import { fetchCampaigns, selectCampaignById } from "@/core/store/features/campai
 import { useParams } from "next/navigation"
 import type { Campaign } from "@/core/types/types"
 import { useAppDispatch, useAppSelector } from "@/core/hooks/storeHooks"
-import {fetchComment } from "@/core/store/features/comments/commentSlice"
+import { fetchComment } from "@/core/store/features/comments/commentSlice"
 import { selectAllComment } from "@/core/store/features/comments/commentSlice"
 import { jwtDecode } from "jwt-decode"
 import Cookies from "js-cookie"
-import { User } from "@/core/types/types"
+import type { User } from "@/core/types/types"
 import { fetchUpdate, selectAllUpdate } from "@/core/store/features/update/updateSlice"
 import { calculateDaysRemaining } from "@/core/helpers/calculateDayRemaining"
 import ShareCard from "@/components/campaign/designSection/shareCard"
@@ -41,8 +41,7 @@ import CommentSection from "@/components/campaign/designSection/commentSection"
 import UpdateSection from "@/components/campaign/designSection/updateSection"
 import { axiosInstance } from "@/core/api/axiosInstance"
 
-export default function CampaignDetails(){
-
+export default function CampaignDetails() {
   const [activeTab, setActiveTab] = useState("about")
   const [commentText, setCommentText] = useState("")
   const [isLiked, setIsLiked] = useState(false)
@@ -57,46 +56,42 @@ export default function CampaignDetails(){
 
   //getting the user from the client cookie
   const token = Cookies.get("userToken")
-  const user = token ? jwtDecode(token) as User : null
+  const user = token ? (jwtDecode(token) as User) : null
 
   //geting the update from the server
   const allUpdate = useAppSelector(selectAllUpdate)
   const campaignUpdate = allUpdate.filter((update) => update.campaignId === (id as string))
 
-
   //update state
-  const isCreator = campaign?.creatorName === user?.username;
+  const isCreator = campaign?.creatorName === user?.username
   const hasUpdates = campaign?.update && campaign?.update?.length > 0
-  
 
   //update state
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isAddingUpdate, setIsAddingUpdate] = useState(false)
 
-  
-
   //add update fuunction
   const handleAddUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    try{
+    try {
       setIsLoading(true)
       const data = {
         title,
         description,
-        campaignId:id as string
+        campaignId: id as string,
       }
-      const response = await axiosInstance.post(`/campaign/${id}/update`,data)
-      if(response.status === 201){
+      const response = await axiosInstance.post(`/campaign/${id}/update`, data)
+      if (response.status === 201) {
         setIsAddingUpdate(false)
         await dispatch(fetchUpdate())
         await dispatch(fetchCampaigns())
         setTitle("")
         setDescription("")
       }
-    }catch(error){
+    } catch (error) {
       console.error(error)
-    }finally{
+    } finally {
       setIsLoading(false)
     }
   }
@@ -113,7 +108,6 @@ export default function CampaignDetails(){
   // Calculate milestone progress percentage
   const milestoneProgress = Math.min(Math.round(((campaign?.moneyReceived || 0) / campaign?.amountNeeded) * 100), 100)
 
-
   const daysRemaining = calculateDaysRemaining(campaign?.completionDate as string)
 
   // Handle comment submission
@@ -125,7 +119,7 @@ export default function CampaignDetails(){
     try {
       const data = {
         id,
-        description:commentText
+        description: commentText,
       }
       const response = await axiosInstance.post(`/campaign/${id}/comment`, data)
       if (response.status === 201) {
@@ -332,7 +326,40 @@ export default function CampaignDetails(){
                           <Users className="h-5 w-5 mr-2 text-blue-600" />
                           About the Team
                         </h3>
-                        <p className="text-gray-700 leading-relaxed">{campaign?.teamInformation}</p>
+
+                        {Array.isArray(campaign?.teamInformation) && campaign?.teamInformation.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {campaign.teamInformation.map((member, index) => (
+                              <div
+                                key={index}
+                                className="bg-white rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all p-4 overflow-hidden group"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center text-lg font-medium">
+                                    {member.name?.charAt(0) || "T"}
+                                  </div>
+                                  <div className="space-y-2 flex-1">
+                                    <div className="flex flex-col">
+                                      <h4 className="font-semibold text-blue-800 group-hover:text-blue-600 transition-colors">
+                                        {member.name || "Team Member"}
+                                      </h4>
+                                      <span className="text-sm text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full self-start">
+                                        {member.qualification || "Team Member"}
+                                      </span>
+                                    </div>
+                                    <p className="text-gray-700 text-sm leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">
+                                      {member.experience || "No experience information provided."}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 text-center">
+                            <p className="text-blue-700">No team information available</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-4">
@@ -363,7 +390,15 @@ export default function CampaignDetails(){
                   />
 
                   {/* Comments Tab */}
-                  <CommentSection campaign={campaign} user={user!} campaignComment={campaignComment} handleCommentSubmit={handleCommentSubmit} commentText={commentText} setCommentText={setCommentText} isLoading={isLoading} />
+                  <CommentSection
+                    campaign={campaign}
+                    user={user!}
+                    campaignComment={campaignComment}
+                    handleCommentSubmit={handleCommentSubmit}
+                    commentText={commentText}
+                    setCommentText={setCommentText}
+                    isLoading={isLoading}
+                  />
                 </Tabs>
               </Card>
             </div>
@@ -448,7 +483,7 @@ export default function CampaignDetails(){
                       </span>
                       <span className="text-gray-500">of NLe{campaign?.amountNeeded.toLocaleString()}</span>
                     </div>
-                    <Progress value={milestoneProgress} className="h-2 bg-blue-100"  />
+                    <Progress value={milestoneProgress} className="h-2 bg-blue-100" />
                     <div className="flex justify-between text-sm">
                       <span className="text-blue-700 font-medium">{milestoneProgress}% complete</span>
                     </div>
@@ -457,10 +492,10 @@ export default function CampaignDetails(){
               </Card>
 
               {/* Creator Card */}
-             <CreatorCard campaign={campaign}/>
+              <CreatorCard campaign={campaign} />
 
               {/* Share Card */}
-             <ShareCard/>
+              <ShareCard />
             </div>
           </div>
         </div>
@@ -468,5 +503,3 @@ export default function CampaignDetails(){
     </div>
   )
 }
-
-

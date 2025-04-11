@@ -8,7 +8,11 @@ interface Campaign extends Document {
   milestone: string;
   amountNeeded: number;
   completionDate: string;
-  teamInformation: string;
+  teamInformation: [{
+    name: string;
+    qualification: string;
+    experience: string;
+  }];
   expectedImpact: string;
   risksAndChallenges: string;
   creatorName: string;
@@ -68,10 +72,20 @@ const campaignSchema = new Schema<Campaign>(
       type: String,
       required: true
     },
-    teamInformation: {
-      type: String,
-      required: true
-    },
+    teamInformation: [{
+      name: {
+        type: String,
+        required: true
+      },
+      qualification: {
+        type: String,
+        required: true
+      },
+      experience: {
+        type: String,
+        required: true
+      }
+    }],
     expectedImpact: {
       type: String,
       required: true

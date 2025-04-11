@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       risksAndChallenges,
       milestone,
       category,
-      teamInformation,
+      teamInformation:JSON.parse(teamInformation),
       expectedImpact,
       problem,
       solution:JSON.parse(solution)
@@ -113,8 +113,6 @@ export async function POST(req: NextRequest) {
     })
     const campaignPictureUrl = urlData.publicUrl
 
-
-
     //creating the new campaign
     const newCampaign = await new Campaign({
       campaignPicture:campaignPictureUrl,
@@ -125,7 +123,7 @@ export async function POST(req: NextRequest) {
       risksAndChallenges,
       milestone,
       category,
-      teamInformation,
+      teamInformation:JSON.parse(teamInformation),
       expectedImpact,
       creatorName: user.username,
       creatorId: user._id,

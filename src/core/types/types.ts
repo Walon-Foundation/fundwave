@@ -7,7 +7,11 @@ export interface Campaign  {
   milestone: string;
   amountNeeded: number;
   completionDate: string;
-  teamInformation: string;
+  teamInformation: [{
+    name: string;
+    qualification: string;
+    experience: string;
+  }];
   expectedImpact: string;
   risksAndChallenges: string;
   creatorName?: string;
