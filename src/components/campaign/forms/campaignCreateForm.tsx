@@ -16,6 +16,7 @@ import CampaignPicturePreview from "@/components/campaign-picture-preview"
 import { axiosInstance } from "@/core/api/axiosInstance"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import useIsCampaign from "@/core/hooks/useIsCampaign"
 
 interface Team {
   name: string
@@ -27,7 +28,7 @@ export default function CampaignCreateForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 3
 
-  // useIsCampaign()
+  useIsCampaign()
 
   // Form state
   const [campaignName, setCampaignName] = useState("")
