@@ -43,3 +43,63 @@ export const sendVerificationEmail = async (email: string, link: string, usernam
         console.error("Email send failed:", error);
     }
 };
+
+
+export const sendUserDeletedAccountEmail = async(email:string, username:string) => {
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Hello ${username ?? "There"},</h2>
+            <p>
+                Your account has been successfully deleted.
+            </p>
+            <br/>
+            <p>– The Fundwavesl Team</p>
+        </div>
+    `
+
+    try{
+        await transporter.sendMail({
+            from: `"Fundwavesl 💌" <${process.env.EMAIL}>`,
+            to: email,
+            subject: "Account Deleted 🗑️",
+            html: htmlContent,
+            headers: {
+                'X-MyApp': "Account Deleted",
+                'X-Priority': '1',
+                'Precedence': 'bulk'
+            }
+        });
+    }catch(error){
+        console.error(error)
+    }
+}
+
+export const sendDeletedCampaignEmail =  async(username:string, email:string) => {
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Hello ${username ?? "There"},</h2>
+            <p>
+                Your campaign has been successfully deleted.
+            </p>
+            <br/>
+            <p>– The Fundwavesl Team</p>
+        </div>
+    `
+
+    
+    try{
+        await transporter.sendMail({
+            from: `"Fundwavesl 💌" <${process.env.EMAIL}>`,
+            to: email,
+            subject: "Campaign  Deleted 🗑️",
+            html: htmlContent,
+            headers: {
+                'X-MyApp': "Campaign Deleted",
+                'X-Priority': '1',
+                'Precedence': 'bulk'
+            }
+        });
+    }catch(error){
+        console.error(error)
+    }
+}

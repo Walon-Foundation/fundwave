@@ -48,7 +48,12 @@ export async function PATCH(req:NextRequest){
             return errorHandler(400, "invalid request body","no profile picture found")
         }
 
-        const maxSizeBytes = 2 * 1024 * 1024
+        const user = await User.findOne({_id:decodedUser.id})
+        if(!user){
+            return errorHandler(401, "invalid user","user not found")
+        }
+
+        const maxSizeBytes = 3 * 1024 * 1024
         const fileSize = profilePicture.size
         const buffer = await  profilePicture.arrayBuffer()
         const bytes = Buffer.from(buffer)
@@ -57,7 +62,7 @@ export async function PATCH(req:NextRequest){
             return errorHandler(400, "image file to large","file size too large",)
         }
 
-        const filename = `${profilePicture.name} - ${Date.now()} - ${decodedUser.id}`
+        const filename = `${user.username}`
 
         const {error} = await supabase.storage.from("profiles").upload(filename, bytes, {
             cacheControl: '3600',
@@ -72,17 +77,12 @@ export async function PATCH(req:NextRequest){
 
         const {data:urlData} = supabase.storage.from("profiles").getPublicUrl(filename,{
             transform:{
-                width:400,
-                height:400,
-                quality:70
+                width:500,
+                height:500,
+                quality:50
             }
         })
         const profilePictureUrl = urlData.publicUrl
-
-        const user = await User.findOne({_id:decodedUser.id})
-        if(!user){
-            return errorHandler(401, "invalid user","user not found")
-        }
 
         //update the user
         user.sex = gender;

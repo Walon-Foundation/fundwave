@@ -35,6 +35,9 @@ import { axiosInstance } from "@/core/api/axiosInstance"
 import { selectAllUpdate } from "@/core/store/features/update/updateSlice"
 import { formatDate } from "@/core/helpers/formatDate"
 import { User } from "@/core/types/types"
+import { deleteCampaign } from "@/core/store/features/campaigns/campaignSlice"
+import { fetchCampaigns } from "@/core/store/features/campaigns/campaignSlice"
+import { useAppDispatch } from "@/core/hooks/storeHooks"
 
 
 export default function AdminDashboard() {
@@ -44,6 +47,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("overview")
   const [user, setUser] = useState<User[] | []>([])
+
+  const dispatch = useAppDispatch();
 
   const allCampaigns = useAppSelector(selectAllCampaign) || []
   const allComments = useAppSelector(selectAllComment) || []
@@ -153,6 +158,36 @@ export default function AdminDashboard() {
   // Handle tab change
   const handleTabChange = (value: string) => {
     setActiveTab(value)
+  }
+
+  const handleCampaignDelete = async(id:string) => {
+    try{
+      console.log(id)
+      await dispatch(deleteCampaign(id)).unwrap()
+      await dispatch(fetchCampaigns())
+    }catch(error){
+      console.error(error)
+    }
+  }
+
+  const getAllUsers = async () => {
+    const response = await axiosInstance.get("auth/users")
+    if (response.status === 200) {
+      setUser(response.data.data)
+    }
+  }
+
+
+  const handleUserDelete = async(userId:string) => {
+    try{
+      console.log(userId)
+      const response = await axiosInstance.delete(`auth/users/${userId}`)
+      if(response.status === 200){
+        await getAllUsers()
+      }
+    }catch(error){
+      console.error(error)
+    }
   }
 
   return (
@@ -573,7 +608,7 @@ export default function AdminDashboard() {
                                     {formatDate(campaign.createdAt as string)}
                                   </TableCell>
                                   <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => console.log("delete")}>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => handleCampaignDelete(campaign._id as string)}>
                                       <Trash className="h-5 w-5 text-red-500"  />
                                       <span className="sr-only">View details</span>
                                     </Button>
@@ -674,7 +709,7 @@ export default function AdminDashboard() {
                                 <TableCell className="text-center">{user?.campaigns?.length}</TableCell>
                                 <TableCell className="hidden md:table-cell">{formatDate(user.createdAt as string)}</TableCell>
                                 <TableCell className="text-right">
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => handleUserDelete(user?._id as string)}>
                                     <Trash className="h-6 w-6 text-red-500" />
                                     <span className="sr-only">View details</span>
                                   </Button>

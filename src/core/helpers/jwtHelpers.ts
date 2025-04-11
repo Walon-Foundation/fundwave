@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 import { User } from "../types/types"
 
 export const generateAccessToken = (user:User) => {
-    return jwt.sign({id:user._id, username:user.username, roles:user.roles, iscampaign:user.isCampaign}, process.env.ACCESS_TOKEN_SECRET!, {expiresIn: '15m'})
+    return jwt.sign({id:user._id, username:user.username, roles:user.roles, iscampaign:user.isCampaign}, process.env.ACCESS_TOKEN_SECRET!, {expiresIn: '1d'})
 }
 
 export const verifyAccessToken = (token:string) => {
