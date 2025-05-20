@@ -1,256 +1,302 @@
+# FundWave
 
----
-
-# Fundwave
-
-![Fundwave](favicon.ico) 
-
-A modern crowdfunding web application built with **Next.js**, **TypeScript**, and **MongoDB**. This platform allows users to create, fund, and manage campaigns, with features for user authentication, campaign creation, payment integration, and an admin dashboard for managing the platform.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Folder Structure](#folder-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Running the App](#running-the-app)
-- [API Routes](#api-routes)
-- [Contributing](#contributing)
-- [License](#license)
-
----
+FundWave is a robust platform designed to help manage and track fundraising campaigns effectively. Built using modern web technologies, FundWave allows users to create and manage campaigns, verify users and their KYC, and manage payments via Supabase.
 
 ## Features
 
-- **User Authentication**: Secure signup, login, and email verification for users.
-- **Campaign Management**: Create, update, and view crowdfunding campaigns with rich media (pictures, descriptions).
-- **Payment Integration**: Support for funding campaigns via secure payment gateways.
-- **Admin Dashboard**: Dedicated admin panel for managing users, campaigns, and platform settings.
-- **User Dashboard**: Dedicated user panel for managing  campaigns and funds received from each campaign.
-- **Profile Management**: Users can view and edit their profiles.
-- **Responsive Design**: Mobile-friendly UI with a clean and intuitive layout.
-- **Type Safety**: Built with TypeScript for better code reliability and maintainability.
-
----
-
-## Tech Stack
-
-- **Frontend**: Next.js (App Router), TypeScript, Tailwind CSS (assumed based on `globals.css`)
-- **Backend**: Next.js API Routes, MongoDB
-- **Node mailer**: For sending emails
-- **Supabase**: For image storage
-- **Authentication**: Custom auth system with JWT (assumed based on your setup)
-- **Database**: MongoDB for storing users, campaigns, and payments
-- **Deployment**: Vercel
-- **Libraries**:
-  - `bcrypt` for password hashing
-  - `jsonwebtoken` for session management
-  -  `shadcn ui` for reuseable components
-  - Other utilities (e.g., `mongoose` for MongoDB, assumed based on `models`)
-
----
-
-## Folder Structure
-
-Here’s an overview of the project’s structure:
-
-```
-├── public/                     # Static assets (images, favicon.ico)
-├── src/                        # Source code
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── api/                # API routes
-│   │   │   ├── auth/           # Authentication routes
-│   │   │   ├── campaign/       # Campaign routes
-│   │   │   ├── payment/        # Payment routes
-│   │   │   └── update/         # Update routes
-│   │   ├── (auth)/             # Authentication-related pages
-│   │   │   ├── admin/          # Admin dashboard
-│   │   │   │   └── page.tsx
-│   │   │   ├── login/          # Login page
-│   │   │   │   └── page.tsx
-│   │   │   ├── profile/        # User profile page
-│   │   │   │   └── page.tsx
-│   │   │   ├── signup/         # Signup page
-│   │   │   │   └── page.tsx
-│   │   │   └── verifyemail/    # Email verification page
-│   │   │       └── page.tsx
-│   │   ├── campaign/[id]/      # Dynamic route for viewing campaigns
-│   │   │   └── page.tsx
-│   │   ├── create/             # Campaign creation page
-│   │   │   └── page.tsx
-│   │   ├── payment/            # Payment page for funding campaigns
-│   │   │   └── page.tsx
-│   │   ├── globals.css         # Global styles (Tailwind CSS)
-│   │   ├── layout.tsx          # Root layout
-│   │   └── page.tsx            # Homepage
-│   ├── components/             # Reusable UI components
-│   │   ├── campaign/           # Campaign-related components
-│   │   │   └── campaignCard.tsx
-│   │   ├── designSectionUI/    # UI sections for design
-│   │   │   ├── commentCard.tsx
-│   │   │   ├── commenterCard.tsx
-│   │   │   ├── creatorCard.tsx
-│   │   │   ├── shareCard.tsx
-│   │   │   └── updateSection.tsx
-│   │   └── forms/              # Form components
-│   │   │   └── heroPart.tsx
-│   ├── ui/                     # Shared UI components
-│   │   ├── campaign-picture-preview.tsx
-│   │   ├── Footer.tsx
-│   │   └── Navbar.tsx
-│   ├── core/                   # Core logic and utilities
-│   │   ├── api/                # API routes
-│   │   │   ├── axiosInstance   # for cookies to be sent easily
-│   │   ├── configs/            # Configuration files
-│   │   ├── helpers/            # Helper functions
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── models/             # MongoDB models (e.g., User, Campaign)
-│   │   ├── store/              # State management (if any)
-│   │   ├── types/              # TypeScript types
-│   │   ├── validators/         # Input validation logic
-│   │   └── lib/                # Utility libraries
-│   ├── profile-picture-preview.tsx # Profile picture preview component
-│   └── middleware.ts           # Middleware for route protection
-├── .env                        # Environment variables
-├── .env.example                # Example environment variables
-├── components.json             # Component configurations
-├── eslint.config.mjs           # ESLint configuration
-├── license.txt                 # License file
-└── next-env.d.ts               # Next.js TypeScript definitions
-```
-
----
-
-## Prerequisites
-
-Before setting up the project, ensure you have the following installed:
-
-- **Node.js**: v18 or higher
-- **npm** or **yarn**: Package manager
-- **MongoDB**: Either a local instance or MongoDB Atlas account
-- **Vercel CLI** (optional): For deployment
-
----
+- **User Authentication** : Secure user login, signup, password recovery, and verification.
+- **KYC Management** : KYC system for user verification.
+- **Campaign Management**: Create, update, and view fundraising campaigns.
+- **Payment Integration**: Manage and track payments for campaigns.
+- **Campaign Analytics**: Real-time analytics and progress tracking for each campaign.
+- **Information Pages**: Static pages for about us, contact us, how it works, and privacy policy.
+- **UI Components**: Reusable UI components for a seamless user experience.
 
 ## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/walonCode/fundwave.git
-   cd crowdfunding-platform
-   ```
+1. **Clone the repository:**
+    ```sh
+    git clone https://github.com/your-repo/fundwave.git
+    cd fundwave
+    ```
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+2. **Install dependencies:**
+    ```sh
+    npm install
+    ```
 
-3. **Set Up MongoDB**:
-   - If using MongoDB Atlas, create a cluster and get your connection string.
-   - If using a local instance, ensure MongoDB is running on `mongodb://localhost:27017`.
+3. **Set up environment variables:**
+    Copy the `.env.example` file to `.env` and configure the environment variables accordingly.
 
----
+4. **Start the development server:**
+    ```sh
+    npm run dev
+    ```
 
-## Environment Variables
+## Usage
 
-Create a `.env` file in the root directory and add the following variables (use `.env.example` as a reference):
+FundWave offers a simple yet powerful interface to manage fundraising campaigns from the creation to updates and payments. Here’s how you can use it:
 
-```
-DATABASE_URI=mongodb uri
-ACCESS_TOKEN_SECRET=some secret key
-USER_TOKEN_SECRET=some secret key
-SESSION_TOKEN_SECRET= some secret key
-VERIFICATION_TOKEN_SECRET=some secret key
-NEXT_PUBLIC_SUPABASE_URL= from supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY= from supabase
-SERVICE_ROLE_KEY= from supabase
-NODE_ENV= production or development
-EMAIL= to shot email using node mailer
+- **User Flow**:
+  - Visit the homepage to see featured campaigns.
+  - Navigate to the login page to authenticate.
+  - Complete your KYC verification if prompted.
+  - Create a campaign or update an existing one.
+
+- **Admin Dashboards**:
+  - Access the admin dashboard for an overview of all campaigns.
+  - Manage campaigns, user activities, and payments.
+
+- **Information Pages**:
+  - Learn more about the platform, how it works, and privacy policies through static pages.
+
+## Technologies
+
+- **Frontend**: React, Next.js
+- **Database**: Supabase, MongoDB
+- **Authentication**: JsonWebToken, BcryptJS
+- **Styling**: Tailwind CSS
+- **Email Service**: Nodemailer
+
+## Configuration and Environment
+
+Ensure you have the following environment variables set in your `.env` file:
+
+```plaintext
+DATABASE_URI=
+ACCESS_TOKEN_SECRET=
+USER_TOKEN_SECRET=
+SESSION_TOKEN_SECRET=
+VERIFICATION_TOKEN_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SERVICE_ROLE_KEY=
+NODE_ENV=
+EMAIL=
 PASSWORD=
 ```
 
-- Replace `<username>`, `<password>`, `<cluster>`, and `<dbname>` with your MongoDB Atlas credentials.
-- Generate a `JWT_SECRET` (e.g., a random string like `mysecretkey123`).
-- Add payment gateway keys if applicable (e.g., Stripe).
+## Folder Structure
 
----
+```
+├── .env
+├── .env.example
+├── .gitignore
+├── README.md
+├── components.json
+├── eslint.config.mjs
+├── license.txt
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+├── src
+│  ├── app
+│  │  ├── (Auth)
+│  │  │  ├── admin
+│  │  │  │  ├── dashboard
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── login
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── kyc
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── login
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── profile
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── signup
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── verification
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── verifyemail
+│  │  │  │  │  ├── page.tsx
+│  │  ├── (Info)
+│  │  │  ├── aboutus
+│  │  │  │  ├── page.tsx
+│  │  │  ├── contactus
+│  │  │  │  ├── page.tsx
+│  │  │  ├── howitworks
+│  │  │  │  ├── page.tsx
+│  │  │  ├── privacypolicy
+│  │  │  │  ├── page.tsx
+│  │  ├── (campaign_folder)
+│  │  │  ├── campaign
+│  │  │  │  ├── [id]
+│  │  │  │  │  ├── page.tsx
+│  │  │  │  ├── create
+│  │  │  │  |  ├── page.tsx
+│  │  │  │  ├── page.tsx
+│  │  │  ├── payment
+│  │  │  │  ├── page.tsx
+│  │  ├── api
+│  │  │  ├── auth
+│  │  │  │  ├── forgotpassword
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── login
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── logout
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── register
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── update
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── users
+│  │  │  │  │  ├── [userId]
+│  │  │  │  │  │  ├── route.ts
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── verify
+│  │  │  │  │  ├── route.ts
+│  │  │  ├── campaign
+│  │  │  │  ├── [campaignId]
+│  │  │  │  │  ├── comment
+│  │  │  │  │  │  ├── route.ts
+│  │  │  │  │  ├── route.ts
+│  │  │  │  │  ├── update
+│  │  │  │  │  │  ├── route.ts
+│  │  │  │  ├── route.ts
+│  │  │  ├── comment
+│  │  │  │  ├── [commentId]
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── route.ts
+│  │  │  ├── payment
+│  │  │  ├── update
+│  │  │  │  ├── [updateId]
+│  │  │  │  │  ├── route.ts
+│  │  │  │  ├── route.ts
+│  │  ├── dashboard
+│  │  │  ├── page.tsx
+│  │  ├── favicon.ico
+│  │  ├── globals.css
+│  │  ├── layout.tsx
+│  │  ├── page.tsx
+│  ├── assets
+│  │  ├── aprof.jpg
+│  │  ├── assets.ts
+│  │  ├── bootcamp.jpg
+│  │  ├── cancer.jpg
+│  │  ├── clean.jpg
+│  │  ├── f_logo.png
+│  │  ├── funding.png
+│  │  ├── g2_logo.png
+│  │  ├── holder.png
+│  │  ├── knee.jpg
+│  │  ├── logo.png
+│  │  ├── mobilmed.jpg
+│  │  ├── nema.jpg
+│  │  ├── soladdress.jpg
+│  │  ├── solar.jpg
+│  │  ├── stadium.jpg
+│  │  ├── swaray.jpg
+│  │  ├── tjalloh.jpg
+│  │  ├── walon.jpg
+│  │  ├── water.jpg
+│  ├── components
+│  │  ├── Footer.tsx
+│  │  ├── Navbar.tsx
+│  │  ├── campaign
+│  │  │  ├── designSection
+│  │  │  │  ├── commentSection.tsx
+│  │  │  │  ├── creatorCard.tsx
+│  │  │  │  ├── dashboardUI
+│  │  │  │  │  ├── campaignCard.tsx
+│  │  │  │  │  ├── commentCard.tsx
+│  │  │  │  ├── shareCard.tsx
+│  │  │  │  ├── updateSection.tsx
+│  │  │  ├── forms
+│  │  │  │  ├── campaignCreateForm.tsx
+│  │  │  │  ├── commentForm.tsx
+│  │  │  │  ├── updateForm.tsx
+│  │  ├── campaign-picture-preview.tsx
+│  │  ├── heroPart
+│  │  │  ├── FeatureCampaign.tsx
+│  │  │  ├── Hero.tsx
+│  │  │  ├── Impact.tsx
+│  │  │  ├── Info.tsx
+│  │  ├── profile-picture-preview.tsx
+│  │  ├── ui
+│  │  │  ├── alert.tsx
+│  │  │  ├── avatar.tsx
+│  │  │  ├── badge.tsx
+│  │  │  ├── button.tsx
+│  │  │  ├── calendar.tsx
+│  │  │  ├── card.tsx
+│  │  │  ├── checkbox.tsx
+│  │  │  ├── dropdown-menu.tsx
+│  │  │  ├── input.tsx
+│  │  │  ├── label.tsx
+│  │  │  ├── pagination.tsx
+│  │  │  ├── popover.tsx
+│  │  │  ├── progress.tsx
+│  │  │  ├── select.tsx
+│  │  │  ├── separator.tsx
+│  │  │  ├── sheet.tsx
+│  │  │  ├── table.tsx
+│  │  │  ├── tabs.tsx
+│  │  │  ├── textarea.tsx
+│  ├── core
+│  │  ├── api
+│  │  │  ├── axiosInstance.ts
+│  │  ├── configs
+│  │  │  ├── mongoDB.ts
+│  │  │  ├── nodemailer.ts
+│  │  │  ├── supabase.ts
+│  │  ├── helpers
+│  │  │  ├── apiResponse.ts
+│  │  │  ├── calculateDayRemaining.ts
+│  │  │  ├── calculateFundingPercentage.ts
+│  │  │  ├── catergoryColor.ts
+│  │  │  ├── errorHandler.ts
+│  │  │  ├── formatDate.ts
+│  │  │  ├── jwtHelpers.ts
+│  │  ├── hooks
+│  │  │  ├── storeHooks.ts
+│  │  │  ├── use-mobile.tsx
+│  │  │  ├── useAuthRedirect.ts
+│  │  │  ├── useIsCampaign.ts
+│  │  ├── models
+│  │  │  ├── campaignModel.ts
+│  │  │  ├── commentModel.ts
+│  │  │  ├── updateModel.ts
+│  │  │  ├── userModel.ts
+│  │  ├── store
+│  │  │  ├── features
+│  │  │  │  ├── campaigns
+│  │  │  │  │  ├── campaignSlice.ts
+│  │  │  │  ├── comments
+│  │  │  │  │  ├── commentSlice.ts
+│  │  │  │  ├── update
+│  │  │  │  │  ├── updateSlice.ts
+│  │  │  │  ├── user
+│  │  │  │  │  ├── userSlice.ts
+│  │  │  ├── store.ts
+│  │  │  ├── storeProvider.tsx
+│  │  ├── types
+│  │  │  ├── slicesTypes.ts
+│  │  │  ├── types.ts
+│  │  ├── validators
+│  │  │  ├── campaign.schema.ts
+│  │  │  ├── comment.schema.ts
+│  │  │  ├── update.schema.ts
+│  │  │  ├── user.schema.ts
+│  ├── lib
+│  │  ├── utils.ts
+│  ├── middleware.ts
+├── tailwind.config.ts
+├── tsconfig.json
+```
 
-## Running the App
+## Authors
 
-1. **Development Mode**:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-2. **Build and Start (Production)**:
-   ```bash
-   npm run build
-   npm run start
-   # or
-   yarn build
-   yarn start
-   ```
-
-3. **Deploy to Vercel**:
-   - Push your code to a GitHub repository.
-   - Link the repository to Vercel via the Vercel dashboard.
-   - Add the environment variables in Vercel’s dashboard under Settings > Environment Variables.
-   - Deploy!
-
----
-
-## API Routes
-
-The app uses Next.js API routes for backend functionality. Key endpoints include:
-
-- **Authentication**:
-  - `POST /api/auth/signup`: Register a new user.
-  - `POST /api/auth/login`: Log in a user and return a JWT.
-- **Campaign**:
-  - `POST /api/campaign`: Create a new campaign.
-  - `GET /api/campaign/[id]`: Get campaign details.
-- **Payment**:
-  - `POST /api/payment`: Process a payment for a campaign.
-- **Update**:
-  - `POST /api/update`: Update campaign details (admin only).
-
-All routes are protected where necessary using middleware (see `middleware.ts`).
-
----
+**[Your Name](https://github.com/yourhandle)** - Initial work and concepts.
 
 ## Contributing
 
-Contributions are welcome! Follow these steps:
+Contributions are welcome! Please follow these steps:
 
 1. Fork the repository.
-2. Create a new branch: `git checkout -b feature/your-feature-name`.
-3. Make your changes and commit: `git commit -m "Add your feature"`.
-4. Push to your branch: `git push origin feature/your-feature-name`.
-5. Create a pull request.
-
-Please ensure your code follows the project’s ESLint rules (`eslint.config.mjs`).
-
----
-
-## License
-
-This project is licensed under the [MIT License](license.txt).
-
----
-
-### Notes for Your Project
-- **Middleware**: Your `middleware.ts` is already set up to protect routes like `/admin`. Ensure it checks the `role` field in the JWT to restrict access.
-- **Admin Dashboard**: Located at `/app/(auth)/admin`, it’s protected for users with `role: "admin"`.
-- **Campaign Features**: Components like `campaignCard.tsx` and pages like `/campaign/[id]` suggest a focus on campaign display and interaction.
-- **Dynamic Routes**: The `/campaign/[id]` route indicates dynamic routing for campaign details.
-
-This README provides a clear starting point for your project while being professional and detailed. If you’d like to add more sections (e.g., testing setup, deployment tips, or specific features), let me know! How does this look for your crowdfunding app?
+2. Create a new branch: `git checkout -b my-new-feature`.
+3. Make your changes and commit them: `git commit -am 'Add some feature'`.
+4. Push to the branch: `git push origin my-new-feature`.
+5. Submit a pull request.
