@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import AdminSidebar from "@/components/admin-sidebar"
+import AdminSidebar from "../../components/admin-sidebar"
 
 export default function AdminLayout({
   children,
