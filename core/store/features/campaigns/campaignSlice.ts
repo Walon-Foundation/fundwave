@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from "@reduxjs/toolkit";
-import { axiosInstance } from "@/core/api/axiosInstance";
-import { CampaignSice } from "@/core/types/slicesTypes";
-import { Campaign } from "@/core/types/types";
+import { axiosInstance } from "../../../../core/api/axiosInstance";
+import { CampaignSice } from "../../../../core/types/slicesTypes";
+import { Campaign } from "../../../../core/types/types";
 import { RootState } from "../../store";
 
 
