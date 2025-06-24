@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return NextResponse.json({
-    campaignId: params.id,
+    campaignId: (await params).id,
     analytics: {
       views: {
         total: 1250,
