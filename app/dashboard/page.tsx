@@ -19,7 +19,7 @@ import {
   Pause,
   Play,
 } from "lucide-react"
-import DashboardSetupWizard from "@/components/dashboard-setup-wizard"
+// import DashboardSetupWizard from "../../components/dashboard-setup-wizard"
 
 // Enhanced mock creator data
 const mockCreatorData = {
@@ -320,10 +320,10 @@ export default function CreatorDashboard() {
                           <div>
                             <p className="text-slate-900">
                               {activity.type === "donation" &&
-                                `New donation of ${formatCurrency(activity.amount)} from ${activity.donor}`}
-                              {activity.type === "comment" && `New comment: "${activity.content}" by ${activity.user}`}
-                              {activity.type === "share" && `Campaign shared on ${activity.platform}`}
-                              {activity.type === "update" && `Campaign update: ${activity.title}`}
+                                `New donation of ${formatCurrency(activity?.amount as number)} from ${activity.donor}`}
+                              {activity.type === "comment" && `New comment: "${activity.content as string}" by ${activity.user}`}
+                              {activity.type === "share" && `Campaign shared on ${activity?.platform}`}
+                              {activity.type === "update" && `Campaign update: ${activity?.title}`}
                             </p>
                             <p className="text-sm text-slate-500">{activity.campaignTitle}</p>
                           </div>
@@ -719,7 +719,7 @@ export default function CreatorDashboard() {
       </div>
 
       {/* Setup Wizard */}
-      <DashboardSetupWizard isFirstTime={isFirstTime} onComplete={handleWizardComplete} onSkip={handleWizardSkip} />
+      {/* <DashboardSetupWizard isFirstTime={isFirstTime} onComplete={handleWizardComplete} onSkip={handleWizardSkip} /> */}
     </div>
   )
 }
