@@ -1,15 +1,19 @@
-import { apiResponse } from "@/core/helpers/apiResponse";
-import { errorHandler } from "@/core/helpers/errorHandler";
-// import  { serialize } from "cookie"
+import { NextResponse } from "next/server"
 
-export async function POST(){
-    try{
-        const response = apiResponse("logout success", 200, null)
+export async function POST() {
+  try {
+    // Demo logout - clear session/cookies
+    const response = NextResponse.json({
+      success: true,
+      message: "Logged out successfully",
+    })
 
-       response.cookies.delete("accessToken")
+    // Clear auth cookies
+    response.cookies.delete("auth-token")
+    response.cookies.delete("user-session")
 
-        return response
-    }catch(error){
-        return errorHandler(500, "server error",error)
-    }
+    return response
+  } catch (error) {
+    return NextResponse.json({ error: "Logout failed" }, { status: 400 })
+  }
 }
