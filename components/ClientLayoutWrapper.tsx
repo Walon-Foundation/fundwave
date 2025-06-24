@@ -1,8 +1,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import Navigation from '@/components/navigation'
-import Footer from '@/components/footer'
+import Navigation from './navigation'
+import Footer from './footer'
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
