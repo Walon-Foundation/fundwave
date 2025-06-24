@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp } from "lucide-react"
-import DonationModal from "@/components/donation-modal"
+import DonationModal from "../../../components/donation-modal"
 
 // Mock campaign data
 const mockCampaign = {

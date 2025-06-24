@@ -15,10 +15,10 @@ import {
   ChevronRight,
   Heart,
 } from "lucide-react"
-import CampaignCard from "@/components/campaign-card"
-import ChatSystem from "@/components/chat-system"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import CampaignCard from "../components/campaign-card"
+import ChatSystem from "../components/chat-system"
+import { Button } from "../components/ui/button"
+import { Badge } from "../components/ui/badge"
 
 // Mock data
 const featuredCampaigns = [
