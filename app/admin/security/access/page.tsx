@@ -1,15 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card"
+import { Button } from "../../../../components/ui/button"
+import { Badge } from "../../../../components/ui/badge"
+import { Input } from "../../../../components/ui/input"
+import { Switch } from "../../../../components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs"
 import { Key, Users, Shield, Plus, Search, Edit, Trash2, MoreHorizontal, UserCheck, UserX } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table"
 
 const roles = [
   {

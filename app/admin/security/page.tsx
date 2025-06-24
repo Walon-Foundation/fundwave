@@ -1,8 +1,8 @@
 "use client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
+import { Button } from "../../../components/ui/button"
+import { Badge } from "../../../components/ui/badge"
+import { Alert, AlertDescription } from "../../../components/ui/alert"
 import { Key, Activity, AlertTriangle, CheckCircle, XCircle, Users, Lock, Eye, FileText, Clock } from "lucide-react"
 import Link from "next/link"
 
