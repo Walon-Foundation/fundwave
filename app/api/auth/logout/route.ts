@@ -1,19 +1,50 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server";
+import { config } from "../../../../config/config";
+import { db } from "../../../../db/drizzle";
+import { and, eq } from "drizzle-orm";
+import { loginSchema } from "../../../../validations/user";
+import { userTable } from "../../../../db/schema";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken"
 
-export async function POST() {
-  try {
-    // Demo logout - clear session/cookies
-    const response = NextResponse.json({
-      success: true,
-      message: "Logged out successfully",
+export async function POST(req:NextRequest){
+  try{
+    const body = await req.formData()
+    const email = body.get("email")
+    const password = body.get("password")
+
+    const {success, error, data} = loginSchema.safeParse({
+      email,
+      password
+    })
+    
+    if(!success){
+      return NextResponse.json({
+        error:"invalid input data",
+      },{ status:500 })
+    }
+
+    const user = await db.select().from(userTable).where(eq(userTable.email, data.email)).limit(1)
+    if(user.length === 0 || !(await bcrypt.compare(data.password, user[0].password))){
+      return NextResponse.json({
+        error: "invalid username or password",
+      }, { status:404 })
+    }
+
+    const accessToken = jwt.sign({id:user[0].id, name:user[0].name}, config.JWT_SECRET, {
+      expiresIn:'1d',
     })
 
-    // Clear auth cookies
-    response.cookies.delete("auth-token")
-    response.cookies.delete("user-session")
+    return NextResponse.json({
+      message:"user login",
+      data:user[0]
+    }, { status:200 })
 
-    return response
-  } catch (error) {
-    return NextResponse.json({ error: "Logout failed" }, { status: 400 })
+  }catch(err){
+    
+    config.NODE_ENV === "dev"? console.log(err):""
+    return NextResponse.json({
+      error:"Internal server error",
+    }, { status: 500 })
   }
 }
