@@ -88,5 +88,11 @@ export const logTable = pgTable("logs",{
     metaData:jsonb("metaData").notNull(),
 })
 
+export const emailVerifcationTable = pgTable("emailVerification",{
+    id:text("id").primaryKey().notNull(),
+    userId:text("userId").notNull().references(() => userTable.id),
+    token:text("token").notNull()
+})
+
 
 
