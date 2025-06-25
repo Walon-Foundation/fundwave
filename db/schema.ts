@@ -16,7 +16,7 @@ export const userTable = pgTable("users",{
     phone:text("phone"),
     role:roleEnum("role").notNull().default("user"),
     amountContributed:integer("amountContribute").default(0).notNull(),
-    isVerfied:boolean("isVerifed").notNull().default(false),
+    isVerified:boolean("isVerifed").notNull().default(false),
     district:text("district"),
     documentType: text("documentType"),
     documentNumber:text("documentNumber"),
@@ -90,7 +90,7 @@ export const logTable = pgTable("logs",{
 
 export const emailVerifcationTable = pgTable("emailVerification",{
     id:text("id").primaryKey().notNull(),
-    userId:text("userId").notNull().references(() => userTable.id),
+    userEmail:text("userEmail").notNull().references(() => userTable.email),
     token:text("token").notNull()
 })
 

@@ -4,7 +4,7 @@ import { eq,and } from "drizzle-orm";
 import bcrypt from "bcryptjs"
 import { registerSchema } from "../../../../validations/user";
 import { config } from "../../../../config/config";
-import { userTable } from "../../../../db/schema";
+import { emailVerifcationTable, userTable } from "../../../../db/schema";
 import { nanoid } from "nanoid"
 import { verifyEmail } from "../../../../lib/nodeMailer";
 
@@ -58,7 +58,13 @@ export async function POST(req:NextRequest){
     const token = nanoid(16)
     await verifyEmail(`${data.firstName + data.lastName}`, "Verification of Email", data.email, token )
 
-    await db.
+    await db.insert(emailVerifcationTable).values({
+      id:nanoid(),
+      token:token,
+      userEmail:data.email
+    })
+
+    
 
     return NextResponse.json({
       message:"user registered successfully",
