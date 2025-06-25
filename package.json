@@ -5,6 +5,10 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "db:migrate":"npx drizzle-kit migrate",
+    "db:push": "npx drizzle-kit push",
+    "db:generate":"npx drizzle-kit generate",
+    "db:studio": "npx drizzle-kit studio",
     "lint": "next lint",
     "start": "next start"
   },
@@ -52,6 +56,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.454.0",
+    "nanoid": "^5.1.5",
     "next": "15.2.4",
     "next-themes": "latest",
     "react": "^19",
