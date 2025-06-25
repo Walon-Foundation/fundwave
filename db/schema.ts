@@ -1,6 +1,5 @@
 
-import { pgEnum } from "drizzle-orm/pg-core"
-import { pgTable, text, integer, boolean, timestamp, jsonb} from "drizzle-orm/pg-core"
+import { pgTable, text, integer, boolean, timestamp, jsonb, pgEnum} from "drizzle-orm/pg-core"
 
 
 export const levelEnum = pgEnum("level",["success", "error","warning", "info"])
@@ -9,11 +8,12 @@ export const roleEnum = pgEnum("role",["user","admin"])
 export const userTable = pgTable("users",{
     id:text("id").primaryKey().notNull().unique(),
     name:text("name").notNull(),
-    username: text("username").notNull().unique(),
+    // username: text("username").notNull().unique(),
     email: text("email").notNull().unique(),
     password: text("password").notNull(),
     address:text("address"),
     age: integer("age"),
+    phone:text("phone"),
     role:roleEnum("role").notNull().default("user"),
     amountContributed:integer("amountContribute").default(0).notNull(),
     isVerfied:boolean("isVerifed").notNull().default(false),
