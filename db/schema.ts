@@ -6,9 +6,8 @@ export const levelEnum = pgEnum("level",["success", "error","warning", "info"])
 export const roleEnum = pgEnum("role",["user","admin"])
 
 export const userTable = pgTable("users",{
-    id:text("id").primaryKey().notNull().unique(),
+    id:text("id").primaryKey().notNull(),
     name:text("name").notNull(),
-    // username: text("username").notNull().unique(),
     email: text("email").notNull().unique(),
     password: text("password").notNull(),
     address:text("address"),
@@ -30,7 +29,7 @@ export const userTable = pgTable("users",{
 
 
 export const campiagnTable = pgTable("campaigns",{
-    id: text("id").primaryKey().notNull().unique(),
+    id: text("id").primaryKey().notNull(),
     title: text("title").notNull().unique(),
     fundingGoal:integer("fundingGoal").notNull(),
     amountReceived:integer("amountRecieved").default(0).notNull(),
@@ -48,7 +47,7 @@ export const campiagnTable = pgTable("campaigns",{
 
 
 export const commentTable = pgTable("comments",{
-    id:text("id").primaryKey().notNull().unique(),
+    id:text("id").primaryKey().notNull(),
     message:text("message").notNull(),
     campaignId:text("campaignId").references(() => campiagnTable.id, { onDelete:"cascade"}).notNull(),
     userId: text("userId").references(() => userTable.id, { onDelete: "cascade"}).notNull(),
@@ -57,7 +56,7 @@ export const commentTable = pgTable("comments",{
 })
 
 export const updateTable = pgTable("updates",{
-    id:text("id").notNull().primaryKey().unique(),
+    id:text("id").notNull().primaryKey(),
     title:text("title").notNull(),
     message:text("message").notNull(),
     campaignId:text("campaignId").notNull().references(() => campiagnTable.id, { onDelete: "cascade"}),
@@ -66,7 +65,7 @@ export const updateTable = pgTable("updates",{
 })
 
 export const paymentTable = pgTable("payments",{
-    id:text("id").notNull().primaryKey().unique(),
+    id:text("id").notNull().primaryKey(),
     userId:text("userId").notNull().references(() => userTable.id, {onDelete: "cascade"}),
     amount:integer("amount").notNull(),
     campaignId:text("campaignId").notNull().references(() => campiagnTable.id, {onDelete:"cascade"}),
@@ -77,7 +76,7 @@ export const paymentTable = pgTable("payments",{
 })
 
 export const logTable = pgTable("logs",{
-    id:text("id").primaryKey().notNull().unique(),
+    id:text("id").primaryKey().notNull(),
     level:levelEnum("level").notNull(),
     timestamp:timestamp("timestamp", { withTimezone: true}).notNull(),
     category: text("category").notNull(),
@@ -92,6 +91,14 @@ export const emailVerifcationTable = pgTable("emailVerification",{
     id:text("id").primaryKey().notNull(),
     userEmail:text("userEmail").notNull().references(() => userTable.email),
     token:text("token").notNull()
+})
+
+export const teamMemberTable = pgTable("teamMember",{
+    id:text("id").primaryKey().notNull(),
+    name:text("name").notNull(),
+    role:text("role").notNull(),
+    bio:text("bio").notNull(),
+    campaignId:text("campaignId").notNull().references(() => campiagnTable.id, { onDelete: "cascade"}),
 })
 
 

@@ -1,5 +1,5 @@
 {
-  "id": "ffc36d32-a706-4a9e-afc9-de18d6fc8151",
+  "id": "09a554c7-356b-4f9f-a1b7-11998722f4f2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -114,13 +114,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "campaigns_id_unique": {
-          "name": "campaigns_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        },
         "campaigns_title_unique": {
           "name": "campaigns_title_unique",
           "nullsNotDistinct": false,
@@ -206,15 +199,52 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "comments_id_unique": {
-          "name": "comments_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.emailVerification": {
+      "name": "emailVerification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userEmail": {
+          "name": "userEmail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
+      "indexes": {},
+      "foreignKeys": {
+        "emailVerification_userEmail_users_email_fk": {
+          "name": "emailVerification_userEmail_users_email_fk",
+          "tableFrom": "emailVerification",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userEmail"
+          ],
+          "columnsTo": [
+            "email"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -274,7 +304,7 @@
         },
         "metaData": {
           "name": "metaData",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         }
@@ -282,15 +312,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "logs_id_unique": {
-          "name": "logs_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -381,15 +403,64 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "payments_id_unique": {
-          "name": "payments_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.teamMember": {
+      "name": "teamMember",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "campaignId": {
+          "name": "campaignId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
+      "indexes": {},
+      "foreignKeys": {
+        "teamMember_campaignId_campaigns_id_fk": {
+          "name": "teamMember_campaignId_campaigns_id_fk",
+          "tableFrom": "teamMember",
+          "tableTo": "campaigns",
+          "columnsFrom": [
+            "campaignId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -454,15 +525,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "updates_id_unique": {
-          "name": "updates_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -479,12 +542,6 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -510,6 +567,12 @@
         "age": {
           "name": "age",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -597,20 +660,6 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_id_unique": {
-          "name": "users_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        },
-        "users_username_unique": {
-          "name": "users_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
-        },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,

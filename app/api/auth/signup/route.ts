@@ -39,7 +39,7 @@ export async function POST(req:NextRequest){
     await Promise.all([
       await db.insert(userTable).values({
         id:nanoid(),
-        name:`${data.firstName} + ${data.lastName}`,
+        name:`${data.firstName + data.lastName}`,
         email: data.email,
         password:passwordHash,
         phone:data.phone,

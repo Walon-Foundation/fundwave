@@ -1,1 +1,0 @@
-ALTER TABLE "logs" ALTER COLUMN "metaData" DROP NOT NULL;

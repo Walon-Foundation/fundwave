@@ -1,13 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Upload, X, Plus, ArrowLeft, ArrowRight, Check, Camera, FileText, Tag, Eye } from "lucide-react"
 import Image from "next/image"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
+import { axiosInstance } from "../../lib/axiosInstance"
 
 const categories = [
   "Community",
@@ -32,6 +33,7 @@ const steps = [
 
 export default function CreateCampaignPage() {
   const [currentStep, setCurrentStep] = useState(1)
+  const [campaignType, setCampaignType] = useState<'personal' | 'business'>('personal')
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -40,12 +42,19 @@ export default function CreateCampaignPage() {
     fullDescription: "",
     location: "",
     endDate: "",
-    images: [] as string[],
+    image: null as File | null,
+    imagePreview: "",
     tags: [] as string[],
   })
+  const [teamMembers, setTeamMembers] = useState<Array<{
+    name: string;
+    role: string;
+    bio: string;
+  }>>([])
   const [currentTag, setCurrentTag] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {}
@@ -59,10 +68,22 @@ export default function CreateCampaignPage() {
         }
         if (!formData.location.trim()) newErrors.location = "Location is required"
         if (!formData.endDate) newErrors.endDate = "End date is required"
+        
+        // Validate team members for business campaigns
+        if (campaignType === 'business') {
+          teamMembers.forEach((member, index) => {
+            if (!member.name.trim()) {
+              newErrors[`teamMemberName_${index}`] = `Team member #${index + 1} name is required`
+            }
+            if (!member.role.trim()) {
+              newErrors[`teamMemberRole_${index}`] = `Team member #${index + 1} role is required`
+            }
+          })
+        }
         break
       case 2:
-        if (formData.images.length === 0) {
-          newErrors.images = "At least one image is required"
+        if (!formData.image) {
+          newErrors.image = "An image is required"
         }
         break
       case 3:
@@ -87,26 +108,46 @@ export default function CreateCampaignPage() {
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      const newImages = Array.from(files).map(
-        (file, index) => `/placeholder.svg?height=200&width=300&text=Image${formData.images.length + index + 1}`,
-      )
+    const file = e.target.files?.[0]
+    if (file) {
+      const validTypes = ["image/jpeg", "image/png", "image/gif"]
+      const maxSize = 5 * 1024 * 1024 // 5MB
+
+      if (!validTypes.includes(file.type)) {
+        setErrors((prev) => ({ ...prev, image: "Only JPG, PNG, and GIF files are allowed" }))
+        return
+      }
+
+      if (file.size > maxSize) {
+        setErrors((prev) => ({ ...prev, image: "File size must be less than 5MB" }))
+        return
+      }
+
+      const previewUrl = URL.createObjectURL(file)
       setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, ...newImages].slice(0, 5),
+        image: file,
+        imagePreview: previewUrl,
       }))
-      if (errors.images) {
-        setErrors((prev) => ({ ...prev, images: "" }))
+      
+      if (errors.image) {
+        setErrors((prev) => ({ ...prev, image: "" }))
       }
     }
   }
 
-  const removeImage = (index: number) => {
+  const removeImage = () => {
+    if (formData.imagePreview) {
+      URL.revokeObjectURL(formData.imagePreview)
+    }
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index),
+      image: null,
+      imagePreview: "",
     }))
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const addTag = () => {
@@ -130,11 +171,37 @@ export default function CreateCampaignPage() {
     if (!validateStep(currentStep)) return
 
     setIsSubmitting(true)
-    console.log("Creating campaign:", formData)
+    
+    const submitData = new FormData()
+    submitData.append("title", formData.title)
+    submitData.append("category", formData.category)
+    submitData.append("targetAmount", formData.targetAmount)
+    submitData.append("description", formData.description)
+    submitData.append("fullDescription", formData.fullDescription)
+    submitData.append("location", formData.location)
+    submitData.append("endDate", formData.endDate)
+    submitData.append("tags", JSON.stringify(formData.tags))
+    submitData.append("campaignType", campaignType)
+    
+    if (campaignType === 'business') {
+      submitData.append("teamMembers", JSON.stringify(teamMembers))
+    }
+    
+    if (formData.image) {
+      submitData.append("image", formData.image)
+    }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    alert("Campaign created successfully! It will be reviewed before going live.")
-    window.location.href = "/dashboard"
+    try {
+      const res = await axiosInstance.post("/campaigns", submitData)
+      if(res.status === 201){
+        alert("Campaign created successfully!")
+      }
+    } catch (error) {
+      console.error("Error creating campaign:", error)
+      alert("Failed to create campaign. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const progress = (currentStep / steps.length) * 100
@@ -160,7 +227,7 @@ export default function CreateCampaignPage() {
 
           {/* Step Indicators */}
           <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
+            {steps.map((step) => {
               const StepIcon = step.icon
               const isCompleted = currentStep > step.id
               const isCurrent = currentStep === step.id
@@ -282,71 +349,190 @@ export default function CreateCampaignPage() {
                     />
                     {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
                   </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Campaign Type *</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="campaignType"
+                          checked={campaignType === 'personal'}
+                          onChange={() => setCampaignType('personal')}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span>Personal/Community</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="campaignType"
+                          checked={campaignType === 'business'}
+                          onChange={() => setCampaignType('business')}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span>Business/Project</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {campaignType === 'business' && (
+                    <div className="md:col-span-2 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-sm font-medium text-slate-700">Team Members *</label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setTeamMembers([...teamMembers, { name: '', role: '', bio: '' }])}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Member
+                        </Button>
+                      </div>
+
+                      {teamMembers.map((member, index) => (
+                        <div key={index} className="space-y-3 p-4 border rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-medium">Team Member #{index + 1}</h4>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setTeamMembers(teamMembers.filter((_, i) => i !== index))}
+                            >
+                              <X className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+                            <input
+                              type="text"
+                              className={`input ${errors[`teamMemberName_${index}`] ? "border-red-500" : ""}`}
+                              value={member.name}
+                              onChange={(e) => {
+                                const updated = [...teamMembers];
+                                updated[index].name = e.target.value;
+                                setTeamMembers(updated);
+                                if (errors[`teamMemberName_${index}`]) {
+                                  setErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors[`teamMemberName_${index}`];
+                                    return newErrors;
+                                  })
+                                }
+                              }}
+                              placeholder="Full name"
+                            />
+                            {errors[`teamMemberName_${index}`] && (
+                              <p className="text-red-500 text-sm mt-1">{errors[`teamMemberName_${index}`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
+                            <input
+                              type="text"
+                              className={`input ${errors[`teamMemberRole_${index}`] ? "border-red-500" : ""}`}
+                              value={member.role}
+                              onChange={(e) => {
+                                const updated = [...teamMembers];
+                                updated[index].role = e.target.value;
+                                setTeamMembers(updated);
+                                if (errors[`teamMemberRole_${index}`]) {
+                                  setErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors[`teamMemberRole_${index}`];
+                                    return newErrors;
+                                  })
+                                }
+                              }}
+                              placeholder="e.g., Founder, Developer"
+                            />
+                            {errors[`teamMemberRole_${index}`] && (
+                              <p className="text-red-500 text-sm mt-1">{errors[`teamMemberRole_${index}`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
+                            <textarea
+                              rows={2}
+                              className="input"
+                              value={member.bio}
+                              onChange={(e) => {
+                                const updated = [...teamMembers];
+                                updated[index].bio = e.target.value;
+                                setTeamMembers(updated);
+                              }}
+                              placeholder="Brief background (optional)"
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      {teamMembers.length === 0 && (
+                        <div className="text-center py-4 text-slate-500">
+                          <p>No team members added yet</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Step 2: Campaign Images */}
+            {/* Step 2: Campaign Image */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle className="text-2xl">Campaign Media</CardTitle>
-                  <p className="text-slate-600">Add compelling images to tell your story visually</p>
+                  <p className="text-slate-600">Add a compelling image to represent your campaign</p>
                 </CardHeader>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Upload Images (Max 5) *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Upload Image *</label>
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                      errors.images ? "border-red-300 bg-red-50" : "border-slate-300 hover:border-indigo-400"
+                      errors.image ? "border-red-300 bg-red-50" : "border-slate-300 hover:border-indigo-400"
                     }`}
                   >
-                    <Upload className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-600 mb-4 text-lg">Drag and drop images here, or click to select files</p>
-                    <p className="text-slate-500 text-sm mb-4">Supported formats: JPG, PNG, GIF (Max 5MB each)</p>
+                    {formData.imagePreview ? (
+                      <div className="relative">
+                        <Image
+                          src={formData.imagePreview}
+                          alt="Campaign preview"
+                          width={600}
+                          height={400}
+                          className="mx-auto mb-4 rounded-lg max-h-64 object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                        <p className="text-slate-600 mb-4 text-lg">Click to select an image file</p>
+                        <p className="text-slate-500 text-sm mb-4">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+                      </>
+                    )}
                     <input
                       type="file"
-                      multiple
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
                       id="image-upload"
+                      ref={fileInputRef}
                     />
                     <label htmlFor="image-upload" className="btn-primary cursor-pointer">
-                      Choose Images
+                      {formData.imagePreview ? "Change Image" : "Choose Image"}
                     </label>
                   </div>
-                  {errors.images && <p className="text-red-500 text-sm mt-2">{errors.images}</p>}
+                  {errors.image && <p className="text-red-500 text-sm mt-2">{errors.image}</p>}
                 </div>
-
-                {formData.images.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-medium text-slate-900 mb-4">
-                      Uploaded Images ({formData.images.length}/5)
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <Image
-                            src={image || "/placeholder.svg"}
-                            alt={`Campaign image ${index + 1}`}
-                            width={200}
-                            height={150}
-                            className="rounded-lg object-cover w-full h-32 border-2 border-slate-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                          {index === 0 && <Badge className="absolute bottom-2 left-2 bg-indigo-600">Main Image</Badge>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -501,32 +687,55 @@ export default function CreateCampaignPage() {
                           <p className="text-sm font-medium text-slate-700">End Date</p>
                           <p className="text-slate-900">{new Date(formData.endDate).toLocaleDateString()}</p>
                         </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Campaign Type</p>
+                          <p className="text-slate-900 capitalize">{campaignType}</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Images Review */}
+                  {/* Team Members Review */}
+                  {campaignType === 'business' && teamMembers.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Team Members</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {teamMembers.map((member, index) => (
+                            <div key={index} className="border-b pb-4 last:border-b-0">
+                              <h4 className="font-medium">{member.name}</h4>
+                              <p className="text-sm text-slate-600">{member.role}</p>
+                              {member.bio && (
+                                <p className="text-sm text-slate-500 mt-1">{member.bio}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Image Review */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">Campaign Images ({formData.images.length})</CardTitle>
+                      <CardTitle className="text-lg">Campaign Image</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                        {formData.images.map((image, index) => (
-                          <div key={index} className="relative">
-                            <Image
-                              src={image || "/placeholder.svg"}
-                              alt={`Campaign image ${index + 1}`}
-                              width={100}
-                              height={75}
-                              className="rounded object-cover w-full h-16"
-                            />
-                            {index === 0 && (
-                              <Badge className="absolute -top-1 -right-1 text-xs bg-indigo-600">Main</Badge>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                      {formData.imagePreview ? (
+                        <div className="relative max-w-lg mx-auto">
+                          <Image
+                            src={formData.imagePreview}
+                            alt="Campaign preview"
+                            width={600}
+                            height={400}
+                            className="rounded-lg object-contain max-h-64 w-full"
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-slate-500">No image uploaded</p>
+                      )}
                     </CardContent>
                   </Card>
 
