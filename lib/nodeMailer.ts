@@ -1,11 +1,10 @@
 import nodemailer from "nodemailer";
-import { config } from "../config/config";
 
 const transport = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: config.GOOGLE_SMTP_EMAIL,
-    pass: config.GOOGLE_SMTP_PASSWORD,
+    user: process.env.GOOGLE_SMTP_EMAIL,
+    pass: process.env.GOOGLE_SMTP_PASSWORD,
   },
 });
 
@@ -19,13 +18,13 @@ const html = (name: string, token: string) => `
         <p>Hi <strong>${name}</strong>,</p>
         <p>Thanks for signing up! Please verify your email by clicking the button below:</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${config.NODE_ENV === "dev"? "http://localhost:3000":""}/verify-email?token=${token}" 
+          <a href="${process.env.NODE_ENV === "development"? "http://localhost:3000/api/auth":""}/verify-email?token=${token}" 
              style="background: #0d6efd; color: white; text-decoration: none; padding: 12px 20px; border-radius: 5px; display: inline-block;">
             Verify Email
           </a>
         </div>
         <p>If the button doesn't work, copy and paste this link into your browser:</p>
-        <p style="word-break: break-all;">${config.NODE_ENV === "dev"? "http://localhost:3000":""}/verify-email?token=${token}</p>
+        <p style="word-break: break-all;">${process.env.NODE_ENV === "development"? "http://localhost:3000":""}/verify-email?token=${token}</p>
         <p style="margin-top: 30px;">– The FundWave Team</p>
       </div>
     </div>
@@ -39,7 +38,7 @@ export async function verifyEmail(
   token: string
 ) {
   await transport.sendMail({
-    from: `"FundWave" <${config.GOOGLE_SMTP_EMAIL}>`,
+    from: `"FundWave" <${process.env.GOOGLE_SMTP_EMAIL}>`,
     to,
     subject,
     html: html(name, token),

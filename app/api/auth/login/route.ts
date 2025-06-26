@@ -1,7 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { config } from "../../../../config/config";
 import { db } from "../../../../db/drizzle";
-import { and, eq } from "drizzle-orm";
+import {  eq } from "drizzle-orm";
 import { loginSchema } from "../../../../validations/user";
 import { userTable } from "../../../../db/schema";
 import bcrypt from "bcryptjs";
@@ -9,14 +8,9 @@ import jwt from "jsonwebtoken"
 
 export async function POST(req:NextRequest){
   try{
-    const body = await req.formData()
-    const email = body.get("email")
-    const password = body.get("password")
+    const body = await req.json()
 
-    const {success, error, data} = loginSchema.safeParse({
-      email,
-      password
-    })
+    const {success, error, data} = loginSchema.safeParse(body)
     
     if(!success){
       return NextResponse.json({
@@ -31,7 +25,7 @@ export async function POST(req:NextRequest){
       }, { status:404 })
     }
 
-    const accessToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role}, config.JWT_SECRET, {
+    const accessToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role}, process.env.JWT_SECRET!, {
       expiresIn:'1d',
     })
 
@@ -45,7 +39,7 @@ export async function POST(req:NextRequest){
 
   }catch(err){
     
-    config.NODE_ENV === "dev"? console.log(err):""
+    process.env.NODE_ENV === "development"? console.log(err):""
     return NextResponse.json({
       error:"Internal server error",
     }, { status: 500 })

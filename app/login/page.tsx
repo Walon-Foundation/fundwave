@@ -11,6 +11,7 @@ import { Label } from "../../components/ui/label"
 import { Checkbox } from "../../components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
+import { axiosInstance } from "../../lib/axiosInstance"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -27,19 +28,16 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-
-    // Simulate authentication
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        // Set cookie for authentication
-        document.cookie = "userAuth=true; path=/; max-age=86400" // 24 hours
-        localStorage.setItem("authToken", "mock-token")
-        router.push("/dashboard")
-      } else {
-        setError("Please enter valid credentials")
+    try{
+      const res = await axiosInstance.post("/auth/login",formData)
+      if(res.status === 200){
+        setIsLoading(false)
+        console.log(res.data)
       }
-      setIsLoading(false)
-    }, 1000)
+    }catch(err){
+      console.log(err)
+      setError("failed to login")
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

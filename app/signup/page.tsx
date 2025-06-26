@@ -10,6 +10,7 @@ import { Label } from "../../components/ui/label"
 import { Checkbox } from "../../components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
+import { axiosInstance } from "../../lib/axiosInstance"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -42,12 +43,15 @@ export default function SignupPage() {
       return
     }
 
-    // Mock signup API call
-    console.log("Signup attempt:", formData)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Redirect to KYC page
-    window.location.href = "/kyc"
+    try{
+      const res = await axiosInstance.post("/auth/signup", formData)
+      if(res.status === 201){
+        setIsLoading(false)
+        console.log(res.data)
+      }
+    }catch(err){
+      console.log(err)
+    }
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {

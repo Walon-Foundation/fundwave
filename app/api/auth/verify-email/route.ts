@@ -1,5 +1,4 @@
 import { NextResponse,NextRequest } from "next/server";
-import { config } from "../../../../config/config";
 import { db } from "../../../../db/drizzle";
 import { emailVerifcationTable, userTable } from "../../../../db/schema";
 import { eq } from "drizzle-orm";
@@ -23,13 +22,15 @@ export async function GET(req:NextRequest){
       }, { status:401 })
     }
 
-    await db.update(userTable).set({ isVerified:true}).where(eq(userTable.email, result[0].userEmail))
-    await db.delete(emailVerifcationTable).where(eq(emailVerifcationTable.token, token))
+    await Promise.all([
+      await db.update(userTable).set({ isVerified:true}).where(eq(userTable.email, result[0].userEmail)),
+      await db.delete(emailVerifcationTable).where(eq(emailVerifcationTable.token, token))
+    ])
 
     return NextResponse.redirect("http://localhost:3000/login")
 
   }catch(err){
-    config.NODE_ENV === "dev" ? console.log(err) : ""
+    process.env.NODE_ENV === "development" ? console.log(err) : ""
     return NextResponse.json({
       error:"internal server error",
     },{ status:500 })
