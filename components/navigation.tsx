@@ -68,20 +68,20 @@ export default function Navigation() {
   }, [])
 
   useEffect(() => {
-    setIsOpen(false) // Close mobile menu on route change
+    setIsOpen(false) 
   }, [pathname])
 
-  // Mock authentication check - replace with actual auth logic
+
   useEffect(() => {
     // Simulate checking auth status
     const checkAuth = () => {
       // This would typically check localStorage, cookies, or auth context
-      const token = localStorage.getItem("authToken")
+      const token = localStorage.getItem("session")
       setIsAuthenticated(!!token)
     }
 
     checkAuth()
-  }, [])
+  }, [localStorage])
 
   const publicNavLinks = [
     { name: "Home", href: "/" },

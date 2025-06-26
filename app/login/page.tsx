@@ -32,7 +32,8 @@ export default function LoginPage() {
       const res = await axiosInstance.post("/auth/login",formData)
       if(res.status === 200){
         setIsLoading(false)
-        console.log(res.data)
+        localStorage.setItem("session", res.data.data.token)
+        router.push("/")
       }
     }catch(err){
       console.log(err)

@@ -11,6 +11,7 @@ import { Checkbox } from "../../components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { axiosInstance } from "../../lib/axiosInstance"
+import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -26,6 +27,8 @@ export default function SignupPage() {
     agreeToTerms: false,
     marketingEmails: false,
   })
+  
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,7 +50,7 @@ export default function SignupPage() {
       const res = await axiosInstance.post("/auth/signup", formData)
       if(res.status === 201){
         setIsLoading(false)
-        console.log(res.data)
+        router.push(`/verify?value=${formData.email}`)
       }
     }catch(err){
       console.log(err)
