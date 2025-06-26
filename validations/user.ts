@@ -12,3 +12,12 @@ export const loginSchema = z.object({
     email:z.string().email("email is required"),
     password:z.string().min(8, "password is required"),
 })
+
+export const forgotPassword = z.object({
+    email:z.string().min(1,"email is required")
+})
+
+export const resetPassword = z.object({
+    email:z.string().min(2, "email is required"),
+    password:z.string().min(2, "password is required")
+})

@@ -54,34 +54,10 @@ const mockNotifications = [
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false) // This should come from your auth context
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
   const pathname = usePathname()
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  useEffect(() => {
-    setIsOpen(false) 
-  }, [pathname])
-
-
-  useEffect(() => {
-    // Simulate checking auth status
-    const checkAuth = () => {
-      // This would typically check localStorage, cookies, or auth context
-      const token = localStorage.getItem("session")
-      setIsAuthenticated(!!token)
-    }
-
-    checkAuth()
-  }, [localStorage])
 
   const publicNavLinks = [
     { name: "Home", href: "/" },

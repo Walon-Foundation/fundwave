@@ -1,25 +1,27 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react"
+import { axiosInstance } from "../../lib/axiosInstance"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async(e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitted(true)
-      setIsLoading(false)
-    }, 2000)
+    try{
+      setIsLoading(true)
+      const res = await axiosInstance.post("/auth/forgot-password", { email })
+      if(res.status === 200){
+        setIsSubmitted(true)
+      }
+    }catch(err){
+      console.log(err)
+    }
   }
 
   if (isSubmitted) {

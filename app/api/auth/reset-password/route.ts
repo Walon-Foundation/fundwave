@@ -1,15 +1,48 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
+import { resetPassword } from "../../../../validations/user"
+import { db } from "../../../../db/drizzle"
+import { userTable } from "../../../../db/schema"
+import { eq } from "drizzle-orm"
+import bcrypt from "bcryptjs"
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { token, password } = await request.json()
+    const body = await req.json()
 
-    // Demo password reset
+    const parsed = resetPassword.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { message: "Invalid input fields", error: parsed.error.format() },
+        { status: 400 }
+      )
+    }
+
+    const { email, password } = parsed.data
+
+    const user = await db.select().from(userTable).where(eq(userTable.email, email)).limit(1)
+    if (user.length === 0) {
+      return NextResponse.json(
+        { error: "User doesn't exist" },
+        { status: 404 }
+      )
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    await db
+      .update(userTable)
+      .set({ password: passwordHash })
+      .where(eq(userTable.email, email))
+
+  
     return NextResponse.json({
-      success: true,
-      message: "Password reset successfully",
-    })
-  } catch (error) {
-    return NextResponse.json({ error: "Password reset failed" }, { status: 400 })
+      message:"user password changed",
+    }, {status:200 })
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error(err)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
 }

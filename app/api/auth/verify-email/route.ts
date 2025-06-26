@@ -27,7 +27,7 @@ export async function GET(req:NextRequest){
       await db.delete(emailVerifcationTable).where(eq(emailVerifcationTable.token, token))
     ])
 
-    return NextResponse.redirect("http://localhost:3000/login")
+    return NextResponse.redirect(process.env.NODE_ENV === "development"?"http://localhost:3000/login": "https//fundwavesl.vercel.app")
 
   }catch(err){
     process.env.NODE_ENV === "development" ? console.log(err) : ""
