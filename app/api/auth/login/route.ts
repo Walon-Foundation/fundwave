@@ -25,17 +25,42 @@ export async function POST(req:NextRequest){
       }, { status:404 })
     }
 
-    const accessToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role}, process.env.JWT_SECRET!, {
-      expiresIn:'1d',
+    const sessionToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role}, process.env.JWT_SECRET!, {
+      expiresIn:'7d',
     })
 
-    return NextResponse.json({
+    const userToken = jwt.sign({
+      name:user[0].name,
+      email:user[0].email,
+      isVerified:user[0].isVerified,
+      phone:user[0].phone,
+      address:user[0].address,
+      createdAt:user[0].createdAt,
+      totalDonated:user[0].amountContributed,
+    }, process.env.USER_TOKEN!, {
+      expiresIn:"7d"
+    })
+
+    const accessToken = jwt.sign({id:user[0].id}, process.env.ACCESS_TOKEN!,{
+      expiresIn:"7d"
+    })
+
+    const response = NextResponse.json({
       message:"user login",
       data:{
-        user:user[0],
-        token:accessToken
+        user:userToken,
+        token:sessionToken
       }  
     }, { status:200 })
+
+    response.cookies.set("accessToken", accessToken, {
+      httpOnly:true,
+      secure:true,
+      maxAge: 24 * 60 * 60,
+      sameSite:'lax'
+    })
+
+    return response
 
   }catch(err){
     
