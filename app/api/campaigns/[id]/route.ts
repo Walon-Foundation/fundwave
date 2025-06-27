@@ -1,67 +1,50 @@
-import { NextResponse } from "next/server"
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "../../../../db/drizzle";
+import { campiagnTable, userTable } from "../../../../db/schema";
+import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken"
+import { deletedCampaignEmail } from "../../../../lib/nodeMailer";
 
-// This would typically come from a database
-const campaigns = [
-  {
-    id: "1",
-    title: "Clean Water for Makeni Community",
-    description: "Help us bring clean, safe drinking water to over 500 families in Makeni.",
-    creator: {
-      id: "user1",
-      name: "Aminata Kamara",
-      avatar: "/placeholder.svg?height=40&width=40",
-      verified: true,
-    },
-    category: "Community",
-    image: "/placeholder.svg?height=400&width=600",
-    target: 5000000,
-    raised: 2500000,
-    donors: 45,
-    status: "active",
-    // ... other fields
-  },
-]
-
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const campaign = campaigns.find((c) => c.id === params.id)
-
-  if (!campaign) {
-    return NextResponse.json({ error: "Campaign not found" }, { status: 404 })
-  }
-
-  return NextResponse.json(campaign)
-}
-
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const body = await request.json()
-    const campaignIndex = campaigns.findIndex((c) => c.id === params.id)
-
-    if (campaignIndex === -1) {
-      return NextResponse.json({ error: "Campaign not found" }, { status: 404 })
+export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string}>} ){
+  try{
+    //auth from cookie
+    const token = (await cookies()).get("accessToken")?.value
+    if(!token){
+      return NextResponse.json({
+        error:"user not authenticated",
+      }, {status:401})
     }
 
-    // Update campaign
-    campaigns[campaignIndex] = {
-      ...campaigns[campaignIndex],
-      ...body,
-      updatedAt: new Date().toISOString(),
+    const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string, role:string }
+    if(!user || user.role != "admin"){
+      return NextResponse.json({
+        error:"invalid user auth token"
+      }, { status: 401 })
     }
 
-    return NextResponse.json(campaigns[campaignIndex])
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to update campaign" }, { status: 500 })
+    const id  = (await params).id
+
+    const userExist = await db.select().from(userTable).where(eq(userTable.id, user.id)).limit(1)
+    if(!userExist){
+      return NextResponse.json({
+        error:"user not found, invalid user id",
+      }, {status:400})
+    }
+
+    await Promise.all([
+      await deletedCampaignEmail(userExist[0].email, userExist[0].name),
+      await db.delete(campiagnTable).where(eq(campiagnTable.id, id))
+    ])
+
+    return NextResponse.json({
+      message:"Campaign deleted successfully",
+    }, { status: 204 })
+
+  }catch(err){
+    process.env.NODE_ENV === "development" ? console.log(err):""
+    return NextResponse.json({
+      error:"internal server error",
+    }, { status:500 })
   }
-}
-
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const campaignIndex = campaigns.findIndex((c) => c.id === params.id)
-
-  if (campaignIndex === -1) {
-    return NextResponse.json({ error: "Campaign not found" }, { status: 404 })
-  }
-
-  campaigns.splice(campaignIndex, 1)
-
-  return NextResponse.json({ message: "Campaign deleted successfully" })
 }

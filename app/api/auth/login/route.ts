@@ -25,7 +25,7 @@ export async function POST(req:NextRequest){
       }, { status:404 })
     }
 
-    const sessionToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role}, process.env.JWT_SECRET!, {
+    const sessionToken = jwt.sign({id:user[0].id, name:user[0].name, role:user[0].role,}, process.env.JWT_SECRET!, {
       expiresIn:'7d',
     })
 
@@ -41,7 +41,7 @@ export async function POST(req:NextRequest){
       expiresIn:"7d"
     })
 
-    const accessToken = jwt.sign({id:user[0].id}, process.env.ACCESS_TOKEN!,{
+    const accessToken = jwt.sign({id:user[0].id,role:user[0].role,isKyc:user[0].isKyc}, process.env.ACCESS_TOKEN!,{
       expiresIn:"7d"
     })
 

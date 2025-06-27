@@ -13,6 +13,7 @@ export const userTable = pgTable("users",{
     address:text("address"),
     age: integer("age"),
     phone:text("phone"),
+    isKyc:boolean("isKyc").default(false).notNull(),
     role:roleEnum("role").notNull().default("user"),
     amountContributed:integer("amountContribute").default(0).notNull(),
     isVerified:boolean("isVerifed").notNull().default(false),

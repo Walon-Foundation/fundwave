@@ -19,8 +19,8 @@ export async function POST(req:NextRequest){
             },{ status:401 })
         }
 
-        const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string}
-        if(!user){
+        const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string, isKyc:boolean}
+        if(!user || !user.isKyc){
             return NextResponse.json({
                 error:"invalid token"
             }, { status:401 })
@@ -121,5 +121,28 @@ export async function POST(req:NextRequest){
         return NextResponse.json({
             error:"internal server error",
         }, { status:500 })
+    }
+}
+
+export async function GET(req:NextRequest){
+    try{
+        const allCampaign = await db.select().from(campiagnTable)
+        if(allCampaign.length === 0){
+            return NextResponse.json({
+                message:"No campaigns created at yet",
+            }, {status:200})
+        }
+        
+        return NextResponse.json({
+            message:"all campaigns",
+            data:{
+                campaigns:allCampaign
+            }
+        }, { status:200})
+    }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err):""
+        return NextResponse.json({
+            error:"internal server error",
+        },{ status:500 })
     }
 }
