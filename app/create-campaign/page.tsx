@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
 import { axiosInstance } from "../../lib/axiosInstance"
+import { useRouter } from "next/navigation"
 
 const categories = [
   "Community",
@@ -55,6 +56,7 @@ export default function CreateCampaignPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {}
@@ -195,6 +197,7 @@ export default function CreateCampaignPage() {
       const res = await axiosInstance.post("/campaigns", submitData)
       if(res.status === 201){
         alert("Campaign created successfully!")
+        router.push('/dashboard')
       }
     } catch (error) {
       console.error("Error creating campaign:", error)

@@ -19,7 +19,7 @@ export async function POST(req:NextRequest){
             },{ status:401 })
         }
 
-        const user = jwt.verify(token, process.env.JWT_SECRET!) as { id:string}
+        const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string}
         if(!user){
             return NextResponse.json({
                 error:"invalid token"
@@ -33,7 +33,7 @@ export async function POST(req:NextRequest){
         const description = body.get("description")
         const fullDescription = body.get("fullDescription")
         const location = body.get("location")
-        const endDate = body.get("endDate")
+        const endDate = body.get("endDate") as string
         const tag = body.get("tags") as string
         const campaignType = body.get("campaignType")
         const image = body.get("image") as File
@@ -44,12 +44,12 @@ export async function POST(req:NextRequest){
             campaignType,
             category,
             tag: JSON.parse(tag),
-            targetAmount,
+            targetAmount: Number(targetAmount),
             description,
             fullDescription,
             location,
-            endDate,
-            teamMembers: JSON.parse(teamMember),
+            endDate: new Date(endDate),
+            teamMembers: JSON.parse(teamMember) || []
         })
 
         if(!success){
@@ -59,7 +59,7 @@ export async function POST(req:NextRequest){
             }, { status:400 })
         }
 
-        if(image.size > 5 *1024 ){
+        if(image.size > 5 *1024 * 1024 ){
             return NextResponse.json({
                 message:"image is to large",
             }, { status:400 })
@@ -87,30 +87,30 @@ export async function POST(req:NextRequest){
             }, { status: 500})
         }
 
-        await db.transaction(async(tx) => {
-            const [newCampaign] = await tx.insert(campiagnTable).values({
-                id:nanoid(16),
-                title:data.title,
-                shortDescription:data.description,
-                location:data.location,
-                campaignEndDate:data.endDate,
-                tags:data.tag,
-                fullStory:data.fullDescription,
-                fundingGoal:data.targetAmount,
-                image:uploadData.fullPath,
-                category:data.category,
-                creatorId:user.id,
-            }).returning()
+        const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
+    
+        const [newCampaign] = await db.insert(campiagnTable).values({
+            id:nanoid(16),
+            title:data.title,
+            shortDescription:data.description,
+            location:data.location,
+            campaignEndDate:data.endDate,
+            tags:data.tag,
+            fullStory:data.fullDescription,
+            fundingGoal:data.targetAmount,
+            image:url,
+            category:data.category,
+            creatorId:user.id,
+        }).returning()
 
-            if(data.teamMembers?.length! > 0){
-                const membersWithCampaignId = data.teamMembers!.map(teamMember =>({
-                    id:nanoid(16),
-                    ...teamMember,
-                    campaignId:newCampaign.id,
-                }))
-                await tx.insert(teamMemberTable).values(membersWithCampaignId)
-            }
-        })
+        if(data.teamMembers?.length! > 0){
+            const membersWithCampaignId = data.teamMembers!.map(teamMember =>({
+                id:nanoid(16),
+                ...teamMember,
+                campaignId:newCampaign.id,
+            }))
+            await db.insert(teamMemberTable).values(membersWithCampaignId)
+        }
 
 
         return NextResponse.json({

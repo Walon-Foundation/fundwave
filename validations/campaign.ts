@@ -16,5 +16,5 @@ export const createCampaign = z.object({
     tag:z.array(z.string().min(2,"tag is required")),
     campaignType:z.string().min(2, "campaign type is required"),
     category:z.string().min(2, "category is required"),
-    teamMembers:z.array(teamMember).min(1,"one team member is required").optional()
+    teamMembers:z.array(teamMember).optional()
 })
