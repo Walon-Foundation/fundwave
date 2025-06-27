@@ -63,7 +63,8 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
 export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>}){
   try{
-    const allComments = await db.select().from(commentTable)
+    const id = (await params).id
+    const allComments = await db.select().from(commentTable).where(eq(commentTable.campaignId, id))
 
     if(allComments.length === 0){
       return NextResponse.json({

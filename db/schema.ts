@@ -62,6 +62,7 @@ export const updateTable = pgTable("updates",{
     title:text("title").notNull(),
     message:text("message").notNull(),
     campaignId:text("campaignId").notNull().references(() => campiagnTable.id, { onDelete: "cascade"}),
+    image:text("image"),
     createdAt:timestamp("createdAt", {withTimezone:true}).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt",{ withTimezone: true}).defaultNow().notNull(),
 })
