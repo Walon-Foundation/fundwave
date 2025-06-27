@@ -16,10 +16,28 @@ export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId
         }
 
         const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string }
-        const checking = (await db.select().from(campiagnTable).where(eq(campiagnTable.id,updateTable.campaignId ))).join(updateTable.campaignId,campiagnTable.id)
     
         const updateId  = (await params).updateId
+        
+        const [update] = await db.select().from(updateTable).where(eq(updateTable.id, updateId)).limit(1)
+        if(!update){
+            return NextResponse.json({
+                error:"update doesn't exist",
+            }, { status:404 })
+        }
 
+        const [campaign] = await db.select().from(campiagnTable).where(eq(campiagnTable.id, update.campaignId))
+        if(!campaign){
+            return NextResponse.json({
+                error:"campaign not found",
+            }, { status:404 })
+        }
+
+        if(campaign.creatorId !== user.id){
+            return NextResponse.json({
+                error:"unauthorized: Not the campaign creator"
+            })
+        }
 
         await db.delete(updateTable).where(eq(updateTable.id, updateId))
 
