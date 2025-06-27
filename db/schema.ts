@@ -37,7 +37,7 @@ export const campiagnTable = pgTable("campaigns",{
     campaignEndDate:timestamp("campaignEndDate", { withTimezone: true}).notNull(),
     creatorId:text("userId").references(() => userTable.id, { onDelete: "cascade" }).notNull(),
     category:text("category").notNull(),
-    image:text("images").array().notNull(),
+    image:text("images").notNull(),
     shortDescription:text("short description").notNull(),
     fullStory:text("fullStory").notNull(),
     tags:text("tags").array().notNull(),
