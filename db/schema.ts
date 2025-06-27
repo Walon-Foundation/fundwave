@@ -50,6 +50,7 @@ export const campiagnTable = pgTable("campaigns",{
 export const commentTable = pgTable("comments",{
     id:text("id").primaryKey().notNull(),
     message:text("message").notNull(),
+    username:text("username").notNull(),
     campaignId:text("campaignId").references(() => campiagnTable.id, { onDelete:"cascade"}).notNull(),
     userId: text("userId").references(() => userTable.id, { onDelete: "cascade"}).notNull(),
     createdAt:timestamp("createdAt", {withTimezone:true}).defaultNow().notNull(),
