@@ -14,7 +14,7 @@ const mockCampaign = {
   fundingGoal: 5000000,
   amountReceived: 2500000, // Note: using correct spelling from schema (amountRecieved)
   location: "Makeni, Northern Province",
-  campaignEndDate: "2024-06-15T23:59:59.000Z",
+  campaignEndDate: "2025-07-29T23:59:59.000Z",
   creatorId: "user_1234567890",
   category: "Community",
   image: "/placeholder.svg?height=400&width=600", // Single image as per schema
@@ -56,7 +56,7 @@ const mockCampaign = {
     </ul>
   `,
   tags: ["water", "community", "health", "infrastructure", "sierra-leone", "sustainability"],
-  createdAt: "2024-01-15T10:00:00.000Z",
+  createdAt: "2024-06-15T10:00:00.000Z",
   updatedAt: "2024-01-20T15:30:00.000Z",
 }
 
@@ -592,3 +592,4 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
     </div>
   )
 }
+

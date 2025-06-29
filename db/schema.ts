@@ -69,7 +69,7 @@ export const updateTable = pgTable("updates",{
 
 export const paymentTable = pgTable("payments",{
     id:text("id").notNull().primaryKey(),
-    userId:text("userId").notNull().references(() => userTable.id, {onDelete: "cascade"}),
+    userId:text("userId").references(() => userTable.id, {onDelete: "cascade"}),
     amount:integer("amount").notNull(),
     campaignId:text("campaignId").notNull().references(() => campiagnTable.id, {onDelete:"cascade"}),
     monimeId:text("monimeId").notNull(),
