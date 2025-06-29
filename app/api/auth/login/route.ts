@@ -29,18 +29,6 @@ export async function POST(req:NextRequest){
       expiresIn:'7d',
     })
 
-    const userToken = jwt.sign({
-      name:user[0].name,
-      email:user[0].email,
-      isVerified:user[0].isVerified,
-      phone:user[0].phone,
-      address:user[0].address,
-      createdAt:user[0].createdAt,
-      totalDonated:user[0].amountContributed,
-    }, process.env.USER_TOKEN!, {
-      expiresIn:"7d"
-    })
-
     const accessToken = jwt.sign({id:user[0].id,role:user[0].role,isKyc:user[0].isKyc}, process.env.ACCESS_TOKEN!,{
       expiresIn:"7d"
     })
@@ -48,7 +36,6 @@ export async function POST(req:NextRequest){
     const response = NextResponse.json({
       message:"user login",
       data:{
-        user:userToken,
         token:sessionToken
       }  
     }, { status:200 })
