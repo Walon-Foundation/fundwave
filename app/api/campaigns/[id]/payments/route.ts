@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "../../../../../db/drizzle";
 import { userTable, paymentTable, campiagnTable } from "../../../../../db/schema";
@@ -25,38 +25,13 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
         const id = (await params).id
         const campaign = await db.select({title:campiagnTable.title}).from(campiagnTable).where(eq(campiagnTable.id, id)).limit(1).execute()
 
-        let userId: string | null = null;
-        let userName: string = "Anonymous";
-
-        // Check if user is authenticated
-        const token = (await cookies()).get("accessToken")?.value;
-        if (token) {
-            try {
-                const decodedUser = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id: string };
-                userId = decodedUser.id;
-                
-                // Fetch user from database
-                const user = await db.select({
-                    name: userTable.name
-                })
-                .from(userTable)
-                .where(eq(userTable.id, userId))
-                .limit(1)
-                .execute();
-
-                if (user[0]?.name) {
-                    userName = user[0].name;
-                }
-            } catch (authError) {
-                // If token verification fails, treat as anonymous
-                console.log("Authentication failed, proceeding as anonymous");
-            }
-        }
+        //getting the user id if the user exist in the database
+        const user = await db.select().from(userTable).where(and(eq(userTable.name, data.name!), eq(userTable.email, data.email!))).limit(1).execute()
 
         // Generate payment code
         const paymentCode = await createPaymentCode(
             campaign[0].title,
-            userName,
+            data.name || "",
             data.amount,
             data.phone
         );
@@ -70,9 +45,10 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
         // Save payment to database
         await db.insert(paymentTable).values({
             id: nanoid(16),
-            userId: userId, 
+            userId: user[0].id, 
             amount: Number(data.amount),
             campaignId: id,
+            username:data.name || "Anonymous",
             monimeId: paymentCode.result.id,
             isCompleted: false,
         }).execute();
@@ -88,5 +64,33 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
         return NextResponse.json({
             error: "internal server error",
         }, { status: 500 });
+    }
+}
+
+
+
+export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>}){
+    try{
+        const id = (await params).id
+        const payments  = await db.select().from(paymentTable).where(eq(paymentTable.campaignId, id))
+
+        if(payments.length === 0){
+            return NextResponse.json({
+                message:"No donations at yet",
+            }, { status:200 })
+        }
+
+        return NextResponse.json({
+            message:"all donation for this campaign",
+            data:{
+                donations:payments,
+            }
+        }, { status:200 })
+
+    }catch(err){
+        process.env.NODE_ENV === "development"? console.log(err):""
+        return NextResponse.json({
+            error:"internal server error",
+        }, { status:500 })
     }
 }
