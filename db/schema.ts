@@ -18,14 +18,19 @@ export const userTable = pgTable("users",{
     amountContributed:integer("amountContribute").default(0).notNull(),
     isVerified:boolean("isVerifed").notNull().default(false),
     district:text("district"),
-    documentType: text("documentType"),
-    documentNumber:text("documentNumber"),
-    documentPhoto: text("documentPhoto").array(),
     occupation:text("occupation"),
     nationality:text("nationality").default("Sierra Leonean"),
     profilePicture:text("profilePicure"),
     createdAt:timestamp("createdAt", {withTimezone:true}).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt",{ withTimezone: true}).defaultNow().notNull(),
+})
+
+export const userDocumentTable = pgTable("userDocument",{
+    id:text("id").primaryKey().notNull(),
+    userId:text("userId").notNull().references(() => userTable.id, { onDelete:"cascade" }),
+    documentType: text("documentType").notNull(),
+    documentNumber:text("documentNumber").notNull(),
+    documentPhoto: text("documentPhoto").notNull()
 })
 
 
@@ -37,6 +42,7 @@ export const campiagnTable = pgTable("campaigns",{
     location:text("location").notNull(),
     campaignEndDate:timestamp("campaignEndDate", { withTimezone: true}).notNull(),
     creatorId:text("userId").references(() => userTable.id, { onDelete: "cascade" }).notNull(),
+    creatorName:text("creatorName").notNull(),
     category:text("category").notNull(),
     image:text("images").notNull(),
     shortDescription:text("short description").notNull(),
@@ -73,6 +79,7 @@ export const paymentTable = pgTable("payments",{
     amount:integer("amount").notNull(),
     campaignId:text("campaignId").notNull().references(() => campiagnTable.id, {onDelete:"cascade"}),
     monimeId:text("monimeId").notNull(),
+    username:text("username"),
     isCompleted:boolean("isCompleted").notNull().default(false),
     createdAt:timestamp("createdAt", {withTimezone:true}).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt",{ withTimezone: true}).defaultNow().notNull(),

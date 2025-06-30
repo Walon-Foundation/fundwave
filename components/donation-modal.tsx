@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { X, CreditCard, Smartphone, Building, Lock, Calendar, User } from "lucide-react"
+import { X, Smartphone, Lock, Copy, CheckCircle } from "lucide-react"
+import axios from "axios"
 
 interface DonationModalProps {
   campaign: {
@@ -18,7 +18,7 @@ interface DonationModalProps {
 
 const donationAmounts = [25000, 50000, 100000, 250000, 500000, 1000000]
 
-export default function DonationModal({ campaign, onClose }: DonationModalProps) {
+export default function DonationModal() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("orange-money")
@@ -28,13 +28,10 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
     phone: "",
     anonymous: false,
   })
-  const [cardInfo, setCardInfo] = useState({
-    number: "",
-    expiry: "",
-    cvv: "",
-    name: "",
-  })
-  const [step, setStep] = useState(1) // 1: Amount, 2: Payment, 3: Details
+  const [step, setStep] = useState(1) // 1: Amount, 2: Payment, 3: Details, 4: USSD
+  const [ussdCode, setUssdCode] = useState("")
+  const [copied, setCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -53,48 +50,69 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
     setStep(step + 1)
   }
 
-  const handleDonate = async (e: React.FormEvent) => {
+  const handlePaymentDetails = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
 
-    const amount = selectedAmount || Number.parseInt(customAmount)
+    try {
+      // This would be your actual API call to generate the USSD code
+      const response = await axios.post("/api/generate-ussd", {
+        amount: selectedAmount || Number.parseInt(customAmount),
+        paymentMethod,
+        phone: donorInfo.phone,
+        campaignId: "", // Add campaign ID here
+        donorInfo: donorInfo.anonymous ? null : {
+          name: donorInfo.name,
+          email: donorInfo.email
+        }
+      })
 
-    // Mock donation API call
-    console.log("Processing donation:", {
-      campaignId: campaign.id,
-      amount,
-      paymentMethod,
-      donorInfo,
-      cardInfo: paymentMethod === "credit-card" ? cardInfo : null,
-    })
-
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    alert("Thank you for your donation! You will receive a confirmation email shortly.")
-    onClose()
-  }
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "")
-    const matches = v.match(/\d{4,16}/g)
-    const match = (matches && matches[0]) || ""
-    const parts = []
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4))
-    }
-    if (parts.length) {
-      return parts.join(" ")
-    } else {
-      return v
+      setUssdCode(response.data.ussdCode)
+      setStep(4)
+    } catch (error) {
+      console.error("Error generating USSD code:", error)
+      alert("Failed to generate payment code. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "")
-    if (v.length >= 2) {
-      return v.substring(0, 2) + "/" + v.substring(2, 4)
+  const handleDonate = async () => {
+    setIsLoading(true)
+    
+    try {
+      // Verify payment was completed
+      await axios.post("/api/verify-payment", {
+        ussdCode,
+        phone: donorInfo.phone
+      })
+
+      alert("Thank you for your donation! You will receive a confirmation SMS shortly.")
+      // onClose()
+    } catch (error) {
+      console.error("Error verifying payment:", error)
+      alert("We couldn't verify your payment. Please contact support if the amount was deducted from your account.")
+    } finally {
+      setIsLoading(false)
     }
-    return v
+  }
+
+  const copyUSSDCode = async () => {
+    try {
+      await navigator.clipboard.writeText(ussdCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea")
+      textArea.value = ussdCode
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   return (
@@ -104,14 +122,14 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">Make a Donation</h2>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <button className="text-slate-400 hover:text-slate-600">
               <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Progress Indicator */}
           <div className="flex items-center mb-6">
-            {[1, 2, 3].map((stepNumber) => (
+            {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -120,8 +138,8 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 >
                   {stepNumber}
                 </div>
-                {stepNumber < 3 && (
-                  <div className={`w-12 h-1 mx-2 ${step > stepNumber ? "bg-indigo-600" : "bg-slate-200"}`} />
+                {stepNumber < 4 && (
+                  <div className={`w-8 h-1 mx-1 ${step > stepNumber ? "bg-indigo-600" : "bg-slate-200"}`} />
                 )}
               </div>
             ))}
@@ -129,8 +147,8 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
 
           {/* Campaign Info */}
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-slate-900 mb-1">{campaign.title}</h3>
-            <p className="text-sm text-slate-600">by {campaign.creator.name}</p>
+            <h3 className="font-semibold text-slate-900 mb-1">{""}</h3>
+            <p className="text-sm text-slate-600">by {""}</p>
           </div>
 
           {/* Step 1: Amount Selection */}
@@ -162,7 +180,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 <input
                   type="number"
                   placeholder="Enter amount in SLL"
-                  className="input"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   value={customAmount}
                   onChange={(e) => {
                     setCustomAmount(e.target.value)
@@ -172,7 +190,10 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 />
               </div>
 
-              <button onClick={handleNext} className="btn-primary w-full">
+              <button
+                onClick={handleNext}
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
                 Continue
               </button>
             </div>
@@ -215,44 +236,40 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50">
+                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50 opacity-50">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="credit-card"
-                    checked={paymentMethod === "credit-card"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    disabled
                     className="mr-3"
                   />
-                  <CreditCard className="w-5 h-5 mr-3 text-green-500" />
-                  <div>
-                    <span className="font-medium">Credit/Debit Card</span>
-                    <p className="text-sm text-slate-600">Visa, Mastercard, American Express</p>
-                  </div>
-                </label>
-
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bank-transfer"
-                    checked={paymentMethod === "bank-transfer"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mr-3"
-                  />
-                  <Building className="w-5 h-5 mr-3 text-blue-500" />
-                  <div>
-                    <span className="font-medium">Bank Transfer</span>
-                    <p className="text-sm text-slate-600">Direct bank transfer</p>
+                  <div className="flex items-center">
+                    <div className="relative mr-3">
+                      <Smartphone className="w-5 h-5 text-slate-400" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-bold text-slate-400">SOON</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-slate-400">Credit/Debit Card</span>
+                      <p className="text-sm text-slate-400">Coming soon</p>
+                    </div>
                   </div>
                 </label>
               </div>
 
               <div className="flex space-x-3">
-                <button onClick={() => setStep(1)} className="btn-outline flex-1">
+                <button
+                  onClick={() => setStep(1)}
+                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                >
                   Back
                 </button>
-                <button onClick={() => setStep(3)} className="btn-primary flex-1">
+                <button
+                  onClick={() => setStep(3)}
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
                   Continue
                 </button>
               </div>
@@ -261,92 +278,21 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
 
           {/* Step 3: Payment Details */}
           {step === 3 && (
-            <form onSubmit={handleDonate}>
+            <form onSubmit={handlePaymentDetails}>
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment Details</h3>
 
-              {/* Credit Card Form */}
-              {paymentMethod === "credit-card" && (
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Card Number</label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        className="input pl-10"
-                        value={cardInfo.number}
-                        onChange={(e) => setCardInfo({ ...cardInfo, number: formatCardNumber(e.target.value) })}
-                        maxLength={19}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder="MM/YY"
-                          className="input pl-10"
-                          value={cardInfo.expiry}
-                          onChange={(e) => setCardInfo({ ...cardInfo, expiry: formatExpiry(e.target.value) })}
-                          maxLength={5}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">CVV</label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder="123"
-                          className="input pl-10"
-                          value={cardInfo.cvv}
-                          onChange={(e) => setCardInfo({ ...cardInfo, cvv: e.target.value.replace(/\D/g, "") })}
-                          maxLength={4}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Cardholder Name</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="John Doe"
-                        className="input pl-10"
-                        value={cardInfo.name}
-                        onChange={(e) => setCardInfo({ ...cardInfo, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Mobile Money Form */}
-              {(paymentMethod === "orange-money" || paymentMethod === "africell-money") && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="+232 XX XXX XXXX"
-                    className="input"
-                    value={donorInfo.phone}
-                    onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
-                    required
-                  />
-                </div>
-              )}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="+232 XX XXX XXXX"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  value={donorInfo.phone}
+                  onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
+                  required
+                />
+              </div>
 
               {/* Donor Information */}
               <div className="mb-6">
@@ -368,7 +314,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                     <input
                       type="text"
                       placeholder="Full Name"
-                      className="input"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       value={donorInfo.name}
                       onChange={(e) => setDonorInfo({ ...donorInfo, name: e.target.value })}
                       required
@@ -376,7 +322,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                     <input
                       type="email"
                       placeholder="Email Address"
-                      className="input"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       value={donorInfo.email}
                       onChange={(e) => setDonorInfo({ ...donorInfo, email: e.target.value })}
                       required
@@ -410,14 +356,113 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
               </div>
 
               <div className="flex space-x-3">
-                <button type="button" onClick={() => setStep(2)} className="btn-outline flex-1">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                >
                   Back
                 </button>
-                <button type="submit" className="btn-primary flex-1">
-                  Donate Now
+                <button
+                  type="submit"
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  ) : null}
+                  Generate USSD Code
                 </button>
               </div>
             </form>
+          )}
+
+          {/* Step 4: USSD Payment */}
+          {step === 4 && (
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Complete Payment</h3>
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Smartphone className="w-8 h-8 text-indigo-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">
+                  {paymentMethod === "orange-money" ? "Orange Money" : "Africell Money"} Payment
+                </h4>
+                <p className="text-slate-600 text-sm">
+                  Dial the USSD code below on your {paymentMethod === "orange-money" ? "Orange" : "Africell"} line to
+                  complete your donation
+                </p>
+              </div>
+
+              <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-slate-700">USSD Code:</span>
+                  <button
+                    onClick={copyUSSDCode}
+                    className="flex items-center text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="bg-white border-2 border-dashed border-slate-300 rounded-lg p-4 text-center">
+                  <code className="text-2xl font-mono font-bold text-slate-900">{ussdCode}</code>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h5 className="font-semibold text-blue-900 mb-2">Instructions:</h5>
+                <ol className="text-sm text-blue-800 space-y-1">
+                  <li>1. Copy the USSD code above</li>
+                  <li>2. Open your phone dialer</li>
+                  <li>3. Dial the USSD code</li>
+                  <li>4. Follow the prompts to complete payment</li>
+                  <li>5. You'll receive a confirmation SMS</li>
+                </ol>
+              </div>
+
+              <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-600">Amount to Pay:</span>
+                  <span className="font-semibold">
+                    {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0) * 1.025)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">Phone Number:</span>
+                  <span className="font-semibold">{donorInfo.phone}</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setStep(3)}
+                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleDonate}
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  ) : null}
+                  I've Completed Payment
+                </button>
+              </div>
+            </div>
           )}
 
           <div className="mt-6 flex items-center justify-center text-xs text-slate-500">

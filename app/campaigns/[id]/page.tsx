@@ -588,8 +588,9 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />}
+      {showDonationModal && <DonationModal />}
     </div>
   )
 }
 
+  // {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />
