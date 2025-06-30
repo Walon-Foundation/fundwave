@@ -71,6 +71,8 @@ export default function Navigation() {
     }
   })
 
+  
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
@@ -104,11 +106,6 @@ export default function Navigation() {
     }
   }
 
-  const user = {
-    name:"",
-    avater:"",
-    email:"",
-  }
 
   return (
     <header className="sticky top-0 z-50">
@@ -222,7 +219,7 @@ export default function Navigation() {
                         className="flex items-center space-x-2 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
                       >
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name || "User"} />
+                          <AvatarImage src={user?.profile || "/placeholder.svg"} alt={user?.name || "User"} />
                           <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
                             {user?.name
                               ?.split(" ")
@@ -325,7 +322,7 @@ export default function Navigation() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3 px-4 py-2">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name || "User"} />
+                        <AvatarImage src={user?.profile || "/placeholder.svg"} alt={user?.name || "User"} />
                         <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
                           {user?.name
                             ?.split(" ")
