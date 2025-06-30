@@ -3,9 +3,10 @@ import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken"
 import { kycSchema } from "../../../../validations/user";
 import { db } from "../../../../db/drizzle";
-import { userTable } from "../../../../db/schema";
+import { userDocumentTable, userTable } from "../../../../db/schema";
 import { eq } from "drizzle-orm";
 import { supabase } from "../../../../lib/supabase";
+import { nanoid } from "nanoid";
 
 
 export async function PATCH(req:NextRequest){
@@ -70,13 +71,18 @@ export async function PATCH(req:NextRequest){
     }
 
     const profilePhotoName = `${userExist[0].name}`
-    // const documentPhotoName = `${userExist[0].name}`
+    const documentPhotoName = `${userExist[0].name}`
 
     const profileBuffer = Buffer.from(await profilePicture.arrayBuffer())
-    // const documentPhotoBuffer = Buffer.from(await documentPhoto.arrayBuffer())
+    const documentPhotoBuffer = Buffer.from(await documentPhoto.arrayBuffer())
   
     const { data:uploadData, error:uploadError }  = await supabase.storage.from("profiles").upload(profilePhotoName, profileBuffer,{
       contentType:profilePicture.type,
+      upsert:false,
+    })
+
+    const {data:uploadDocumentData, error:uploadDocumentError } = await supabase.storage.from("documents").upload(documentPhotoName,documentPhotoBuffer,{
+      contentType:documentPhoto.type,
       upsert:false,
     })
 
@@ -87,19 +93,34 @@ export async function PATCH(req:NextRequest){
       }, { status:500 })
     }
 
-    const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
+    if(uploadDocumentError){
+      console.log(uploadDocumentError.message)
+      return NextResponse.json({
+        error:"failed to upload document picture"
+      }, { status:500 })
+    }
 
-    await db.update(userTable).set({
+    const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
+    const documentUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadDocumentData.fullPath}`
+
+    const newUser = await db.update(userTable).set({
       isKyc:true,
       address:data.address,
       age:data.age,
       nationality:data.nationality,
       district:data.district,
-      documentNumber:data.documentNumber,
-      documentType:data.documentType,
       profilePicture:url,
       occupation:data.occupation,
-    }).where(eq(userTable.id, user.id))
+    }).where(eq(userTable.id, user.id)).returning().execute()
+    
+
+    await db.insert(userDocumentTable).values({
+      documentNumber:data.documentNumber,
+      documentPhoto:documentUrl,
+      documentType:data.documentType,
+      id:nanoid(16),
+      userId:newUser[0].id
+    })
 
     return NextResponse.json({
       message:"kyc completed successfull",
