@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useContext } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Shield, Zap, CheckCircle } from "lucide-react"
 import { Button } from "../../components/ui/button"
@@ -12,6 +11,8 @@ import { Checkbox } from "../../components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { axiosInstance } from "../../lib/axiosInstance"
+import { useRouter } from "next/navigation"
+
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -31,9 +32,8 @@ export default function LoginPage() {
     try{
       const res = await axiosInstance.post("/auth/login",formData)
       if(res.status === 200){
-        setIsLoading(false)
         localStorage.setItem("session", res.data.data.token)
-        router.push("/")
+        router.push("/dashboard")
       }
     }catch(err){
       console.log(err)

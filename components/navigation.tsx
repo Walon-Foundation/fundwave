@@ -2,8 +2,21 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { Menu, X, Heart, ChevronDown, User, Settings, LogOut, Bell, Plus } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { 
+  Menu, 
+  X, 
+  Heart, 
+  ChevronDown, 
+  User, 
+  Settings, 
+  LogOut, 
+  Bell, 
+  Plus,
+  Home,
+  Compass,
+  LayoutDashboard
+} from "lucide-react"
 import { Button } from "./ui/button"
 import {
   DropdownMenu,
@@ -16,15 +29,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Badge } from "./ui/badge"
-
-// Mock user data - replace with actual auth state
-const mockUser = {
-  id: "1",
-  name: "Aminata Kamara",
-  email: "aminata@example.com",
-  avatar: "/placeholder.svg?height=40&width=40",
-  isVerified: true,
-}
+import { Skeleton } from "./ui/skeleton"
 
 // Mock notifications
 const mockNotifications = [
@@ -57,39 +62,60 @@ export default function Navigation() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
   const pathname = usePathname()
+  const router = useRouter()
 
+  useEffect(() => {
+    const token = localStorage.getItem("session")
+    if(token){
+      setIsAuthenticated(true)
+    }
+  })
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const publicNavLinks = [
-    { name: "Home", href: "/" },
-    { name: "Explore", href: "/campaigns" },
+    { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
+    { name: "Explore", href: "/campaigns", icon: <Compass className="w-4 h-4" /> },
   ]
 
   const authenticatedNavLinks = [
-    { name: "Dashboard", href: "/dashboard" },
-    { name: "Explore", href: "/campaigns" },
+    { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { name: "Explore", href: "/campaigns", icon: <Compass className="w-4 h-4" /> },
   ]
 
   const navLinks = isAuthenticated ? authenticatedNavLinks : publicNavLinks
-
-  const handleLogout = () => {
-    localStorage.removeItem("authToken")
-    setIsAuthenticated(false)
-    // Redirect to home or login page
-    window.location.href = "/"
-  }
-
   const unreadCount = notifications.filter((n) => n.unread).length
 
   const markAsRead = (notificationId: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, unread: false } : n)))
   }
 
+  const handleLogout = async () => {
+    try {
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
+  const user = {
+    name:"",
+    avater:"",
+    email:"",
+  }
+
   return (
     <header className="sticky top-0 z-50">
       <nav
         className={`transition-all duration-300 ${
-          isScrolled ? "glass-effect shadow-lg border-b border-white/20" : "bg-white/95 backdrop-blur-sm"
-        }`}
+          isScrolled ? "bg-white/90 shadow-sm border-b" : "bg-white/95"
+        } backdrop-blur-sm`}
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,15 +123,17 @@ export default function Navigation() {
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 rounded-lg p-1 transition-all hover:scale-105"
+              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-lg p-1 transition-all hover:scale-105"
               aria-label="FundWaveSL homepage"
             >
-              <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl flex items-center justify-center shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <span className="text-2xl font-bold gradient-text">FundWave</span>
-                <span className="text-sm text-ocean-600 font-medium">SL</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                  FundWave
+                </span>
+                <span className="text-sm text-blue-600 font-medium">SL</span>
               </div>
             </Link>
 
@@ -115,18 +143,14 @@ export default function Navigation() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                     pathname === link.href
-                      ? "text-ocean-600 bg-ocean-50"
-                      : "text-slate-700 hover:text-ocean-600 hover:bg-ocean-50/50"
+                      ? "text-blue-600 bg-blue-50"
+                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50/50"
                   }`}
                 >
+                  {link.icon}
                   {link.name}
-                  <span
-                    className={`absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-azure-500 to-ocean-500 transition-all duration-300 ${
-                      pathname === link.href ? "w-6" : "w-0 group-hover:w-6"
-                    }`}
-                  ></span>
                 </Link>
               ))}
             </div>
@@ -136,7 +160,7 @@ export default function Navigation() {
               {isAuthenticated ? (
                 <>
                   {/* Create Campaign Button */}
-                  <Button asChild size="sm" className="btn-primary">
+                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
                     <Link href="/create-campaign" className="flex items-center">
                       <Plus className="w-4 h-4 mr-1" />
                       Create
@@ -146,7 +170,7 @@ export default function Navigation() {
                   {/* Notifications */}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="relative text-slate-600 hover:text-ocean-600">
+                      <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-blue-600">
                         <Bell className="w-4 h-4" />
                         {unreadCount > 0 && (
                           <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
@@ -157,23 +181,23 @@ export default function Navigation() {
                     </PopoverTrigger>
                     <PopoverContent className="w-80 p-0 z-50" align="end">
                       <div className="p-4 border-b">
-                        <h3 className="font-semibold text-slate-900">Notifications</h3>
-                        <p className="text-sm text-slate-500">You have {unreadCount} unread notifications</p>
+                        <h3 className="font-semibold text-gray-900">Notifications</h3>
+                        <p className="text-sm text-gray-500">You have {unreadCount} unread notifications</p>
                       </div>
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.slice(0, 3).map((notification) => (
                           <div
                             key={notification.id}
-                            className={`p-4 border-b hover:bg-slate-50 cursor-pointer transition-colors ${
+                            className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
                               notification.unread ? "bg-blue-50" : ""
                             }`}
                             onClick={() => markAsRead(notification.id)}
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <p className="font-medium text-sm text-slate-900">{notification.title}</p>
-                                <p className="text-sm text-slate-600 mt-1">{notification.message}</p>
-                                <p className="text-xs text-slate-400 mt-2">{notification.time}</p>
+                                <p className="font-medium text-sm text-gray-900">{notification.title}</p>
+                                <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                                <p className="text-xs text-gray-400 mt-2">{notification.time}</p>
                               </div>
                               {notification.unread && (
                                 <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
@@ -195,31 +219,31 @@ export default function Navigation() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="flex items-center space-x-2 hover:bg-ocean-50 focus:ring-2 focus:ring-ocean-500"
+                        className="flex items-center space-x-2 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
                       >
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={mockUser.avatar || "/placeholder.svg"} alt={mockUser.name} />
-                          <AvatarFallback className="bg-gradient-to-r from-azure-500 to-ocean-500 text-white">
-                            {mockUser.name
-                              .split(" ")
+                          <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name || "User"} />
+                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
+                            {user?.name
+                              ?.split(" ")
                               .map((n) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="hidden lg:block text-left">
-                          <p className="text-sm font-medium text-slate-900">{mockUser.name}</p>
-                          <p className="text-xs text-slate-500">{mockUser.email}</p>
+                          <p className="text-sm font-medium text-gray-900">{user?.name || "User"}</p>
+                          <p className="text-xs text-gray-500">{user?.email || ""}</p>
                         </div>
-                        <ChevronDown className="w-4 h-4 text-slate-500" />
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 z-50">
                       <DropdownMenuLabel className="flex items-center space-x-2">
                         <div>
-                          <p className="font-medium">{mockUser.name}</p>
-                          <p className="text-sm text-slate-500">{mockUser.email}</p>
+                          <p className="font-medium">{user?.name || "User"}</p>
+                          <p className="text-sm text-gray-500 truncate">{user?.email || ""}</p>
                         </div>
-                        {mockUser.isVerified && (
+                        {user?.email && (
                           <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
                             Verified
                           </Badge>
@@ -251,10 +275,10 @@ export default function Navigation() {
                 </>
               ) : (
                 <>
-                  <Button asChild variant="ghost" className="text-slate-700 hover:text-ocean-600">
+                  <Button asChild variant="ghost" className="text-gray-700 hover:text-blue-600">
                     <Link href="/login">Login</Link>
                   </Button>
-                  <Button asChild className="btn-primary">
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700">
                     <Link href="/signup">Get Started</Link>
                   </Button>
                 </>
@@ -264,7 +288,7 @@ export default function Navigation() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-ocean-50 hover:text-ocean-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 transition-colors"
+              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
               aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
             >
@@ -284,36 +308,42 @@ export default function Navigation() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                  onClick={() => setIsOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-base font-medium transition-colors flex items-center gap-3 ${
                     pathname === link.href
-                      ? "bg-ocean-50 text-ocean-600 border-l-4 border-ocean-500"
-                      : "text-slate-700 hover:bg-ocean-50/50 hover:text-ocean-600"
+                      ? "bg-blue-50 text-blue-600 border-l-4 border-blue-500"
+                      : "text-gray-700 hover:bg-blue-50/50 hover:text-blue-600"
                   }`}
                 >
+                  {link.icon}
                   {link.name}
                 </Link>
               ))}
 
-              <div className="pt-4 border-t border-slate-200">
+              <div className="pt-4 border-t border-gray-200">
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3 px-4 py-2">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={mockUser.avatar || "/placeholder.svg"} alt={mockUser.name} />
-                        <AvatarFallback className="bg-gradient-to-r from-azure-500 to-ocean-500 text-white">
-                          {mockUser.name
-                            .split(" ")
+                        <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name || "User"} />
+                        <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
+                          {user?.name
+                            ?.split(" ")
                             .map((n) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-slate-900">{mockUser.name}</p>
-                        <p className="text-sm text-slate-500">{mockUser.email}</p>
+                        <p className="font-medium text-gray-900">{user?.name || "User"}</p>
+                        <p className="text-sm text-gray-500">{user?.email || ""}</p>
                       </div>
                       {unreadCount > 0 && <Badge className="bg-red-500 text-white">{unreadCount}</Badge>}
                     </div>
-                    <Button asChild className="w-full btn-primary">
+                    <Button 
+                      asChild 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setIsOpen(false)}
+                    >
                       <Link href="/create-campaign" className="flex items-center justify-center">
                         <Plus className="w-4 h-4 mr-2" />
                         Create Campaign
@@ -330,10 +360,19 @@ export default function Navigation() {
                   </div>
                 ) : (
                   <div className="flex flex-col space-y-3">
-                    <Button asChild variant="outline" className="btn-secondary">
+                    <Button 
+                      asChild 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setIsOpen(false)}
+                    >
                       <Link href="/login">Login</Link>
                     </Button>
-                    <Button asChild className="btn-primary">
+                    <Button 
+                      asChild 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setIsOpen(false)}
+                    >
                       <Link href="/signup">Get Started</Link>
                     </Button>
                   </div>
