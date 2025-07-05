@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { useAuth } from "../context/AuthContext"
+import { axiosInstance } from "../lib/axiosInstance"
 import { 
   Menu, 
   X, 
@@ -28,50 +30,25 @@ import {
 } from "./ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
-import { Badge } from "./ui/badge"
 import { Skeleton } from "./ui/skeleton"
 
-// Mock notifications
-const mockNotifications = [
-  {
-    id: "1",
-    title: "New donation received",
-    message: "John Doe donated $50 to your campaign",
-    time: "2 minutes ago",
-    unread: true,
-  },
-  {
-    id: "2",
-    title: "Campaign milestone reached",
-    message: "Your campaign has reached 75% of its goal!",
-    time: "1 hour ago",
-    unread: true,
-  },
-  {
-    id: "3",
-    title: "New comment on campaign",
-    message: "Someone left a supportive comment",
-    time: "3 hours ago",
-    unread: false,
-  },
-]
+// Define the notification type based on the API response (logTable schema)
+interface Notification {
+  id: string;
+  level: "success" | "error" | "warning" | "info";
+  timestamp: string; // ISO date string
+  category: string;
+  details: string;
+}
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loadingNotifications, setLoadingNotifications] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
-
-  useEffect(() => {
-    const token = localStorage.getItem("session")
-    if(token){
-      setIsAuthenticated(true)
-    }
-  })
-
-  
+  const { isAuthenticated, user, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,6 +57,27 @@ export default function Navigation() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoadingNotifications(true);
+      const fetchNotifications = async () => {
+        try {
+          const response = await axiosInstance.get<{ data: Notification[] }>('/api/notifications');
+          setNotifications(response.data.data);
+        } catch (error) {
+          console.error("Failed to fetch notifications", error);
+          setNotifications([]); // Clear on error
+        } finally {
+          setLoadingNotifications(false);
+        }
+      };
+      fetchNotifications();
+    } else {
+      setNotifications([]); // Clear notifications on logout
+      setLoadingNotifications(false);
+    }
+  }, [isAuthenticated]);
 
   const publicNavLinks = [
     { name: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
@@ -92,20 +90,11 @@ export default function Navigation() {
   ]
 
   const navLinks = isAuthenticated ? authenticatedNavLinks : publicNavLinks
-  const unreadCount = notifications.filter((n) => n.unread).length
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, unread: false } : n)))
+  const handleLogout = () => {
+    logout()
+    router.push('/')
   }
-
-  const handleLogout = async () => {
-    try {
-      router.push('/')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
-
 
   return (
     <header className="sticky top-0 z-50">
@@ -121,7 +110,7 @@ export default function Navigation() {
             <Link
               href="/"
               className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-lg p-1 transition-all hover:scale-105"
-              aria-label="FundWaveSL homepage"
+              aria-label="FundWave homepage"
             >
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl flex items-center justify-center shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
@@ -130,20 +119,19 @@ export default function Navigation() {
                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
                   FundWave
                 </span>
-                <span className="text-sm text-blue-600 font-medium">SL</span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                  className={`text-base font-medium transition-colors flex items-center gap-2 ${
                     pathname === link.href
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50/50"
+                      ? "text-blue-600"
+                      : "text-gray-600 hover:text-blue-600"
                   }`}
                 >
                   {link.icon}
@@ -152,117 +140,90 @@ export default function Navigation() {
               ))}
             </div>
 
-            {/* Desktop Auth Section */}
-            <div className="hidden md:flex items-center space-x-3">
-              {isAuthenticated ? (
+            {/* Actions */}
+            <div className="hidden md:flex items-center space-x-4">
+              {isAuthenticated && user ? (
                 <>
-                  {/* Create Campaign Button */}
-                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
-                    <Link href="/create-campaign" className="flex items-center">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Create
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                    <Link href="/create-campaign">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Campaign
                     </Link>
                   </Button>
 
-                  {/* Notifications */}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-blue-600">
-                        <Bell className="w-4 h-4" />
-                        {unreadCount > 0 && (
-                          <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                            {unreadCount}
-                          </Badge>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="w-5 h-5" />
+                        {notifications.length > 0 && (
+                          <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 z-50" align="end">
+                    <PopoverContent className="w-80 p-0">
                       <div className="p-4 border-b">
-                        <h3 className="font-semibold text-gray-900">Notifications</h3>
-                        <p className="text-sm text-gray-500">You have {unreadCount} unread notifications</p>
+                        <h4 className="font-medium">Notifications</h4>
                       </div>
                       <div className="max-h-80 overflow-y-auto">
-                        {notifications.slice(0, 3).map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
-                              notification.unread ? "bg-blue-50" : ""
-                            }`}
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p className="font-medium text-sm text-gray-900">{notification.title}</p>
-                                <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                                <p className="text-xs text-gray-400 mt-2">{notification.time}</p>
-                              </div>
-                              {notification.unread && (
-                                <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
-                              )}
-                            </div>
+                        {loadingNotifications ? (
+                          <div className="p-4 space-y-4">
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
                           </div>
-                        ))}
-                      </div>
-                      <div className="p-3 border-t">
-                        <Button asChild variant="ghost" className="w-full text-sm">
-                          <Link href="/notifications">View all notifications</Link>
-                        </Button>
+                        ) : notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <div key={notification.id} className="p-4 border-t">
+                              <p className="font-semibold capitalize">{notification.category}</p>
+                              <p className="text-sm text-gray-600">{notification.details}</p>
+                              <p className="text-xs text-gray-400 mt-2">
+                                {new Date(notification.timestamp).toLocaleString()}
+                              </p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="p-4 text-sm text-gray-500">No new notifications.</p>
+                        )}
                       </div>
                     </PopoverContent>
                   </Popover>
 
-                  {/* User Menu */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="flex items-center space-x-2 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
-                      >
+                      <Button variant="ghost" className="flex items-center space-x-2">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={user?.profile || "/placeholder.svg"} alt={user?.name || "User"} />
+                          <AvatarImage src={'/placeholder.svg'} alt={user.name} />
                           <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
-                            {user?.name
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {user.name?.split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="hidden lg:block text-left">
-                          <p className="text-sm font-medium text-gray-900">{user?.name || "User"}</p>
-                          <p className="text-xs text-gray-500">{user?.email || ""}</p>
-                        </div>
                         <ChevronDown className="w-4 h-4 text-gray-500" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 z-50">
-                      <DropdownMenuLabel className="flex items-center space-x-2">
-                        <div>
-                          <p className="font-medium">{user?.name || "User"}</p>
-                          <p className="text-sm text-gray-500 truncate">{user?.email || ""}</p>
-                        </div>
-                        {user?.email && (
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                            Verified
-                          </Badge>
-                        )}
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-gray-500 font-normal">
+                          {user.email}
+                        </p>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="flex items-center cursor-pointer">
+                        <Link href="/profile" className="flex items-center">
                           <User className="w-4 h-4 mr-2" />
                           Profile
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="flex items-center cursor-pointer">
+                        <Link href="/settings" className="flex items-center">
                           <Settings className="w-4 h-4 mr-2" />
-                          Dashboard
+                          Settings
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                        className="text-red-600 focus:bg-red-50 focus:text-red-700"
                       >
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
@@ -272,7 +233,7 @@ export default function Navigation() {
                 </>
               ) : (
                 <>
-                  <Button asChild variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  <Button asChild variant="ghost">
                     <Link href="/login">Login</Link>
                   </Button>
                   <Button asChild className="bg-blue-600 hover:bg-blue-700">
@@ -282,10 +243,10 @@ export default function Navigation() {
               )}
             </div>
 
-            {/* Mobile menu button */}
+            {/* Mobile Menu Button */}
             <button
+              className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
               aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
             >
@@ -318,23 +279,19 @@ export default function Navigation() {
               ))}
 
               <div className="pt-4 border-t border-gray-200">
-                {isAuthenticated ? (
+                {isAuthenticated && user ? (
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3 px-4 py-2">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={user?.profile || "/placeholder.svg"} alt={user?.name || "User"} />
+                        <AvatarImage src={'/placeholder.svg'} alt={user.name} />
                         <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-400 text-white">
-                          {user?.name
-                            ?.split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {user.name?.split(" ").map((n) => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-gray-900">{user?.name || "User"}</p>
-                        <p className="text-sm text-gray-500">{user?.email || ""}</p>
+                        <p className="font-medium text-gray-900">{user.name}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
-                      {unreadCount > 0 && <Badge className="bg-red-500 text-white">{unreadCount}</Badge>}
                     </div>
                     <Button 
                       asChild 

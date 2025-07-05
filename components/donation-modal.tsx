@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { X, Smartphone, Lock, Copy, CheckCircle } from "lucide-react"
-import axios from "axios"
+import { axiosInstance } from "../lib/axiosInstance"
 
 interface DonationModalProps {
   campaign: {
@@ -18,7 +18,7 @@ interface DonationModalProps {
 
 const donationAmounts = [25000, 50000, 100000, 250000, 500000, 1000000]
 
-export default function DonationModal() {
+export default function DonationModal({ campaign, onClose }: DonationModalProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("orange-money")
@@ -56,11 +56,11 @@ export default function DonationModal() {
 
     try {
       // This would be your actual API call to generate the USSD code
-      const response = await axios.post("/api/generate-ussd", {
+      const response = await axiosInstance.post("generate-ussd", {
         amount: selectedAmount || Number.parseInt(customAmount),
         paymentMethod,
         phone: donorInfo.phone,
-        campaignId: "", // Add campaign ID here
+        campaignId: campaign.id,
         donorInfo: donorInfo.anonymous ? null : {
           name: donorInfo.name,
           email: donorInfo.email
@@ -82,7 +82,7 @@ export default function DonationModal() {
     
     try {
       // Verify payment was completed
-      await axios.post("/api/verify-payment", {
+      await axiosInstance.post("verify-payment", {
         ussdCode,
         phone: donorInfo.phone
       })
