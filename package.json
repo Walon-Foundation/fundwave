@@ -10,7 +10,8 @@
     "db:generate": "npx drizzle-kit generate",
     "db:studio": "npx drizzle-kit studio",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "db:seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -50,10 +51,13 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
+    "cuid": "^3.0.0",
     "date-fns": "4.1.0",
     "drizzle-orm": "^0.44.2",
+    "drizzle-seed": "^0.3.1",
     "embla-carousel-react": "latest",
     "input-otp": "latest",
+    "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.454.0",
@@ -61,6 +65,7 @@
     "next": "15.2.4",
     "next-themes": "latest",
     "nodemailer": "^7.0.3",
+    "openai": "^5.8.2",
     "react": "^19",
     "react-day-picker": "latest",
     "react-dom": "^19",
