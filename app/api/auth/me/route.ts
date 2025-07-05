@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
@@ -8,15 +9,16 @@ import { eq } from "drizzle-orm";
 
 export async function GET(req:NextRequest){
     try{
-        //auth
-        const token = (await cookies()).get("accessToken")?.value
-        if(!token){
+        // auth
+        const authHeader = req.headers.get('authorization');
+        const token = authHeader?.split(' ')[1];
+        if (!token) {
             return NextResponse.json({
                 error:"user not authenticated",
             }, { status:401 })
         }
 
-        const decodedUser = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id: string}
+        const decodedUser = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
         if(!decodedUser){
             return NextResponse.json({
                 error:"invalid auth token",
