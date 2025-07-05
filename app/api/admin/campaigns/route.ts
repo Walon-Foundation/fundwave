@@ -1,20 +1,25 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { db } from "@/db/drizzle";
+import { campaignTable, campaignStatusEnum } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const status = searchParams.get("status")
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status");
 
-  return NextResponse.json({
-    campaigns: [
-      {
-        id: "1",
-        title: "Clean Water Project",
-        creator: "Aminata Kamara",
-        status: status || "active",
-        raised: 2500000,
-        target: 5000000,
-        createdAt: "2024-01-15",
-      },
-    ],
-  })
+  try {
+    const queryBuilder = db.select().from(campaignTable);
+
+    if (status && campaignStatusEnum.enumValues.includes(status as any)) {
+      queryBuilder.where(eq(campaignTable.status, status as any));
+    }
+
+    const campaigns = await queryBuilder;
+
+    return NextResponse.json({ campaigns });
+  } catch (error) {
+    console.error("Error fetching campaigns:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
+

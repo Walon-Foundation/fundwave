@@ -1,44 +1,58 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { db } from "@/db/drizzle";
+import { reportTable, reportStatusEnum, reportTypeEnum } from "@/db/schema";
+import { eq, and, count } from "drizzle-orm";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const status = searchParams.get("status") || "all"
-  const type = searchParams.get("type") || "all"
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status");
+  const type = searchParams.get("type");
 
-  return NextResponse.json({
-    reports: [
-      {
-        id: "report1",
-        type: "campaign",
-        targetId: "campaign123",
-        targetTitle: "Suspicious Campaign",
-        reason: "fraud",
-        description: "This campaign seems fraudulent",
-        reporterId: "user456",
-        reporterName: "John Doe",
-        status: "pending",
-        priority: "high",
-        createdAt: "2024-01-20T10:30:00Z",
-      },
-      {
-        id: "report2",
-        type: "user",
-        targetId: "user789",
-        targetTitle: "Spam User",
-        reason: "spam",
-        description: "User posting spam comments",
-        reporterId: "user123",
-        reporterName: "Jane Smith",
-        status: "investigating",
-        priority: "medium",
-        createdAt: "2024-01-19T14:15:00Z",
-      },
-    ],
-    summary: {
-      total: 15,
-      pending: 8,
-      investigating: 4,
-      resolved: 3,
-    },
-  })
+  try {
+    // Build the query for fetching reports
+    const queryBuilder = db.select().from(reportTable);
+    const conditions = [];
+    if (status && reportStatusEnum.enumValues.includes(status as any)) {
+      conditions.push(eq(reportTable.status, status as any));
+    }
+    if (type && reportTypeEnum.enumValues.includes(type as any)) {
+      conditions.push(eq(reportTable.type, type as any));
+    }
+    if (conditions.length > 0) {
+      queryBuilder.where(and(...conditions));
+    }
+
+    const reports = await queryBuilder;
+
+    // Build the summary
+    const [totalRes] = await db.select({ value: count() }).from(reportTable);
+    const [pendingRes] = await db
+      .select({ value: count() })
+      .from(reportTable)
+      .where(eq(reportTable.status, "pending"));
+    const [investigatingRes] = await db
+      .select({ value: count() })
+      .from(reportTable)
+      .where(eq(reportTable.status, "investigating"));
+    const [resolvedRes] = await db
+      .select({ value: count() })
+      .from(reportTable)
+      .where(eq(reportTable.status, "resolved"));
+
+    const summary = {
+      total: totalRes.value,
+      pending: pendingRes.value,
+      investigating: investigatingRes.value,
+      resolved: resolvedRes.value,
+    };
+
+    return NextResponse.json({
+      reports,
+      summary,
+    });
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
+

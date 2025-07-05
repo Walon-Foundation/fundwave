@@ -1,22 +1,34 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { db } from "@/db/drizzle";
+import { userTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
   try {
-    const { userId, reason, duration } = await request.json()
+    const { userId } = await request.json();
+
+    if (!userId) {
+      return new NextResponse("User ID is required", { status: 400 });
+    }
+
+    const [updatedUser] = await db
+      .update(userTable)
+      .set({ status: "suspended" })
+      .where(eq(userTable.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      return new NextResponse("User not found", { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
-      suspension: {
-        id: `suspension_${Date.now()}`,
-        userId,
-        reason,
-        duration,
-        suspendedAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString(),
-      },
       message: "User suspended successfully",
-    })
+      user: updatedUser,
+    });
   } catch (error) {
-    return NextResponse.json({ error: "User suspension failed" }, { status: 400 })
+    console.error("Error suspending user:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
+
