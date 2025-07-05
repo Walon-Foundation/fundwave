@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Badge } from "../../components/ui/badge"
 import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
+import { useAuth } from "../../context/AuthContext"
 
 
 export default function LoginPage() {
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const { login } = useAuth();
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +35,11 @@ export default function LoginPage() {
     try{
       const res = await axiosInstance.post("/auth/login",formData)
       if(res.status === 200){
-        localStorage.setItem("session", res.data.data.token)
+              if (res.status === 200) {
+        const { token } = res.data.data;
+        login(token); // This now handles setting the session
+        router.push("/dashboard");
+      }
         router.push("/dashboard")
       }
     }catch(err){

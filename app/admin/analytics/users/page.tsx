@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react";
+import { axiosInstance } from "@/lib/axiosInstance";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card"
 import { Button } from "../../../../components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs"
@@ -115,7 +116,18 @@ const behaviorData = [
 ]
 
 export default function AdminUserAnalyticsPage() {
-  const [timeRange, setTimeRange] = useState("30d")
+  const [timeRange, setTimeRange] = useState("30d");
+const [overview, setOverview] = useState<{ totalUsers: number; totalCampaigns: number; totalRaised: number; activeCampaigns: number;} | null>(null);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  setLoading(true);
+  axiosInstance
+    .get(`/api/admin/analytics?range=${timeRange}`)
+    .then((res) => setOverview(res.data.overview))
+    .catch((err) => console.error("Error fetching analytics:", err))
+    .finally(() => setLoading(false));
+}, [timeRange]);
 
   return (
     <div className="space-y-6">
@@ -146,36 +158,62 @@ export default function AdminUserAnalyticsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {userStats.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <div className="flex items-center mt-1">
-                    {stat.trend === "up" ? (
-                      <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3 text-red-500 mr-1" />
-                    )}
-                    <span className={`text-xs ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                      {stat.change}
-                    </span>
-                  </div>
-                </div>
-                <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {loading || !overview ? (
+  <div>Loading statistics...</div>
+) : (
+  <>
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total Users</p>
+            <p className="text-2xl font-bold text-gray-900">{overview.totalUsers}</p>
+          </div>
+          <Users className="w-6 h-6 text-blue-600" />
+        </div>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
+            <p className="text-2xl font-bold text-gray-900">{overview.totalCampaigns}</p>
+          </div>
+          <Activity className="w-6 h-6 text-green-600" />
+        </div>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total Raised</p>
+            <p className="text-2xl font-bold text-gray-900">{overview.totalRaised}</p>
+          </div>
+          <TrendingUp className="w-6 h-6 text-purple-600" />
+        </div>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Active Campaigns</p>
+            <p className="text-2xl font-bold text-gray-900">{overview.activeCampaigns}</p>
+          </div>
+          <UserCheck className="w-6 h-6 text-orange-600" />
+        </div>
+      </CardContent>
+    </Card>
+  </>
+)}
       </div>
 
       <Tabs defaultValue="growth" className="space-y-6">
         <TabsList>
           <TabsTrigger value="growth">User Growth</TabsTrigger>
+
           <TabsTrigger value="behavior">User Behavior</TabsTrigger>
           <TabsTrigger value="demographics">Demographics</TabsTrigger>
           <TabsTrigger value="devices">Devices & Platforms</TabsTrigger>

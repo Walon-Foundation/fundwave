@@ -4,5 +4,19 @@ const baseURL = process.env.NODE_ENV === "development" ? "http://localhost:3000/
 
 export const axiosInstance = axios.create({
     baseURL,
-    withCredentials:true,
-})
+});
+
+axiosInstance.interceptors.request.use(
+    (config) => {
+        if (typeof window !== 'undefined') {
+            const token = sessionStorage.getItem('session');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
