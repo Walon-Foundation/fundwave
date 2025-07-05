@@ -1,39 +1,102 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { db } from "@/db/drizzle";
+import { userTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  // Mock user data
-  const user = {
-    id: params.id,
-    firstName: "Aminata",
-    lastName: "Kamara",
-    email: "aminata@email.com",
-    phone: "+232 76 123 456",
-    location: "Freetown, Western Area",
-    avatar: "/placeholder.svg?height=100&width=100",
-    joinDate: "2024-01-15",
-    kycStatus: "approved",
-    totalDonated: 750000,
-    campaignsSupported: 12,
-    campaignsCreated: 2,
-    totalRaised: 7500000,
+  const { id } = params;
+
+  if (!id) {
+    return new NextResponse("User ID is required", { status: 400 });
   }
 
-  return NextResponse.json(user)
+  try {
+    const [user] = await db.select({
+      id: userTable.id,
+      name: userTable.name,
+      email: userTable.email,
+      address: userTable.address,
+      phone: userTable.phone,
+      isKyc: userTable.isKyc,
+      role: userTable.role,
+      amountContributed: userTable.amountContributed,
+      isVerified: userTable.isVerified,
+      district: userTable.district,
+      occupation: userTable.occupation,
+      nationality: userTable.nationality,
+      profilePicture: userTable.profilePicture,
+      createdAt: userTable.createdAt,
+      status: userTable.status,
+    }).from(userTable).where(eq(userTable.id, id));
+
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
+
+    // TODO: Add logic to calculate campaignsSupported, campaignsCreated, totalRaised
+    const userProfile = {
+      ...user,
+      campaignsSupported: 0, // Placeholder
+      campaignsCreated: 0,   // Placeholder
+      totalRaised: 0,        // Placeholder
+    };
+
+
+    return NextResponse.json(userProfile);
+  } catch (error) {
+    console.error(`Error fetching user ${id}:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const body = await request.json()
+  const authenticatedUserId = request.headers.get("x-user-id");
+  const { id } = params;
 
-    // In a real app, update user in database
-    const updatedUser = {
-      id: params.id,
-      ...body,
-      updatedAt: new Date().toISOString(),
+  if (!id) {
+    return new NextResponse("User ID is required", { status: 400 });
+  }
+
+  if (authenticatedUserId !== id) {
+    return new NextResponse("Forbidden: You can only update your own profile", { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { name, address, phone, district, occupation, profilePicture } = body;
+
+    const [updatedUser] = await db
+      .update(userTable)
+      .set({
+        name,
+        address,
+        phone,
+        district,
+        occupation,
+        profilePicture,
+        updatedAt: new Date(),
+      })
+      .where(eq(userTable.id, id))
+      .returning({
+        id: userTable.id,
+        name: userTable.name,
+        email: userTable.email,
+        address: userTable.address,
+        phone: userTable.phone,
+        district: userTable.district,
+        occupation: userTable.occupation,
+        profilePicture: userTable.profilePicture,
+        updatedAt: userTable.updatedAt,
+      });
+
+    if (!updatedUser) {
+      return new NextResponse("User not found or failed to update", { status: 404 });
     }
 
-    return NextResponse.json(updatedUser)
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update user" }, { status: 500 })
+    console.error(`Error updating user ${id}:`, error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
+

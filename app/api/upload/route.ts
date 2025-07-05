@@ -1,23 +1,36 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { writeFile } from "fs/promises";
+import { join } from "path";
+import cuid from "cuid";
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData()
-    const file = formData.get("file") as File
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 })
+      return new NextResponse("No file provided", { status: 400 });
     }
 
-    // Demo file upload
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const extension = file.name.split(".").pop();
+    const filename = `${cuid()}.${extension}`;
+    const path = join(process.cwd(), "public/uploads", filename);
+
+    await writeFile(path, buffer);
+
     return NextResponse.json({
       success: true,
-      url: `/uploads/${file.name}`,
-      filename: file.name,
+      url: `/uploads/${filename}`,
+      filename,
       size: file.size,
       type: file.type,
-    })
+    });
   } catch (error) {
-    return NextResponse.json({ error: "File upload failed" }, { status: 400 })
+    console.error("File upload failed:", error);
+    return new NextResponse("File upload failed", { status: 500 });
   }
 }
+
