@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import type React from "react"
 import { useState } from "react"
@@ -28,23 +28,20 @@ export default function LoginPage() {
   const { login } = useAuth();
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-    try{
-      const res = await axiosInstance.post("/auth/login",formData)
-      if(res.status === 200){
-              if (res.status === 200) {
-        const { token } = res.data.data;
-        login(token); // This now handles setting the session
-        router.push("/dashboard");
-      }
-        router.push("/dashboard")
-      }
-    }catch(err){
-      console.log(err)
-      setError("failed to login")
+    try {
+      const res = await axiosInstance.post("/auth/login", formData)
+      const { token } = res.data.data
+      login(token)
+      router.push("/dashboard")
+    } catch (err: any) {
+      console.error("Login error:", err)
+      setError(err.response?.data?.error || "Failed to login")
+    } finally {
+      setIsLoading(false)
     }
   }
 

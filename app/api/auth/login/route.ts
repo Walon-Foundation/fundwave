@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       .select()
       .from(userTable)
       .where(eq(userTable.email, data.email))
-      .limit(1);
+      .limit(1).execute();
 
     if (!user || !(await bcrypt.compare(data.password, user.password))) {
       await logEvent({
