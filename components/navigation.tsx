@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { useAuth } from "../context/AuthContext"
+import { useUser, useClerk } from "@clerk/nextjs"
 import { axiosInstance } from "../lib/axiosInstance"
 import { 
   Menu, 
@@ -48,7 +48,8 @@ export default function Navigation() {
   const [loadingNotifications, setLoadingNotifications] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isSignedIn: isAuthenticated, user } = useUser()
+  const clerk = useClerk()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,7 +93,7 @@ export default function Navigation() {
   const navLinks = isAuthenticated ? authenticatedNavLinks : publicNavLinks
 
   const handleLogout = () => {
-    logout()
+    clerk.signOut()
     router.push('/')
   }
 
@@ -234,10 +235,10 @@ export default function Navigation() {
               ) : (
                 <>
                   <Button asChild variant="ghost">
-                    <Link href="/login">Login</Link>
+                  <Link href="/sign-in">Login</Link>
                   </Button>
                   <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                    <Link href="/signup">Get Started</Link>
+                    <Link href="/sign-up">Get Started</Link>
                   </Button>
                 </>
               )}
@@ -320,14 +321,14 @@ export default function Navigation() {
                       className="w-full"
                       onClick={() => setIsOpen(false)}
                     >
-                      <Link href="/login">Login</Link>
+                    <Link href="/sign-in">Login</Link>
                     </Button>
                     <Button 
                       asChild 
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       onClick={() => setIsOpen(false)}
                     >
-                      <Link href="/signup">Get Started</Link>
+                      <Link href="/sign-up">Get Started</Link>
                     </Button>
                   </div>
                 )}

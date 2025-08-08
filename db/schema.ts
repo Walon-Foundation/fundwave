@@ -9,6 +9,7 @@ export const campaignStatusEnum = pgEnum("campaign_status", ["pending", "active"
 
 export const userTable = pgTable("users",{
     id:text("id").primaryKey().notNull(),
+    clerkId:text("clerk_id").notNull(),
     name:text("name").notNull(),
     email: text("email").notNull().unique(),
     password: text("password").notNull(),
