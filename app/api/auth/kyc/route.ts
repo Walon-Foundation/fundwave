@@ -43,6 +43,7 @@ export async function PATCH(req:NextRequest){
     const occupation =  body.get("occupation")
     const nationality =  body.get("nationality")
     const age =  body.get("age")
+    const phoneNumber = body.get("phoneNumber")
     const profilePicture =  body.get("profilePicture") as File
     const documentPhoto =  body.get("documentPhoto") as File
 
@@ -59,6 +60,7 @@ export async function PATCH(req:NextRequest){
       documentNumber,
       occupation,
       nationality,
+      phoneNumber,
       age:Number(age)
     })
 
@@ -115,6 +117,7 @@ export async function PATCH(req:NextRequest){
       nationality:data.nationality,
       profilePicture:url,
       district:data.district,
+      phone:data.phoneNumber
     }).returning()
     
 

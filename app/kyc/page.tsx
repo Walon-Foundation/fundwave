@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Upload, ChevronLeft, ChevronRight } from "lucide-react"
 import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
+import { PhoneNumber } from "@clerk/nextjs/server"
 
 export default function KYCPage() {
   const [step, setStep] = useState(1)
@@ -18,6 +19,7 @@ export default function KYCPage() {
     nationality: "Sierra Leonean",
     profilePicture: null as File | null,
     age: "",
+    phoneNumber:""
   })
 
   const router = useRouter()
@@ -73,6 +75,7 @@ export default function KYCPage() {
     submitData.append("occupation", formData.occupation)
     submitData.append("nationality", formData.nationality)
     submitData.append("age", formData.age)
+    submitData.append("phoneNumber", formData.phoneNumber)
     
     if (formData.profilePicture) {
       submitData.append("profilePicture", formData.profilePicture)
@@ -234,6 +237,17 @@ export default function KYCPage() {
                     required
                     className="input"
                     value={formData.occupation}
+                    onChange={handleChange}
+                  />
+                </div>
+                  <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">PhoneNumber *</label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    required
+                    className="input"
+                    value={formData.phoneNumber}
                     onChange={handleChange}
                   />
                 </div>
