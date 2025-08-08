@@ -1,35 +1,33 @@
-// @ts-nocheck
+import { auth, clerkClient } from "@clerk/nextjs/server"
 import { NextResponse, NextRequest } from "next/server";
 import { createCampaign } from "../../../validations/campaign";
 import { supabase } from "../../../lib/supabase";
-import { verifyJwt } from "../../../lib/jwt";
 import { db } from "../../../db/drizzle";
-import { campiagnTable, teamMemberTable } from "../../../db/schema";
+import { campaignTable, teamMemberTable, userTable } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 
-
-
 export async function POST(req:NextRequest){
     try{
-        // extract token from Authorization header and verify JWT
-        const authHeader = req.headers.get('authorization');
-        const token = authHeader?.split(' ')[1];
-        if (!token) {
-            return NextResponse.json({
-                error: "user not authenticated",
-            }, { status: 401 });
+        //authenticating the user
+        const { userId:clerkId } = await auth();
+        if (!clerkId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const payload = await verifyJwt(token);
-        if (!payload || !payload.id) {
-            return NextResponse.json({ error: "invalid token" }, { status: 401 });
+        //getting the user details from clerk
+        const user = (await clerkClient()).users.getUser(clerkId)
+
+        const userExist = await db.select().from(userTable).where(eq(userTable.id, (await user).id)).limit(1)
+        
+        if(!user || userExist.length === 0){
+        return NextResponse.json({
+            error:"user auth token is invalid",
+        }, { status:401 })
         }
-        if (!payload.isKyc) {
-            return NextResponse.json({ error: "KYC not completed" }, { status: 403 });
-        }
-        const userId = payload.id;
+        
+        const userId = userExist[0].id;
 
         const body = await req.formData()
         const title = body.get("title")
@@ -70,7 +68,7 @@ export async function POST(req:NextRequest){
             }, { status:400 })
         }
 
-        const campaign = await db.select().from(campiagnTable).where(and(eq(campiagnTable.title, data.title),eq(campiagnTable.shortDescription, data.description))).limit(1)
+        const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.title, data.title),eq(campaignTable.shortDescription, data.description))).limit(1)
         if(campaign.length > 0){
             return NextResponse.json({
                 message:"campaign already exist",
@@ -94,7 +92,7 @@ export async function POST(req:NextRequest){
 
         const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
     
-        const [newCampaign] = await db.insert(campiagnTable).values({
+        const [newCampaign] = await db.insert(campaignTable).values({
             id:nanoid(16),
             title:data.title,
             shortDescription:data.description,
@@ -106,7 +104,7 @@ export async function POST(req:NextRequest){
             image:url,
             category:data.category,
             creatorId: userId,
-            creatorName: payload.name,
+            creatorName: userExist[0].name,
         }).returning()
 
         if(data.teamMembers?.length! > 0){
@@ -132,7 +130,7 @@ export async function POST(req:NextRequest){
 
 export async function GET(req:NextRequest){
     try{
-        const allCampaign = await db.select().from(campiagnTable)
+        const allCampaign = await db.select().from(campaignTable)
         if(allCampaign.length === 0){
             return NextResponse.json({
                 message:"No campaigns created at yet",

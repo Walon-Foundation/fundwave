@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../db/drizzle";
-import { campiagnTable, userTable } from "../../../../db/schema";
+import { campaignTable, userTable } from "../../../../db/schema";
 import { eq } from "drizzle-orm";
 import jwt from "jsonwebtoken"
 import { deletedCampaignEmail } from "../../../../lib/nodeMailer";
@@ -34,7 +34,7 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string
 
     await Promise.all([
       await deletedCampaignEmail(userExist[0].email, userExist[0].name),
-      await db.delete(campiagnTable).where(eq(campiagnTable.id, id))
+      await db.delete(campaignTable).where(eq(campaignTable.id, id))
     ])
 
     return NextResponse.json({
