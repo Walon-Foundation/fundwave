@@ -5,7 +5,7 @@ import cuid from "cuid";
 interface LogDetails {
   level: typeof levelEnum.enumValues[number];
   category: string;
-  user: string; // Can be a user ID or a system process name
+  user: string;
   details: string;
   ipAddress: string;
   userAgent: string;
@@ -22,7 +22,5 @@ export async function logEvent(logDetails: LogDetails) {
     });
   } catch (error) {
     console.error("Failed to write to log table:", error);
-    // Depending on the importance, you might want to handle this differently
-    // e.g., write to a fallback log file
   }
 }
