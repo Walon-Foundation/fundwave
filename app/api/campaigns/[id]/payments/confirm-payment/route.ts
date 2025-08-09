@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { ConfirmPayment } from "../../../../../../types/monimeTypes";
 import { db } from "../../../../../../db/drizzle";
 import {
-  campiagnTable,
+  campaignTable,
   paymentTable,
   userTable,
 } from "../../../../../../db/schema";
@@ -44,11 +44,11 @@ export async function POST(req: NextRequest) {
 
       queries.push(
         db
-          .update(campiagnTable)
+          .update(campaignTable)
           .set({
-            amountReceived: sql`${campiagnTable.amountReceived} + ${payment[0].amount}`,
+            amountReceived: sql`${campaignTable.amountReceived} + ${payment[0].amount}`,
           })
-          .where(eq(campiagnTable.id, payment[0].campaignId))
+          .where(eq(campaignTable.id, payment[0].campaignId))
           .execute()
       );
 

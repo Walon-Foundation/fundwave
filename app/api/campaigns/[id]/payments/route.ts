@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "../../../../../db/drizzle";
-import { userTable, paymentTable, campiagnTable } from "../../../../../db/schema";
+import { userTable, paymentTable, campaignTable } from "../../../../../db/schema";
 import createPaymentCode from "../../../../../lib/generateCode";
 import { createCode } from "../../../../../validations/payment";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
 
         //getting the campaign name
         const id = (await params).id
-        const campaign = await db.select({title:campiagnTable.title}).from(campiagnTable).where(eq(campiagnTable.id, id)).limit(1).execute()
+        const campaign = await db.select({title:campaignTable.title}).from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute()
 
         //getting the user id if the user exist in the database
         const user = await db.select().from(userTable).where(and(eq(userTable.name, data.name!), eq(userTable.email, data.email!))).limit(1).execute()
