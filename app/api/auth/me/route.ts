@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../db/drizzle";
 import { userTable } from "../../../../db/schema";
@@ -13,11 +13,8 @@ export async function GET(req:NextRequest){
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        //getting the user details from clerk
-        const clerkUser = (await clerkClient()).users.getUser(userId)
-
         //getting the user
-        const user = await db.select().from(userTable).where(eq(userTable.id, (await clerkUser).id)).limit(1)
+        const user = await db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
 
         if(user.length === 0 ){
             return NextResponse.json({
