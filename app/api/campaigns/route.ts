@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 import { NextResponse, NextRequest } from "next/server";
 import { createCampaign } from "../../../validations/campaign";
 import { supabase } from "../../../lib/supabase";
@@ -16,12 +16,10 @@ export async function POST(req:NextRequest){
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        //getting the user details from clerk
-        const user = (await clerkClient()).users.getUser(clerkId)
 
-        const userExist = await db.select().from(userTable).where(eq(userTable.id, (await user).id)).limit(1)
+        const userExist = await db.select().from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1)
         
-        if(!user || userExist.length === 0){
+        if(userExist.length === 0){
         return NextResponse.json({
             error:"user auth token is invalid",
         }, { status:401 })
