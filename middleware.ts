@@ -8,7 +8,12 @@ import { db } from "./db/drizzle";
 import { userTable } from "./db/schema";
 import { eq } from "drizzle-orm";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)", 
+  "/sign-up(.*)",
+  "/campaigns",
+  "/"
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
