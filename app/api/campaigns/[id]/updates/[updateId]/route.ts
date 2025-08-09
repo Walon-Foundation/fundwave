@@ -1,21 +1,14 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken"
 import { db } from "../../../../../../db/drizzle";
-import { campiagnTable, updateTable } from "../../../../../../db/schema";
-import { and, eq } from "drizzle-orm";
+import { campaignTable, updateTable, userTable } from "../../../../../../db/schema";
+import { eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 
 
 export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
     try{
-        const token = (await cookies()).get("accessToken")?.value
-        if(!token){
-            return NextResponse.json({
-            error:"user is not authenticated",
-            }, { status:500 })
-        }
-
-        const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string }
+        const { userId } = await auth()
+        const user = (await db.select().from(userTable).where(eq(userTable.clerkId, userId as string)).limit(1))[0]
     
         const updateId  = (await params).updateId
         
@@ -26,7 +19,7 @@ export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId
             }, { status:404 })
         }
 
-        const [campaign] = await db.select().from(campiagnTable).where(eq(campiagnTable.id, update.campaignId))
+        const [campaign] = await db.select().from(campaignTable).where(eq(campaignTable.id, update.campaignId))
         if(!campaign){
             return NextResponse.json({
                 error:"campaign not found",

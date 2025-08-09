@@ -1,26 +1,20 @@
-import { cookies } from "next/headers"
 import { NextResponse,NextRequest } from "next/server"
-import jwt from "jsonwebtoken"
 import { db } from "../../../../../db/drizzle"
-import { campiagnTable, updateTable } from "../../../../../db/schema"
+import { campaignTable, updateTable, userTable } from "../../../../../db/schema"
 import { and, eq } from "drizzle-orm"
 import { createUpdate } from "../../../../../validations/update"
 import { nanoid } from "nanoid"
+import { auth } from "@clerk/nextjs/server"
 
 export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}>}) {
   try{
     //auth checking
-    const token = (await cookies()).get("accessToken")?.value
-    if(!token){
-      return NextResponse.json({
-        error:"user is not authenticated",
-      }, { status:500 })
-    }
+    const { userId } = await auth()
+    const user = (await db.select().from(userTable).where(eq(userTable.clerkId, userId as string)).limit(1))[0]
 
     const id = (await params).id
 
-    const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string}
-    const campaign = await db.select().from(campiagnTable).where(and(eq(campiagnTable.id, id), eq(campiagnTable.creatorId, user.id))).limit(1)
+    const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.id, id), eq(campaignTable.creatorId, user.id))).limit(1)
 
     if(!user || campaign.length === 0){
       return NextResponse.json({
