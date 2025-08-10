@@ -63,7 +63,7 @@ export const campaignTable = pgTable("campaigns",{
     amountReceived:integer("amountReceived").default(0).notNull(),
     location:text("location").notNull(),
     campaignEndDate:timestamp("campaignEndDate", { withTimezone: true}).notNull(),
-    creatorId:text("userId").references(() => userTable.id, { onDelete: "cascade" }).notNull(),
+    creatorId:text("creator_id").references(() => userTable.id, { onDelete: "cascade" }).notNull(),
     creatorName:text("creatorName").notNull(),
     category:text("category").notNull(),
     image:text("images").notNull(),

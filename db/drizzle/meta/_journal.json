@@ -71,6 +71,13 @@
       "when": 1754694395086,
       "tag": "0009_wise_krista_starr",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1754785146402,
+      "tag": "0010_wandering_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }
