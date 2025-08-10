@@ -1,46 +1,52 @@
-import { NextResponse } from "next/server";
-import { db } from "@/db/drizzle";
-import { paymentTable, campaignTable } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { db } from "@/db/drizzle"
+import { campaignTable, paymentTable, userTable } from "@/db/schema"
+import { auth } from "@clerk/nextjs/server"
+import { eq, inArray, } from "drizzle-orm"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: Request) {
-  const userId = request.headers.get("x-user-id");
 
-  if (!userId) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+export async function GET(req:NextRequest){
+  try{
+    //getting the user clerkId
+    const { userId:clerkId } = await auth()
+    if(!clerkId){
+      return NextResponse.json({
+        ok:false,
+        message:"user is not authenticated",
+      }, { status:401 })
+    }
 
-  try {
-    const donations = await db
-      .select({
-        id: paymentTable.id,
-        campaignId: paymentTable.campaignId,
-        campaignTitle: campaignTable.title,
-        amount: paymentTable.amount,
-        currency: sql<string>`'SLL'`.as("currency"),
-        status: paymentTable.isCompleted,
-        transactionId: paymentTable.monimeId,
-        createdAt: paymentTable.createdAt,
-      })
-      .from(paymentTable)
-      .leftJoin(campaignTable, eq(paymentTable.campaignId, campaignTable.id))
-      .where(eq(paymentTable.userId, userId));
+    //getting the user from the database
+    const userId = (await db.select({ userId: userTable.id}).from(userTable).where(eq(userTable.clerkId,clerkId)).limit(1).execute())[0]
+    if(!userId){
+      return NextResponse.json({
+        ok:false,
+        message:"user not found",
+      }, {status:400})
+    }
 
-    const totalDonated = donations.reduce((sum, d) => sum + Number(d.amount), 0);
-    const totalCampaigns = new Set(donations.map((d) => d.campaignId)).size;
-    const averageDonation = donations.length > 0 ? totalDonated / donations.length : 0;
+    //getting the campaignId
+    const campaignIds = await db.selectDistinct({campaignId:paymentTable.campaignId}).from(paymentTable).where(eq(paymentTable.userId, userId.userId))
+
+    if(campaignIds.length === 0){
+      return NextResponse.json({
+        ok:true,
+        message:"no donation for this user at yet",
+      }, { status: 200 })
+    }
+
+    const campaignDetails = await db.select().from(campaignTable).where(inArray(campaignTable.id, campaignIds.map(c => c.campaignId))).execute()
 
     return NextResponse.json({
-      donations,
-      summary: {
-        totalDonated,
-        totalCampaigns,
-        averageDonation,
-      },
-    });
-  } catch (error) {
-    console.error(`Error fetching donations for user ${userId}:`, error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+      ok:true,
+      message:"all donation made by the user",
+      data:campaignDetails
+    }, { status:200 })
+  }catch(err){
+    process.env.NODE_ENV === "development" ? console.log(err):""
+    return NextResponse.json({
+      ok:false,
+      message:"internal server error",
+    }, { status:500 })
   }
 }
-
