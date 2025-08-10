@@ -86,7 +86,7 @@ export default function KYCPage() {
     }
     
     try {
-      const res = await axiosInstance.patch("/user/kyc", submitData)
+      const res = await axiosInstance.patch("/users/kyc", submitData)
       if(res.status === 200){
         router.push("/dashboard")
         alert("KYC completed successfully")

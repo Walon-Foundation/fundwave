@@ -13,16 +13,17 @@ export async function GET(req:NextRequest){
       return NextResponse.json({
         ok:false,
         message:"users is not authenticated"
-      })
+      }, { status:401 })
     }
 
     const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1).execute())[0]
 
     if(!user){
+      process.env.NODE_ENV === "development" ? console.log("user not found") : ""
       return NextResponse.json({
         ok:false,
         message:"user not found"
-      })
+      }, { status:400 })
     }
 
     //getting the other details
@@ -47,7 +48,7 @@ export async function GET(req:NextRequest){
         totalRaised,
         campaignSupported
       }
-    })
+    }, { status:200 })
   }catch(err){
     process.env.NODE_ENV === "development" ? console.log(err):""
     return NextResponse.json({

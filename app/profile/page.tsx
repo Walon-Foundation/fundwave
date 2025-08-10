@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -21,6 +21,8 @@ import {
   CheckCircle,
   Star,
 } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
+import { axiosInstance } from "@/lib/axiosInstance"
 
 // Enhanced mock user data
 const mockUser = {
@@ -130,6 +132,8 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
 
+  const [realUser, setRealUser] = useState({})
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
@@ -137,6 +141,28 @@ export default function ProfilePage() {
       minimumFractionDigits: 0,
     }).format(amount)
   }
+
+  const { user:clerkUser } = useUser()
+  
+
+  //getting the user from the database
+  useEffect(() => {
+    if(!clerkUser)return
+
+    const fetchUser = async() => {
+      try{
+        const res = await axiosInstance.get("/users/profile")
+        if(res.status === 200){
+          setRealUser(res.data.data)
+          console.log(res.data.data)
+        }
+      }catch(err){
+        console.log(err)
+      }
+    }
+
+    fetchUser()
+  }, [clerkUser])
 
   const handleSaveProfile = () => {
     console.log("Saving profile:", user)
