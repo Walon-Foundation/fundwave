@@ -120,11 +120,6 @@ export const logTable = pgTable("logs",{
     metaData:jsonb("metaData").notNull(),
 })
 
-export const emailVerifcationTable = pgTable("emailVerification",{
-    id:text("id").primaryKey().notNull(),
-    userEmail:text("userEmail").notNull().references(() => userTable.email),
-    token:text("token").notNull()
-})
 
 export const teamMemberTable = pgTable("teamMember",{
     id:text("id").primaryKey().notNull(),

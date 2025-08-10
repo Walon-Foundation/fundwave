@@ -1,39 +1,35 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../db/drizzle";
-import { campaignTable, userTable } from "../../../../db/schema";
-import { eq } from "drizzle-orm";
-import jwt from "jsonwebtoken"
+import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "../../../../db/schema";
+import { eq,asc } from "drizzle-orm";
 import { deletedCampaignEmail } from "../../../../lib/nodeMailer";
+import { auth } from "@clerk/nextjs/server";
 
 export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string}>} ){
   try{
     //auth from cookie
-    const token = (await cookies()).get("accessToken")?.value
-    if(!token){
+    const { userId:clerkId} = await auth()
+    if(!clerkId){
       return NextResponse.json({
-        error:"user not authenticated",
-      }, {status:401})
+        ok:false,
+        message:"user is not authenticated",
+      }, { status:401 })
     }
 
-    const user = jwt.verify(token, process.env.ACCESS_TOKEN!) as { id:string, role:string }
-    if(!user || user.role != "admin"){
+    const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId)).execute())[0]
+    if(!user){
       return NextResponse.json({
-        error:"invalid user auth token"
-      }, { status: 401 })
+        ok:false,
+        message:"user not found",
+      }, { status:400 })
     }
 
+    //the campaign id from the params
     const id  = (await params).id
 
-    const userExist = await db.select().from(userTable).where(eq(userTable.id, user.id)).limit(1)
-    if(!userExist){
-      return NextResponse.json({
-        error:"user not found, invalid user id",
-      }, {status:400})
-    }
-
+    //Todo: send email to all the donors about the campaign being deleted
     await Promise.all([
-      await deletedCampaignEmail(userExist[0].email, userExist[0].name),
+      await deletedCampaignEmail(user.email, user.name),
       await db.delete(campaignTable).where(eq(campaignTable.id, id))
     ])
 
@@ -45,6 +41,55 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string
     process.env.NODE_ENV === "development" ? console.log(err):""
     return NextResponse.json({
       error:"internal server error",
+    }, { status:500 })
+  }
+}
+
+
+export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>}){
+  try{
+    //getting the id from the params
+    const id = (await params).id
+
+    //getting the campaign with that id
+    const campaign = (await db.select().from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
+
+    //getting the team member, updare,comments,
+    const [updates,comments,teamMembers, recentDonors] = await Promise.all([
+      await db.select().from(updateTable).where(eq(updateTable.campaignId, campaign.id)).execute(),
+      await db.select().from(commentTable).where(eq(commentTable.campaignId, campaign.id)).execute(),
+      await db.select().from(teamMemberTable).where(eq(teamMemberTable.campaignId, campaign.id)).execute(),
+      await db.select({
+        name:paymentTable.username,
+        ammount:paymentTable.amount
+      }).from(paymentTable).where(eq(paymentTable.campaignId, campaign.id)).orderBy(asc(paymentTable.createdAt)).limit(10).execute()
+    ])
+
+    if(!campaign){
+      return NextResponse.json({
+        ok:false,
+        message:"campaign not found"
+      }, { status:400 })
+    }
+
+    const result = {
+      campaign,
+      updates,
+      comments,
+      teamMembers,
+      recentDonors
+    }
+
+    return NextResponse.json({
+      ok:true,
+      message:"campaign details",
+      data:result
+    }, { status:200 })
+  }catch(err){
+    process.env.NODE_ENV === "development" ? console.log(err) : ""
+    return NextResponse.json({
+      ok:false,
+      message:"internal server error",
     }, { status:500 })
   }
 }

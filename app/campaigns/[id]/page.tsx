@@ -2,10 +2,11 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag } from "lucide-react"
 import DonationModal from "../../../components/donation-modal"
+import { axiosInstance } from "@/lib/axiosInstance"
 
 // Mock campaign data matching the exact database schema
 const mockCampaign = {
@@ -14,7 +15,7 @@ const mockCampaign = {
   fundingGoal: 5000000,
   amountReceived: 2500000, // Note: using correct spelling from schema (amountRecieved)
   location: "Makeni, Northern Province",
-  campaignEndDate: "2025-07-29T23:59:59.000Z",
+  campaignEndDate: "2025-10-29T23:59:59.000Z",
   creatorId: "user_1234567890",
   category: "Community",
   image: "/placeholder.svg?height=400&width=600", // Single image as per schema
@@ -56,7 +57,7 @@ const mockCampaign = {
     </ul>
   `,
   tags: ["water", "community", "health", "infrastructure", "sierra-leone", "sustainability"],
-  createdAt: "2024-06-15T10:00:00.000Z",
+  createdAt: "2024-09-15T10:00:00.000Z",
   updatedAt: "2024-01-20T15:30:00.000Z",
 }
 
@@ -174,6 +175,7 @@ const mockRecentDonors = [
 ]
 
 export default function CampaignDetailPage({ params }: { params: { id: string } }) {
+  //Todo: get the campaign id so u can use it to fetch the details from the server
   const [campaign] = useState(mockCampaign)
   const [creator] = useState(mockCreator)
   const [teamMembers] = useState(mockTeamMembers)
@@ -187,7 +189,26 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   const progress = (campaign.amountReceived / campaign.fundingGoal) * 100
   const campaignEndDate = new Date(campaign.campaignEndDate)
   const daysLeft = Math.ceil((campaignEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-  const totalDonors = 45 // This would come from donations count
+  const totalDonors = 45// This would come from donations count
+
+  const [realCampaginInfo, setRealCampaignInfo] = useState({})
+
+
+  //getting the info from the server
+  useEffect(() => {
+    const getInfo =  async() => {
+      try{
+        const res = await axiosInstance.get(`/campaigns/${""}`)
+        if(res.status === 200){
+          setRealCampaignInfo(res.data.data)
+        }
+      }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err) : ""
+      }
+    }
+
+    getInfo()
+  }, [])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
