@@ -134,6 +134,7 @@ export default function ProfilePage() {
 
   const [realUser, setRealUser] = useState({})
   const [realDonation, setRealDonation] = useState([])
+  const [realActivity, setRealActivity] = useState([])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -174,8 +175,21 @@ export default function ProfilePage() {
       }
     }
 
+    const getActivity = async() => {
+      try{
+        const res = await axiosInstance.get("/users/activity")
+        if(res.status === 200){
+          setRealActivity(res.data.data)
+          console.log(res.data)
+        }
+      }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err): ""
+      }
+    }
+
     fetchUser()
     getDonations()
+    getActivity()
   }, [clerkUser])
 
   const handleSaveProfile = () => {
