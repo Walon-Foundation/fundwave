@@ -175,7 +175,7 @@ const mockRecentDonors = [
 ]
 
 export default function CampaignDetailPage({ params }: { params: { id: string } }) {
-  //Todo: get the campaign id so u can use it to fetch the details from the server
+  const { id } = params
   const [campaign] = useState(mockCampaign)
   const [creator] = useState(mockCreator)
   const [teamMembers] = useState(mockTeamMembers)
@@ -198,7 +198,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   useEffect(() => {
     const getInfo =  async() => {
       try{
-        const res = await axiosInstance.get(`/campaigns/${""}`)
+        const res = await axiosInstance.get(`/campaigns/${id}`)
         if(res.status === 200){
           setRealCampaignInfo(res.data.data)
         }
@@ -208,7 +208,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
     }
 
     getInfo()
-  }, [])
+  }, [params])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -609,7 +609,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal />}
+      {showDonationModal && <DonationModal onClose={() => setShowDonationModal(!showDonationModal)}  />}
     </div>
   )
 }

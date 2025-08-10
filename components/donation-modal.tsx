@@ -88,7 +88,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
       })
 
       alert("Thank you for your donation! You will receive a confirmation SMS shortly.")
-      // onClose()
+      onClose()
     } catch (error) {
       console.error("Error verifying payment:", error)
       alert("We couldn't verify your payment. Please contact support if the amount was deducted from your account.")
@@ -122,7 +122,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">Make a Donation</h2>
-            <button className="text-slate-400 hover:text-slate-600">
+            <button className="text-slate-400 hover:text-slate-600" onClick={() => onClose()}>
               <X className="w-6 h-6" />
             </button>
           </div>

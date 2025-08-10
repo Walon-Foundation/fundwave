@@ -54,6 +54,13 @@ export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>
     //getting the campaign with that id
     const campaign = (await db.select().from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
 
+    if(!campaign){
+      return NextResponse.json({
+        ok:false,
+        message:"campaign not found",
+      }, { status:400 })
+    }
+
     //getting the team member, updare,comments,
     const [updates,comments,teamMembers, recentDonors] = await Promise.all([
       await db.select().from(updateTable).where(eq(updateTable.campaignId, campaign.id)).execute(),
