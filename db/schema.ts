@@ -6,6 +6,7 @@ export const levelEnum = pgEnum("level",["success", "error","warning", "info"])
 export const roleEnum = pgEnum("role",["user","admin"])
 export const userStatusEnum = pgEnum("user_status", ["active", "suspended", "banned"]);
 export const campaignStatusEnum = pgEnum("campaign_status", ["pending", "active", "rejected", "completed"]);
+export const notificationTypeEnum = pgEnum("type", ["comment", "update", "donations","campaignStuff"])
 
 export const userTable = pgTable("users",{
     id:text("id").primaryKey().notNull(),
@@ -170,5 +171,11 @@ export const chatMessageTable = pgTable("chat_messages", {
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
-
+export const notificationTable = pgTable("notification", {
+    id:text("id").primaryKey().notNull(),
+    campaignId:text("campaignId").notNull().references(() => campaignTable.id, { onDelete: "cascade"}),
+    type:notificationTypeEnum("type").notNull(),
+    userId:text("userId").references(() => userTable.id, { onDelete: "no action"}),
+    createdAt:timestamp('createdAt', { withTimezone:true}).defaultNow().notNull(),
+});
 
