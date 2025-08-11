@@ -144,46 +144,45 @@ export default function ProfilePage() {
     }).format(amount)
   }
 
-  const { user:clerkUser } = useUser()
-  
+  const { user: clerkUser } = useUser()
 
   //getting the user from the database
   useEffect(() => {
-    if(!clerkUser)return
+    if (!clerkUser) return
 
-    const fetchUser = async() => {
-      try{
+    const fetchUser = async () => {
+      try {
         const res = await axiosInstance.get("/users/profile")
-        if(res.status === 200){
+        if (res.status === 200) {
           setRealUser(res.data.data)
           console.log(res.data.data)
         }
-      }catch(err){
+      } catch (err) {
         console.log(err)
       }
     }
 
-    const getDonations = async() => {
-      try{
+    const getDonations = async () => {
+      try {
         const res = await axiosInstance.get("/users/donations")
-        if(res.status === 200){
+        if (res.status === 200) {
           setRealDonation(res.data.data)
           console.log(res.data)
         }
-      }catch(err){
+      } catch (err) {
         process.env.NODE_ENV === "development" ? console.log(err) : ""
       }
     }
 
-    const getActivity = async() => {
-      try{
+    const getActivity = async () => {
+      try {
         const res = await axiosInstance.get("/users/activity")
-        if(res.status === 200){
+        if (res.status === 200) {
           setRealActivity(res.data.data)
           console.log(res.data)
         }
-      }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err): ""
+      } catch (err) {
+        process.env.NODE_ENV === "development" ? console.log(err) : ""
       }
     }
 
@@ -198,11 +197,11 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {/* Profile Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-1">
             <div className="card mb-6">
               {/* Profile Header */}
               <div className="text-center mb-6">
@@ -223,7 +222,7 @@ export default function ProfilePage() {
 
                 {isEditing ? (
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <input
                         type="text"
                         className="input text-sm"
@@ -240,10 +239,10 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-900">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
                       {user.firstName} {user.lastName}
                     </h2>
-                    <div className="flex items-center justify-center mt-2 space-x-2">
+                    <div className="flex flex-col sm:flex-row items-center justify-center mt-2 space-y-2 sm:space-y-0 sm:space-x-2">
                       <div
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           user.kycStatus === "approved"
@@ -264,8 +263,8 @@ export default function ProfilePage() {
 
               {/* Profile Details */}
               <div className="space-y-4">
-                <div className="flex items-center text-slate-600">
-                  <Mail className="w-4 h-4 mr-3" />
+                <div className="flex flex-col sm:flex-row sm:items-center text-slate-600">
+                  <Mail className="w-4 h-4 mr-0 sm:mr-3 mb-1 sm:mb-0" />
                   {isEditing ? (
                     <input
                       type="email"
@@ -274,12 +273,12 @@ export default function ProfilePage() {
                       onChange={(e) => setUser({ ...user, email: e.target.value })}
                     />
                   ) : (
-                    <span>{user.email}</span>
+                    <span className="break-all">{user.email}</span>
                   )}
                 </div>
 
-                <div className="flex items-center text-slate-600">
-                  <Phone className="w-4 h-4 mr-3" />
+                <div className="flex flex-col sm:flex-row sm:items-center text-slate-600">
+                  <Phone className="w-4 h-4 mr-0 sm:mr-3 mb-1 sm:mb-0" />
                   {isEditing ? (
                     <input
                       type="tel"
@@ -292,8 +291,8 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <div className="flex items-center text-slate-600">
-                  <MapPin className="w-4 h-4 mr-3" />
+                <div className="flex flex-col sm:flex-row sm:items-center text-slate-600">
+                  <MapPin className="w-4 h-4 mr-0 sm:mr-3 mb-1 sm:mb-0" />
                   {isEditing ? (
                     <input
                       type="text"
@@ -306,8 +305,8 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <div className="flex items-center text-slate-600">
-                  <Calendar className="w-4 h-4 mr-3" />
+                <div className="flex flex-col sm:flex-row sm:items-center text-slate-600">
+                  <Calendar className="w-4 h-4 mr-0 sm:mr-3 mb-1 sm:mb-0" />
                   <span>Joined {new Date(user.joinDate).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -327,7 +326,8 @@ export default function ProfilePage() {
               {/* Action Buttons */}
               <div className="mt-6 space-y-2">
                 {isEditing ? (
-                  <div className="flex space-x-2">
+                  /* Made button layout responsive */
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                     <button onClick={handleSaveProfile} className="btn-primary flex-1 text-sm">
                       Save Changes
                     </button>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600">Impact Score</span>
                   <div className="flex items-center">
-                    <div className="w-16 bg-slate-200 rounded-full h-2 mr-2">
+                    <div className="w-12 sm:w-16 bg-slate-200 rounded-full h-2 mr-2">
                       <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${user.impactScore}%` }} />
                     </div>
                     <span className="text-sm font-medium">{user.impactScore}</span>
@@ -387,50 +387,64 @@ export default function ProfilePage() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 order-2 lg:order-2">
             {/* Enhanced Stats Overview */}
-            <div className="grid md:grid-cols-4 gap-6 mb-8">
-              <div className="card text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 text-center hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <DollarSign className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 </div>
-                <div className="text-2xl font-bold text-slate-900">{formatCurrency(user.totalDonated)}</div>
-                <div className="text-sm text-slate-600">Total Donated</div>
+                <div
+                  className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1 truncate"
+                  title={formatCurrency(user.totalDonated)}
+                >
+                  {formatCurrency(user.totalDonated)}
+                </div>
+                <div className="text-sm sm:text-base text-slate-600 font-medium">Total Donated</div>
               </div>
 
-              <div className="card text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Heart className="w-6 h-6 text-blue-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 text-center hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold text-slate-900">{user.campaignsSupported}</div>
-                <div className="text-sm text-slate-600">Campaigns Supported</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1">
+                  {user.campaignsSupported}
+                </div>
+                <div className="text-sm sm:text-base text-slate-600 font-medium">Campaigns Supported</div>
               </div>
 
-              <div className="card text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 text-center hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-purple-600" />
                 </div>
-                <div className="text-2xl font-bold text-slate-900">{formatCurrency(user.totalRaised)}</div>
-                <div className="text-sm text-slate-600">Total Raised</div>
+                <div
+                  className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1 truncate"
+                  title={formatCurrency(user.totalRaised)}
+                >
+                  {formatCurrency(user.totalRaised)}
+                </div>
+                <div className="text-sm sm:text-base text-slate-600 font-medium">Total Raised</div>
               </div>
 
-              <div className="card text-center">
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Award className="w-6 h-6 text-yellow-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 text-center hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-yellow-100 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Award className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-600" />
                 </div>
-                <div className="text-2xl font-bold text-slate-900">{user.campaignsCreated}</div>
-                <div className="text-sm text-slate-600">Campaigns Created</div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1">
+                  {user.campaignsCreated}
+                </div>
+                <div className="text-sm sm:text-base text-slate-600 font-medium">Campaigns Created</div>
               </div>
             </div>
 
             {/* Tabs */}
             <div className="border-b border-slate-200 mb-6">
-              <nav className="flex space-x-8">
+              <nav className="flex space-x-4 sm:space-x-8 overflow-x-auto">
                 {["overview", "donations", "campaigns", "achievements", "settings"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm capitalize ${
+                    className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                       activeTab === tab
                         ? "border-indigo-600 text-indigo-600"
                         : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -444,7 +458,8 @@ export default function ProfilePage() {
 
             {/* Tab Content */}
             {activeTab === "overview" && (
-              <div className="grid lg:grid-cols-2 gap-6">
+              /* Made overview grid responsive */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Activity */}
                 <div className="card">
                   <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
@@ -454,16 +469,18 @@ export default function ProfilePage() {
                         key={donation.id}
                         className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0"
                       >
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <div className="flex items-center min-w-0 flex-1">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                             <DollarSign className="w-4 h-4 text-green-600" />
                           </div>
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <p className="text-slate-900 font-medium">Donated {formatCurrency(donation.amount)}</p>
-                            <p className="text-sm text-slate-600">{donation.campaignTitle}</p>
+                            <p className="text-sm text-slate-600 truncate">{donation.campaignTitle}</p>
                           </div>
                         </div>
-                        <span className="text-sm text-slate-500">{new Date(donation.date).toLocaleDateString()}</span>
+                        <span className="text-sm text-slate-500 ml-2 flex-shrink-0">
+                          {new Date(donation.date).toLocaleDateString()}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -486,11 +503,11 @@ export default function ProfilePage() {
 
             {activeTab === "donations" && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                   <h3 className="text-xl font-semibold text-slate-900">Your Donations</h3>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <span className="text-sm text-slate-600">{mockDonations.length} donations</span>
-                    <button className="btn-outline flex items-center">
+                    <button className="btn-outline flex items-center justify-center">
                       <Download className="w-4 h-4 mr-2" />
                       Export
                     </button>
@@ -500,10 +517,10 @@ export default function ProfilePage() {
                 {mockDonations.map((donation) => (
                   <div key={donation.id} className="card">
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-slate-900">{donation.campaignTitle}</h4>
-                          <div className="text-right">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                          <h4 className="font-semibold text-slate-900 truncate">{donation.campaignTitle}</h4>
+                          <div className="text-left sm:text-right flex-shrink-0">
                             <div className="text-lg font-semibold text-slate-900">
                               {formatCurrency(donation.amount)}
                             </div>
@@ -517,11 +534,13 @@ export default function ProfilePage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center text-sm text-slate-600 mb-3">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {new Date(donation.date).toLocaleDateString()}
+                        <div className="flex flex-col sm:flex-row sm:items-center text-sm text-slate-600 mb-3 gap-2">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {new Date(donation.date).toLocaleDateString()}
+                          </div>
                           {donation.anonymous && (
-                            <span className="ml-4 px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs">
+                            <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs w-fit">
                               Anonymous
                             </span>
                           )}
@@ -538,7 +557,7 @@ export default function ProfilePage() {
                           <p className="text-sm text-green-700">{donation.impact}</p>
                         </div>
 
-                        <div className="flex items-center justify-between mt-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-2">
                           <Link
                             href={`/campaigns/${donation.campaignId}`}
                             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
@@ -559,7 +578,7 @@ export default function ProfilePage() {
 
             {activeTab === "campaigns" && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                   <h3 className="text-xl font-semibold text-slate-900">Your Campaigns</h3>
                   <Link href="/create-campaign" className="btn-primary">
                     Create New Campaign
@@ -570,11 +589,11 @@ export default function ProfilePage() {
                   mockCreatedCampaigns.map((campaign) => (
                     <div key={campaign.id} className="card">
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-semibold text-slate-900">{campaign.title}</h4>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                            <h4 className="font-semibold text-slate-900 truncate">{campaign.title}</h4>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${
                                 campaign.status === "active"
                                   ? "bg-green-100 text-green-800"
                                   : "bg-slate-100 text-slate-800"
@@ -598,7 +617,7 @@ export default function ProfilePage() {
                             <div className="text-sm text-slate-500 mt-1">Goal: {formatCurrency(campaign.target)}</div>
                           </div>
 
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div className="flex items-center text-sm text-slate-600">
                               <Users className="w-4 h-4 mr-1" />
                               <span>{campaign.donors} donors</span>
@@ -626,7 +645,7 @@ export default function ProfilePage() {
                   <div className="text-center py-12">
                     <Target className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h4 className="text-lg font-semibold text-slate-900 mb-2">No campaigns yet</h4>
-                    <p className="text-slate-600 mb-4">
+                    <p className="text-slate-600 mb-4 px-4">
                       Start your first campaign and make a difference in your community
                     </p>
                     <Link href="/create-campaign" className="btn-primary">
@@ -641,19 +660,19 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-slate-900">Achievements</h3>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {mockAchievements.map((achievement) => (
                     <div key={achievement.id} className="card">
                       <div className="flex items-center">
-                        <div className="text-3xl mr-4">{achievement.icon}</div>
-                        <div className="flex-1">
+                        <div className="text-2xl sm:text-3xl mr-4 flex-shrink-0">{achievement.icon}</div>
+                        <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-slate-900">{achievement.title}</h4>
                           <p className="text-sm text-slate-600">{achievement.description}</p>
                           <p className="text-xs text-slate-500 mt-1">
                             Earned on {new Date(achievement.date).toLocaleDateString()}
                           </p>
                         </div>
-                        <CheckCircle className="w-6 h-6 text-green-500" />
+                        <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
                       </div>
                     </div>
                   ))}
@@ -669,8 +688,8 @@ export default function ProfilePage() {
                 <div className="card">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4">Privacy Settings</h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex-1">
                         <p className="font-medium text-slate-900">Public Profile</p>
                         <p className="text-sm text-slate-600">Allow others to view your profile</p>
                       </div>
@@ -683,11 +702,11 @@ export default function ProfilePage() {
                             preferences: { ...user.preferences, publicProfile: e.target.checked },
                           })
                         }
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded flex-shrink-0"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex-1">
                         <p className="font-medium text-slate-900">Show Donations</p>
                         <p className="text-sm text-slate-600">Display your donation history publicly</p>
                       </div>
@@ -700,7 +719,7 @@ export default function ProfilePage() {
                             preferences: { ...user.preferences, showDonations: e.target.checked },
                           })
                         }
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded flex-shrink-0"
                       />
                     </div>
                   </div>
@@ -710,8 +729,8 @@ export default function ProfilePage() {
                 <div className="card">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4">Notification Preferences</h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex-1">
                         <p className="font-medium text-slate-900">Email Notifications</p>
                         <p className="text-sm text-slate-600">Receive updates via email</p>
                       </div>
@@ -724,11 +743,11 @@ export default function ProfilePage() {
                             preferences: { ...user.preferences, emailNotifications: e.target.checked },
                           })
                         }
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded flex-shrink-0"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex-1">
                         <p className="font-medium text-slate-900">SMS Notifications</p>
                         <p className="text-sm text-slate-600">Receive updates via SMS</p>
                       </div>
@@ -741,7 +760,7 @@ export default function ProfilePage() {
                             preferences: { ...user.preferences, smsNotifications: e.target.checked },
                           })
                         }
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded flex-shrink-0"
                       />
                     </div>
                   </div>
@@ -755,7 +774,7 @@ export default function ProfilePage() {
                       <label className="block text-sm font-medium text-slate-700 mb-2">Facebook</label>
                       <input
                         type="text"
-                        className="input"
+                        className="input w-full"
                         placeholder="facebook.com/username"
                         value={user.socialLinks.facebook}
                         onChange={(e) =>
@@ -770,7 +789,7 @@ export default function ProfilePage() {
                       <label className="block text-sm font-medium text-slate-700 mb-2">Twitter</label>
                       <input
                         type="text"
-                        className="input"
+                        className="input w-full"
                         placeholder="@username"
                         value={user.socialLinks.twitter}
                         onChange={(e) =>
@@ -785,7 +804,7 @@ export default function ProfilePage() {
                       <label className="block text-sm font-medium text-slate-700 mb-2">LinkedIn</label>
                       <input
                         type="text"
-                        className="input"
+                        className="input w-full"
                         placeholder="linkedin.com/in/username"
                         value={user.socialLinks.linkedin}
                         onChange={(e) =>
@@ -803,12 +822,12 @@ export default function ProfilePage() {
                 <div className="card border-red-200">
                   <h4 className="text-lg font-semibold text-red-900 mb-4">Danger Zone</h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-red-50 rounded-lg gap-4">
+                      <div className="flex-1">
                         <p className="font-medium text-red-900">Delete Account</p>
                         <p className="text-sm text-red-700">Permanently delete your account and all data</p>
                       </div>
-                      <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                      <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm w-full sm:w-auto">
                         Delete Account
                       </button>
                     </div>
@@ -816,7 +835,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <button onClick={handleSaveProfile} className="btn-primary">
+                  <button onClick={handleSaveProfile} className="btn-primary w-full sm:w-auto">
                     Save Settings
                   </button>
                 </div>

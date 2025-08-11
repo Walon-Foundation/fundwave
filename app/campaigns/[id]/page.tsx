@@ -68,6 +68,9 @@ const mockCreator = {
   avatar: "/placeholder.svg?height=50&width=50",
   verified: true,
   bio: "Community organizer and water rights advocate",
+  location: "Makeni, Northern Province",
+  campaignsCreated: 5,
+  totalRaised: 10000000,
 }
 
 // Mock team members data matching the teamMemberTable schema
@@ -181,28 +184,27 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   const [teamMembers] = useState(mockTeamMembers)
   const [updates] = useState(mockUpdates)
   const [comments, setComments] = useState(mockComments)
-  const [recentDonors] = useState(mockRecentDonors)
   const [activeTab, setActiveTab] = useState("story")
   const [showDonationModal, setShowDonationModal] = useState(false)
   const [newComment, setNewComment] = useState("")
+  const [recentDonors] = useState(mockRecentDonors) // Declare recentDonors variable
 
   const progress = (campaign.amountReceived / campaign.fundingGoal) * 100
   const campaignEndDate = new Date(campaign.campaignEndDate)
   const daysLeft = Math.ceil((campaignEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-  const totalDonors = 45// This would come from donations count
+  const totalDonors = 45 // This would come from donations count
 
-  const [realCampaginInfo, setRealCampaignInfo] = useState({})
+  const [realCampaignInfo, setRealCampaignInfo] = useState({})
 
-
-  //getting the info from the server
+  // Getting the info from the server
   useEffect(() => {
-    const getInfo =  async() => {
-      try{
+    const getInfo = async () => {
+      try {
         const res = await axiosInstance.get(`/campaigns/${id}`)
-        if(res.status === 200){
+        if (res.status === 200) {
           setRealCampaignInfo(res.data.data)
         }
-      }catch(err){
+      } catch (err) {
         process.env.NODE_ENV === "development" ? console.log(err) : ""
       }
     }
@@ -260,80 +262,61 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             {/* Campaign Image */}
-            <div className="relative h-64 md:h-96 rounded-xl overflow-hidden mb-6">
+            <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-4 sm:mb-6">
               <Image src={campaign.image || "/placeholder.svg"} alt={campaign.title} fill className="object-cover" />
-              <div className="absolute top-4 left-4">
-                <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {campaign.category}
-                </span>
-              </div>
-              <div className="absolute top-4 right-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    daysLeft > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {daysLeft > 0 ? `${daysLeft} days left` : "Campaign ended"}
-                </span>
-              </div>
             </div>
 
-            {/* Campaign Title and Creator */}
+            {/* Campaign Header */}
             <div className="mb-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">{campaign.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
+                {campaign.title}
+              </h1>
 
-              <p className="text-lg text-slate-600 mb-6">{campaign.shortDescription}</p>
-
-              <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-                <div className="flex items-center space-x-3">
-                  <Image
-                    src={creator.avatar || "/placeholder.svg"}
-                    alt={creator.name}
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                  <div>
-                    <p className="font-semibold text-slate-900">
-                      {creator.name}
-                      {creator.verified && <span className="ml-1 text-indigo-600">✓</span>}
-                    </p>
-                    <div className="flex items-center text-sm text-slate-600">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {campaign.location}
-                    </div>
-                  </div>
+              {/* Campaign Meta */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-slate-600 mb-4">
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{campaign.location}</span>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <button className="btn-outline flex items-center">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Save
-                  </button>
-                  <button className="btn-outline flex items-center">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </button>
-                  <button className="btn-outline flex items-center">
-                    <Flag className="w-4 h-4 mr-2" />
-                    Report
-                  </button>
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">Ends {formatDate(campaign.campaignEndDate)}</span>
                 </div>
+                <div className="flex items-center">
+                  <Users className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{totalDonors} donors</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <button className="btn-outline flex items-center justify-center py-2 px-4">
+                  <Heart className="w-4 h-4 mr-2" />
+                  <span className="text-sm sm:text-base">Save</span>
+                </button>
+                <button className="btn-outline flex items-center justify-center py-2 px-4">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  <span className="text-sm sm:text-base">Share</span>
+                </button>
+                <button className="btn-outline flex items-center justify-center py-2 px-4">
+                  <Flag className="w-4 h-4 mr-2" />
+                  <span className="text-sm sm:text-base">Report</span>
+                </button>
               </div>
 
               {/* Tags */}
               {campaign.tags && campaign.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2 mt-4 sm:mt-6">
                   {campaign.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm hover:bg-slate-200 transition-colors"
+                      className="inline-flex items-center px-2 sm:px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm hover:bg-slate-200 transition-colors"
                     >
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
@@ -344,13 +327,13 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-slate-200 mb-6">
-              <nav className="flex space-x-8">
+            <div className="border-b border-slate-200 mb-4 sm:mb-6">
+              <nav className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide">
                 {["story", "team", "updates", "comments"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm capitalize ${
+                    className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                       activeTab === tab
                         ? "border-indigo-600 text-indigo-600"
                         : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -366,37 +349,193 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
             </div>
 
             {/* Tab Content */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               {activeTab === "story" && (
-                <div className="prose max-w-none">
-                  <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: campaign.fullStory }} />
+                <div className="space-y-6 sm:space-y-8">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-6 sm:p-8">
+                      <div className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:leading-relaxed prose-a:text-indigo-600 prose-strong:text-slate-900">
+                        <div
+                          className="text-base sm:text-lg leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: campaign.fullStory }}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                  <div className="mt-8 p-6 bg-slate-50 rounded-lg">
-                    <h4 className="font-semibold text-slate-900 mb-4">Campaign Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Campaign ID:</span>
-                        <span className="font-mono text-xs text-slate-900">{campaign.id}</span>
+                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="p-6 sm:p-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                          <svg
+                            className="w-5 h-5 text-indigo-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="text-xl font-bold text-slate-900">Campaign Details</h4>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Category:</span>
-                        <span className="font-medium text-slate-900">{campaign.category}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Created:</span>
-                        <span className="font-medium text-slate-900">{formatDate(campaign.createdAt)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Last Updated:</span>
-                        <span className="font-medium text-slate-900">{formatDate(campaign.updatedAt)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">End Date:</span>
-                        <span className="font-medium text-slate-900">{formatDate(campaign.campaignEndDate)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Location:</span>
-                        <span className="font-medium text-slate-900">{campaign.location}</span>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">Campaign ID</p>
+                              <p className="font-mono text-xs text-slate-900 break-all mt-1">{campaign.id}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">Category</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign.category}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-purple-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">Created</p>
+                              <p className="font-semibold text-slate-900 mt-1">{formatDate(campaign.createdAt)}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-orange-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 00-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">End Date</p>
+                              <p className="font-semibold text-slate-900 mt-1">
+                                {formatDate(campaign.campaignEndDate)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-red-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">Last Updated</p>
+                              <p className="font-semibold text-slate-900 mt-1">{formatDate(campaign.updatedAt)}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-teal-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 font-medium">Location</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign.location}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -404,95 +543,71 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
               )}
 
               {activeTab === "team" && (
-                <div className="space-y-6">
-                  {teamMembers.length > 0 ? (
-                    <div className="grid md:grid-cols-1 gap-6">
-                      {teamMembers.map((member) => (
-                        <div key={member.id} className="card">
-                          <div className="flex items-start space-x-4">
-                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-indigo-600 font-semibold text-lg">
-                                {member.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-slate-900 mb-1">{member.name}</h3>
-                              <p className="text-indigo-600 font-medium mb-3">{member.role}</p>
-                              <p className="text-slate-600 text-sm leading-relaxed">{member.bio}</p>
-                            </div>
-                          </div>
+                <div className="space-y-4 sm:space-y-6">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="card">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                        <Image
+                          src={member.avatar || "/placeholder.svg"}
+                          alt={member.name}
+                          width={60}
+                          height={60}
+                          className="rounded-full mx-auto sm:mx-0"
+                        />
+                        <div className="flex-1 text-center sm:text-left">
+                          <h3 className="text-lg font-semibold text-slate-900">{member.name}</h3>
+                          <p className="text-indigo-600 font-medium mb-2">{member.role}</p>
+                          <p className="text-slate-600 text-sm leading-relaxed">{member.bio}</p>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">No team members</h3>
-                      <p className="text-slate-600">This campaign is managed by an individual creator.</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
 
               {activeTab === "updates" && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {updates.length > 0 ? (
                     updates.map((update) => (
                       <div key={update.id} className="card">
-                        <div className="flex items-start justify-between mb-4">
-                          <h3 className="text-xl font-semibold text-slate-900">{update.title}</h3>
-                          <span className="text-sm text-slate-500 whitespace-nowrap ml-4">
-                            {formatDateTime(update.date)}
-                          </span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                          <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
+                          <span className="text-sm text-slate-500">{formatDate(update.date)}</span>
                         </div>
-                        <div className="flex items-center mb-4">
-                          <span className="text-sm text-slate-600">By {update.author}</span>
-                        </div>
-                        <p className="text-slate-700 mb-4 leading-relaxed">{update.content}</p>
-                        {update.images && update.images.length > 0 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {update.images.map((image, index) => (
-                              <div key={index} className="relative h-48 rounded-lg overflow-hidden">
-                                <Image
-                                  src={image || "/placeholder.svg"}
-                                  alt={`Update ${update.id} image ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.content}</p>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-12">
-                      <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                    <div className="text-center py-8 sm:py-12">
+                      <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-slate-900 mb-2">No updates yet</h3>
-                      <p className="text-slate-600">The campaign creator hasn't posted any updates yet.</p>
+                      <p className="text-slate-600 text-sm sm:text-base">Check back later for campaign updates!</p>
                     </div>
                   )}
                 </div>
               )}
 
               {activeTab === "comments" && (
-                <div className="space-y-6">
+                <div>
                   {/* Comment Form */}
-                  <form onSubmit={handleCommentSubmit} className="card">
+                  <form onSubmit={handleCommentSubmit} className="card mb-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Leave a Comment</h3>
                     <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Share your thoughts, ask questions, or show your support..."
-                      className="input min-h-[100px] mb-4"
-                      required
+                      placeholder="Share your thoughts or ask a question..."
+                      className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
+                      rows={4}
                     />
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-slate-500">Be respectful and constructive in your comments.</p>
-                      <button type="submit" className="btn-primary">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-3">
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        Be respectful and constructive in your comments.
+                      </p>
+                      <button
+                        type="submit"
+                        disabled={!newComment.trim()}
+                        className="btn-primary px-4 sm:px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                      >
                         Post Comment
                       </button>
                     </div>
@@ -509,19 +624,23 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                               alt={comment.user}
                               width={40}
                               height={40}
-                              className="rounded-full"
+                              className="rounded-full flex-shrink-0"
                             />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold text-slate-900">{comment.user}</h4>
-                                <span className="text-sm text-slate-500">{formatDateTime(comment.date)}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
+                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment.user}</h4>
+                                <span className="text-xs sm:text-sm text-slate-500">
+                                  {formatDateTime(comment.date)}
+                                </span>
                               </div>
-                              <p className="text-slate-700 mb-3 leading-relaxed">{comment.content}</p>
+                              <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
+                                {comment.content}
+                              </p>
                               <button
                                 onClick={() => handleLikeComment(comment.id)}
-                                className="flex items-center text-sm text-slate-500 hover:text-indigo-600 transition-colors"
+                                className="flex items-center text-xs sm:text-sm text-slate-500 hover:text-indigo-600 transition-colors"
                               >
-                                <ThumbsUp className="w-4 h-4 mr-1" />
+                                <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                 {comment.likes} {comment.likes === 1 ? "like" : "likes"}
                               </button>
                             </div>
@@ -529,10 +648,12 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-12">
-                        <ThumbsUp className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                      <div className="text-center py-8 sm:py-12">
+                        <ThumbsUp className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">No comments yet</h3>
-                        <p className="text-slate-600">Be the first to comment and show your support!</p>
+                        <p className="text-slate-600 text-sm sm:text-base">
+                          Be the first to comment and show your support!
+                        </p>
                       </div>
                     )}
                   </div>
@@ -542,65 +663,96 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <div className="lg:sticky lg:top-8">
               {/* Donation Card */}
-              <div className="card mb-6">
-                <div className="mb-6">
-                  <div className="flex justify-between text-sm text-slate-600 mb-2">
+              <div className="card mb-4 sm:mb-6">
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex justify-between text-xs sm:text-sm text-slate-600 mb-2">
                     <span>Raised: {formatCurrency(campaign.amountReceived)}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
+                  <div className="w-full bg-slate-200 rounded-full h-2 sm:h-3 mb-2">
                     <div
-                      className="bg-gradient-to-r from-indigo-600 to-sky-500 h-3 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-indigo-600 to-sky-500 h-2 sm:h-3 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
-                  <div className="text-sm text-slate-500">Goal: {formatCurrency(campaign.fundingGoal)}</div>
+                  <div className="text-xs sm:text-sm text-slate-500">Goal: {formatCurrency(campaign.fundingGoal)}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-slate-900">{totalDonors}</div>
-                    <div className="text-sm text-slate-600">Donors</div>
+                    <div className="text-xl sm:text-2xl font-bold text-slate-900">{totalDonors}</div>
+                    <div className="text-xs sm:text-sm text-slate-600">Donors</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-slate-900">{Math.max(0, daysLeft)}</div>
-                    <div className="text-sm text-slate-600">Days Left</div>
+                    <div className="text-xl sm:text-2xl font-bold text-slate-900">{Math.max(0, daysLeft)}</div>
+                    <div className="text-xs sm:text-sm text-slate-600">Days Left</div>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setShowDonationModal(true)}
-                  className="btn-primary w-full py-3 text-lg mb-4"
+                  className="btn-primary w-full py-2 sm:py-3 text-base sm:text-lg mb-3 sm:mb-4"
                   disabled={daysLeft <= 0}
                 >
                   {daysLeft > 0 ? "Donate Now" : "Campaign Ended"}
                 </button>
 
-                <div className="text-center text-sm text-slate-600">
-                  <Calendar className="w-4 h-4 inline mr-1" />
+                <div className="text-center text-xs sm:text-sm text-slate-600">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
                   Campaign ends on {formatDate(campaign.campaignEndDate)}
                 </div>
               </div>
 
               {/* Recent Donors */}
               <div className="card">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Donors</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Recent Donors</h3>
                 <div className="space-y-3">
                   {recentDonors.map((donor, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <Users className="w-4 h-4 text-indigo-600" />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
                       </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-slate-900">{donor.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs sm:text-sm font-medium text-slate-900 truncate">{donor.name}</div>
                         <div className="text-xs text-slate-500">{donor.time}</div>
                       </div>
-                      <div className="text-sm font-medium text-slate-900">{formatCurrency(donor.amount)}</div>
+                      <div className="text-xs sm:text-sm font-semibold text-indigo-600 flex-shrink-0">
+                        {formatCurrency(donor.amount)}
+                      </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <button className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                    View all donors →
+                  </button>
+                </div>
+              </div>
+
+              {/* Creator Info */}
+              <div className="card mt-4 sm:mt-6">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Campaign Creator</h3>
+                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                  <Image
+                    src={creator.avatar || "/placeholder.svg"}
+                    alt={creator.name}
+                    width={60}
+                    height={60}
+                    className="rounded-full"
+                  />
+                  <div className="flex-1 text-center sm:text-left">
+                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{creator.name}</h4>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-2">{creator.location}</p>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{creator.bio}</p>
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                      <span className="text-xs text-slate-500">{creator.campaignsCreated} campaigns</span>
+                      <span className="text-xs text-slate-500">{formatCurrency(creator.totalRaised)} raised</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -609,9 +761,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal onClose={() => setShowDonationModal(!showDonationModal)}  />}
+      {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />}
     </div>
   )
 }
-
-  // {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />

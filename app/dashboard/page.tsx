@@ -10,7 +10,6 @@ import {
   Eye,
   MessageCircle,
   Edit,
-  Trash2,
   BarChart3,
   Share2,
   Download,
@@ -134,19 +133,19 @@ export default function CreatorDashboard() {
   const { user } = useUser()
 
   useEffect(() => {
-    if(!user){
+    if (!user) {
       return
     }
 
-    const getData = async() => {
-      try{
+    const getData = async () => {
+      try {
         const res = await axiosInstance.get("/dashboard")
-        if(res.status === 200){
+        if (res.status === 200) {
           setRealData(res.data)
           console.log(res.data)
         }
-      }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+      } catch (err) {
+        process.env.NODE_ENV === "development" ? console.log(err) : ""
       }
     }
 
@@ -203,13 +202,13 @@ export default function CreatorDashboard() {
   const selectedCampaignData = data.campaigns.find((c) => c.id === selectedCampaign)
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">Creator Dashboard</h1>
-            <p className="text-xl text-slate-600">Manage your campaigns and track your impact</p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2">Creator Dashboard</h1>
+            <p className="text-lg sm:text-xl text-slate-600">Manage your campaigns and track your impact</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -221,78 +220,81 @@ export default function CreatorDashboard() {
               )}
             </div>
             <Link href="/create-campaign" className="btn-primary flex items-center create-campaign-btn">
-              <Plus className="w-5 h-5 mr-2" />
-              New Campaign
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="hidden sm:inline">New Campaign</span>
+              <span className="sm:hidden">New</span>
             </Link>
           </div>
         </div>
 
         {/* Enhanced Stats Overview */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stats-overview">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 stats-overview">
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Total Raised</p>
-                <p className="text-2xl font-bold text-slate-900">{formatCurrency(data.totalRaised)}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Raised</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
+                  {formatCurrency(data.totalRaised)}
+                </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
-            <div className="flex items-center text-sm">
-              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+            <div className="flex items-center text-xs sm:text-sm">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1" />
               <span className="text-green-600">+{data.monthlyGrowth}% this month</span>
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Total Donors</p>
-                <p className="text-2xl font-bold text-slate-900">{data.totalDonors}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Donors</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.totalDonors}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
-            <div className="text-sm text-slate-600">Avg: {formatCurrency(data.avgDonation)}</div>
+            <div className="text-xs sm:text-sm text-slate-600 truncate">Avg: {formatCurrency(data.avgDonation)}</div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Total Views</p>
-                <p className="text-2xl font-bold text-slate-900">{data.totalViews.toLocaleString()}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Views</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.totalViews.toLocaleString()}</p>
               </div>
-              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <Eye className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
               </div>
             </div>
-            <div className="text-sm text-slate-600">Conversion: {data.conversionRate}%</div>
+            <div className="text-xs sm:text-sm text-slate-600">Conversion: {data.conversionRate}%</div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Active Campaigns</p>
-                <p className="text-2xl font-bold text-slate-900">{data.activeCampaigns}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-slate-600">Active Campaigns</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.activeCampaigns}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
             </div>
-            <div className="text-sm text-slate-600">{data.totalCampaigns} total campaigns</div>
+            <div className="text-xs sm:text-sm text-slate-600">{data.totalCampaigns} total campaigns</div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-slate-200 mb-6 dashboard-tabs">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-4 sm:space-x-8 overflow-x-auto">
             {["overview", "campaigns", "analytics", "notifications"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm capitalize ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                   activeTab === tab
                     ? "border-indigo-600 text-indigo-600"
                     : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -311,11 +313,11 @@ export default function CreatorDashboard() {
 
         {/* Tab Content */}
         {activeTab === "overview" && (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Recent Activity */}
             <div className="lg:col-span-2">
               <div className="card mb-6 recent-activity">
-                <h2 className="text-xl font-semibold text-slate-900 mb-4">Recent Activity</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-4">Recent Activity</h2>
                 <div className="space-y-4">
                   {data.campaigns
                     .flatMap((c) => c.recentActivity.map((a) => ({ ...a, campaignTitle: c.title })))
@@ -325,9 +327,9 @@ export default function CreatorDashboard() {
                         key={index}
                         className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0"
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center min-w-0 flex-1">
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
                               activity.type === "donation"
                                 ? "bg-green-100"
                                 : activity.type === "comment"
@@ -342,18 +344,19 @@ export default function CreatorDashboard() {
                             {activity.type === "share" && <Share2 className="w-4 h-4 text-purple-600" />}
                             {activity.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
                           </div>
-                          <div>
-                            <p className="text-slate-900">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-slate-900 text-sm sm:text-base">
                               {activity.type === "donation" &&
                                 `New donation of ${formatCurrency(activity?.amount as number)} from ${activity.donor}`}
-                              {activity.type === "comment" && `New comment: "${activity.content as string}" by ${activity.user}`}
+                              {activity.type === "comment" &&
+                                `New comment: "${activity.content as string}" by ${activity.user}`}
                               {activity.type === "share" && `Campaign shared on ${activity?.platform}`}
                               {activity.type === "update" && `Campaign update: ${activity?.title}`}
                             </p>
-                            <p className="text-sm text-slate-500">{activity.campaignTitle}</p>
+                            <p className="text-xs sm:text-sm text-slate-500 truncate">{activity.campaignTitle}</p>
                           </div>
                         </div>
-                        <span className="text-sm text-slate-500">{activity.time}</span>
+                        <span className="text-xs sm:text-sm text-slate-500 ml-2 flex-shrink-0">{activity.time}</span>
                       </div>
                     ))}
                 </div>
@@ -405,23 +408,23 @@ export default function CreatorDashboard() {
           <div>
             {/* Enhanced Campaigns Table */}
             <div className="card campaigns-table">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-slate-900">Your Campaigns</h2>
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Your Campaigns</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <select className="px-3 py-2 border border-slate-300 rounded-lg text-sm">
                     <option>All Campaigns</option>
                     <option>Active</option>
                     <option>Completed</option>
                     <option>Paused</option>
                   </select>
-                  <button className="btn-outline flex items-center">
+                  <button className="btn-outline flex items-center justify-center">
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-200">
@@ -499,52 +502,30 @@ export default function CreatorDashboard() {
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center space-x-2">
                               <Link
                                 href={`/campaigns/${campaign.id}`}
-                                className="text-indigo-600 hover:text-indigo-800"
-                                title="View Campaign"
+                                className="text-indigo-600 hover:text-indigo-800 text-sm"
                               >
-                                <Eye className="w-4 h-4" />
-                              </Link>
-                              <Link
-                                href={`/campaigns/${campaign.id}/updates`}
-                                className="text-green-600 hover:text-green-800"
-                                title="Manage Updates"
-                              >
-                                <MessageCircle className="w-4 h-4" />
+                                View
                               </Link>
                               <Link
                                 href={`/campaigns/${campaign.id}/edit`}
-                                className="text-slate-600 hover:text-slate-800"
-                                title="Edit Campaign"
+                                className="text-slate-600 hover:text-slate-800 text-sm"
                               >
                                 <Edit className="w-4 h-4" />
                               </Link>
-                              {campaign.status === "active" && (
-                                <button
-                                  onClick={() => handleCampaignAction(campaign.id, "pause")}
-                                  className="text-yellow-600 hover:text-yellow-800"
-                                  title="Pause Campaign"
-                                >
-                                  <Pause className="w-4 h-4" />
-                                </button>
-                              )}
-                              {campaign.status === "paused" && (
-                                <button
-                                  onClick={() => handleCampaignAction(campaign.id, "resume")}
-                                  className="text-green-600 hover:text-green-800"
-                                  title="Resume Campaign"
-                                >
-                                  <Play className="w-4 h-4" />
-                                </button>
-                              )}
                               <button
-                                onClick={() => handleCampaignAction(campaign.id, "delete")}
-                                className="text-red-600 hover:text-red-800"
-                                title="Delete Campaign"
+                                onClick={() =>
+                                  handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
+                                }
+                                className="text-slate-600 hover:text-slate-800"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                {campaign.status === "active" ? (
+                                  <Pause className="w-4 h-4" />
+                                ) : (
+                                  <Play className="w-4 h-4" />
+                                )}
                               </button>
                             </div>
                           </td>
@@ -554,6 +535,96 @@ export default function CreatorDashboard() {
                   </tbody>
                 </table>
               </div>
+
+              <div className="lg:hidden space-y-4">
+                {data.campaigns.map((campaign) => {
+                  const progress = (campaign.raised / campaign.target) * 100
+                  return (
+                    <div key={campaign.id} className="border border-slate-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-slate-900 mb-1 truncate">{campaign.title}</h3>
+                          <p className="text-sm text-slate-600">
+                            Created {new Date(campaign.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getStatusColor(campaign.status)}`}
+                        >
+                          {campaign.status}
+                        </span>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex justify-between text-sm text-slate-600 mb-2">
+                          <span>{formatCurrency(campaign.raised)}</span>
+                          <span>{Math.round(progress)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-indigo-600 to-sky-500 h-2 rounded-full"
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">Goal: {formatCurrency(campaign.target)}</div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+                        <div className="flex items-center">
+                          <Users className="w-3 h-3 mr-1 text-slate-400" />
+                          <span>{campaign.donors}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Eye className="w-3 h-3 mr-1 text-slate-400" />
+                          <span>{campaign.views}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MessageCircle className="w-3 h-3 mr-1 text-slate-400" />
+                          <span>{campaign.comments}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm">
+                          {campaign.status === "completed" ? (
+                            <span className="text-green-600 font-medium">Completed</span>
+                          ) : campaign.daysLeft > 0 ? (
+                            <span className="text-slate-900 font-medium">{campaign.daysLeft} days left</span>
+                          ) : (
+                            <span className="text-red-600 font-medium">Expired</span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Link
+                            href={`/campaigns/${campaign.id}`}
+                            className="text-indigo-600 hover:text-indigo-800 text-sm"
+                          >
+                            View
+                          </Link>
+                          <Link
+                            href={`/campaigns/${campaign.id}/edit`}
+                            className="text-slate-600 hover:text-slate-800 text-sm"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() =>
+                              handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
+                            }
+                            className="text-slate-600 hover:text-slate-800"
+                          >
+                            {campaign.status === "active" ? (
+                              <Pause className="w-4 h-4" />
+                            ) : (
+                              <Play className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -561,8 +632,8 @@ export default function CreatorDashboard() {
         {activeTab === "analytics" && selectedCampaignData && (
           <div className="analytics-section">
             {/* Campaign Selector */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <select
                   value={selectedCampaign}
                   onChange={(e) => setSelectedCampaign(e.target.value)}
@@ -584,24 +655,24 @@ export default function CreatorDashboard() {
                   <option value="90d">Last 90 days</option>
                 </select>
               </div>
-              <button className="btn-outline flex items-center">
+              <button className="btn-outline flex items-center justify-center">
                 <Download className="w-4 h-4 mr-2" />
                 Export Report
               </button>
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Views Chart */}
               <div className="card">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Daily Views</h3>
-                <div className="h-64 flex items-end justify-between space-x-2">
+                <div className="h-48 sm:h-64 flex items-end justify-between space-x-1 sm:space-x-2">
                   {selectedCampaignData.analytics.dailyViews.map((views, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center">
                       <div
                         className="w-full bg-indigo-500 rounded-t"
                         style={{
-                          height: `${(views / Math.max(...selectedCampaignData.analytics.dailyViews)) * 200}px`,
+                          height: `${(views / Math.max(...selectedCampaignData.analytics.dailyViews)) * 160}px`,
                         }}
                       />
                       <span className="text-xs text-slate-500 mt-2">{views}</span>
@@ -613,13 +684,13 @@ export default function CreatorDashboard() {
               {/* Donations Chart */}
               <div className="card">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Daily Donations</h3>
-                <div className="h-64 flex items-end justify-between space-x-2">
+                <div className="h-48 sm:h-64 flex items-end justify-between space-x-1 sm:space-x-2">
                   {selectedCampaignData.analytics.dailyDonations.map((donations, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center">
                       <div
                         className="w-full bg-green-500 rounded-t"
                         style={{
-                          height: `${(donations / Math.max(...selectedCampaignData.analytics.dailyDonations)) * 200}px`,
+                          height: `${(donations / Math.max(...selectedCampaignData.analytics.dailyDonations)) * 160}px`,
                         }}
                       />
                       <span className="text-xs text-slate-500 mt-2">{donations}</span>
@@ -634,9 +705,9 @@ export default function CreatorDashboard() {
                 <div className="space-y-3">
                   {selectedCampaignData.analytics.topReferrers.map((referrer, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-slate-700">{referrer}</span>
-                      <div className="flex items-center">
-                        <div className="w-24 bg-slate-200 rounded-full h-2 mr-3">
+                      <span className="text-slate-700 truncate flex-1 mr-2">{referrer}</span>
+                      <div className="flex items-center flex-shrink-0">
+                        <div className="w-16 sm:w-24 bg-slate-200 rounded-full h-2 mr-3">
                           <div
                             className="bg-indigo-500 h-2 rounded-full"
                             style={{
@@ -656,41 +727,44 @@ export default function CreatorDashboard() {
               {/* Donor Demographics */}
               <div className="card">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Donor Demographics</h3>
-                <div className="space-y-3">
-                  {Object.entries(selectedCampaignData.analytics.donorDemographics).map(([age, percentage]) => (
-                    <div key={age} className="flex items-center justify-between">
-                      <span className="text-slate-700">{age} years</span>
-                      <div className="flex items-center">
-                        <div className="w-24 bg-slate-200 rounded-full h-2 mr-3">
-                          <div className="bg-sky-500 h-2 rounded-full" style={{ width: `${percentage}%` }} />
-                        </div>
-                        <span className="text-sm text-slate-600">{percentage}%</span>
-                      </div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-2">
+                      <span>Age 18-25</span>
+                      <span>25%</span>
                     </div>
-                  ))}
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: "25%" }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-2">
+                      <span>Age 26-35</span>
+                      <span>40%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: "40%" }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-2">
+                      <span>Age 36-50</span>
+                      <span>30%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: "30%" }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-2">
+                      <span>Age 50+</span>
+                      <span>5%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "5%" }} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Performance Metrics */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-slate-900">{selectedCampaignData.conversionRate}%</div>
-                <div className="text-sm text-slate-600">Conversion Rate</div>
-              </div>
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-slate-900">
-                  {formatCurrency(selectedCampaignData.avgDonation)}
-                </div>
-                <div className="text-sm text-slate-600">Avg Donation</div>
-              </div>
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-slate-900">{selectedCampaignData.shares}</div>
-                <div className="text-sm text-slate-600">Total Shares</div>
-              </div>
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-slate-900">{selectedCampaignData.updates}</div>
-                <div className="text-sm text-slate-600">Updates Posted</div>
               </div>
             </div>
           </div>
@@ -698,8 +772,8 @@ export default function CreatorDashboard() {
 
         {activeTab === "notifications" && (
           <div className="card notifications-section">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-slate-900">Notifications</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Notifications</h2>
               <button className="text-sm text-indigo-600 hover:text-indigo-800">Mark all as read</button>
             </div>
 
@@ -712,9 +786,9 @@ export default function CreatorDashboard() {
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start">
+                    <div className="flex items-start min-w-0 flex-1">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
                           notification.type === "donation"
                             ? "bg-green-100"
                             : notification.type === "comment"
@@ -729,12 +803,12 @@ export default function CreatorDashboard() {
                         {notification.type === "milestone" && <Target className="w-4 h-4 text-purple-600" />}
                         {notification.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
                       </div>
-                      <div>
-                        <p className="text-slate-900">{notification.message}</p>
-                        <p className="text-sm text-slate-500">{notification.time}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-slate-900 text-sm sm:text-base">{notification.message}</p>
+                        <p className="text-xs sm:text-sm text-slate-500">{notification.time}</p>
                       </div>
                     </div>
-                    {!notification.read && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
+                    {!notification.read && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />}
                   </div>
                 </div>
               ))}
@@ -742,9 +816,6 @@ export default function CreatorDashboard() {
           </div>
         )}
       </div>
-
-      {/* Setup Wizard */}
-      {/* <DashboardSetupWizard isFirstTime={isFirstTime} onComplete={handleWizardComplete} onSkip={handleWizardSkip} /> */}
     </div>
   )
 }
