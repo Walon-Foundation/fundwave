@@ -19,6 +19,8 @@ import {
   Pause,
   Play,
 } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
+import { axiosInstance } from "@/lib/axiosInstance"
 // import DashboardSetupWizard from "../../components/dashboard-setup-wizard"
 
 // Enhanced mock creator data
@@ -127,6 +129,29 @@ export default function CreatorDashboard() {
   const [timeRange, setTimeRange] = useState("7d")
   const [isFirstTime, setIsFirstTime] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
+  const [realData, setRealData] = useState()
+
+  const { user } = useUser()
+
+  useEffect(() => {
+    if(!user){
+      return
+    }
+
+    const getData = async() => {
+      try{
+        const res = await axiosInstance.get("/dashboard")
+        if(res.status === 200){
+          setRealData(res.data)
+          console.log(res.data)
+        }
+      }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err):""
+      }
+    }
+
+    getData()
+  }, [user])
 
   // Check if this is user's first time on dashboard
   useEffect(() => {
