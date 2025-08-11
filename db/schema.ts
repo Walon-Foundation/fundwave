@@ -173,6 +173,7 @@ export const chatMessageTable = pgTable("chat_messages", {
 
 export const notificationTable = pgTable("notification", {
     id:text("id").primaryKey().notNull(),
+    title:text("title").notNull(),
     campaignId:text("campaignId").notNull().references(() => campaignTable.id, { onDelete: "cascade"}),
     type:notificationTypeEnum("type").notNull(),
     userId:text("userId").references(() => userTable.id, { onDelete: "no action"}),
