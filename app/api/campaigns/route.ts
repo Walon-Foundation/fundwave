@@ -16,7 +16,6 @@ export async function POST(req:NextRequest){
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-
         const userExist = await db.select().from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1)
         
         if(userExist.length === 0){
