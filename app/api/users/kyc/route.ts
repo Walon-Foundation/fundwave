@@ -6,6 +6,7 @@ import { userDocumentTable, userTable } from "../../../../db/schema";
 import { eq } from "drizzle-orm";
 import { supabase } from "../../../../lib/supabase";
 import { nanoid } from "nanoid";
+import { sendEmail } from "@/lib/nodeMailer";
 
 
 export async function PATCH(req:NextRequest){
@@ -121,13 +122,17 @@ export async function PATCH(req:NextRequest){
     }).returning()
     
 
-    await db.insert(userDocumentTable).values({
-      documentNumber:data.documentNumber,
-      documentPhoto:documentUrl,
-      documentType:data.documentType,
-      id:nanoid(16),
-      userId:newUser[0].id
-    })
+   //saving the document and sending the email
+   await Promise.all([
+      db.insert(userDocumentTable).values({
+        documentNumber:data.documentNumber,
+        documentPhoto:documentUrl,
+        documentType:data.documentType,
+        id:nanoid(16),
+        userId:newUser[0].id
+      }),
+      sendEmail("kyc-complete", (await user).primaryEmailAddress?.emailAddress!, "Kyc has being completed", { name: (await user).fullName! })
+   ])
 
     return NextResponse.json({
       message:"kyc completed successfull",
