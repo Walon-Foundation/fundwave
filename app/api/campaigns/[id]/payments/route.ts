@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
 import { NextResponse, NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "../../../../../db/drizzle";
@@ -23,14 +21,14 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
 
         //getting the campaign name
         const id = (await params).id
-        const campaign = await db.select({title:campaignTable.title}).from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute()
+        const campaign = (await db.select({title:campaignTable.title}).from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
 
         //getting the user id if the user exist in the database
-        const user = await db.select().from(userTable).where(and(eq(userTable.name, data.name!), eq(userTable.email, data.email!))).limit(1).execute()
+        const user = (await db.select().from(userTable).where(and(eq(userTable.name, data.name!), eq(userTable.email, data.email!))).limit(1).execute())[0]
 
         // Generate payment code
         const paymentCode = await createPaymentCode(
-            campaign[0].title,
+            campaign.title,
             data.name || "",
             data.amount,
             data.phone
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
         // Save payment to database
         await db.insert(paymentTable).values({
             id: nanoid(16),
-            userId: user[0].id, 
+            userId: user.id, 
             amount: Number(data.amount),
             campaignId: id,
             username:data.name || "Anonymous",

@@ -5,6 +5,7 @@ import { db } from "../../../../../db/drizzle";
 import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
+import { sendNotification } from "@/lib/notification";
 
 
 export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}>}){
@@ -15,7 +16,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
     if(!userId || userExist.length === 0){
       return NextResponse.json({
-        error:"invalid auth token",
+        error:"user not authenticated",
       }, { status:401 })
     }
     
@@ -32,13 +33,18 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
     const id = (await params).id
 
-    await db.insert(commentTable).values({
-      id:nanoid(16),
-      campaignId:id,
-      message:data.comment,
-      username:userExist[0].name,
-      userId:userExist[0].id
-    })
+    await Promise.all([
+      db.insert(commentTable).values({
+        id:nanoid(16),
+        campaignId:id,
+        message:data.comment,
+        username:userExist[0].name,
+        userId:userExist[0].id
+      }),
+
+      //sending the notification about the new comment created
+      sendNotification("New comment", "comment", userExist[0].id, id)
+    ])
 
     return NextResponse.json({
       message:"comment created successfully",

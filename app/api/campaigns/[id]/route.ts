@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../db/drizzle";
 import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "../../../../db/schema";
 import { eq,asc } from "drizzle-orm";
-import { deletedCampaignEmail } from "../../../../lib/nodeMailer";
 import { auth } from "@clerk/nextjs/server";
+import { sendEmail } from "@/lib/nodeMailer";
 
 export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string}>} ){
   try{
@@ -28,8 +28,9 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string
     const id  = (await params).id
 
     //Todo: send email to all the donors about the campaign being deleted
+    //Todo: add logger to this api route
     await Promise.all([
-      await deletedCampaignEmail(user.email, user.name),
+      await sendEmail("campaign-deleted", user.email, "Campaign has being deleted", { name:user.name }),
       await db.delete(campaignTable).where(eq(campaignTable.id, id))
     ])
 

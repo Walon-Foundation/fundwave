@@ -12,6 +12,13 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
     const { userId } = await auth()
     const user = (await db.select().from(userTable).where(eq(userTable.clerkId, userId as string)).limit(1))[0]
 
+    if(!userId || !user){
+      return NextResponse.json({
+        ok:false,
+        message:"user is not authenticated",
+      }, { status: 401 })
+    }
+
     const id = (await params).id
 
     const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.id, id), eq(campaignTable.creatorId, user.id))).limit(1)

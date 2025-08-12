@@ -9,6 +9,13 @@ export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId
     try{
         const { userId } = await auth()
         const user = (await db.select().from(userTable).where(eq(userTable.clerkId, userId as string)).limit(1))[0]
+
+        if(!userId || !user){
+            return NextResponse.json({
+                ok:false,
+                message:"user is not authenticated",
+            }, { status:401 })
+        }
     
         const updateId  = (await params).updateId
         
@@ -29,7 +36,7 @@ export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId
         if(campaign.creatorId !== user.id){
             return NextResponse.json({
                 error:"unauthorized: Not the campaign creator"
-            })
+            }, { status:401 })
         }
 
         await db.delete(updateTable).where(eq(updateTable.id, updateId))
