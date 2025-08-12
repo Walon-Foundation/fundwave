@@ -9,30 +9,110 @@ const transport = nodemailer.createTransport({
 });
 
 
-export const getCampaignDeletedEmail = (name: string) => `
-  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
-    <h2 style="color: #cc0000;">Hello ${name},</h2>
-    
-    <p>We wanted to let you know that your campaign has been successfully deleted from the FundWave platform.</p>
-    
-    <p>If you did not perform this action or believe it was a mistake, please contact our support team immediately.</p>
+// ----------------- EMAIL TEMPLATES -----------------
+const templates: Record<string, (data: Record<string, string | number>) => string> = {
+  "welcome": ({ name }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #007bff;">Welcome to FundWave 🎉</h2>
+      <p>Hi ${name},</p>
+      <p>We’re excited to have you join our community of changemakers. Start exploring campaigns or create your own today!</p>
+      <p>Thanks,<br/>The FundWave Team</p>
+    </div>
+  `,
 
-    <p style="margin-top: 30px;">Thanks,<br/>The FundWave Team</p>
+  "kyc-complete": ({ name }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #28a745;">KYC Verification Successful ✅</h2>
+      <p>Hello ${name},</p>
+      <p>Your KYC verification has been successfully completed. You can now create and manage campaigns without restrictions.</p>
+      <p>Thanks,<br/>The FundWave Team</p>
+    </div>
+  `,
 
-    <hr style="margin-top: 40px;" />
-    <p style="font-size: 12px; color: #777;">Need help? Reach out to us at <a href="mailto:support@fundwave.sl">support@fundwave.sl</a>.</p>
-  </div>
-`
+  "kyc-rejected": ({ name, reason }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #cc0000;">KYC Verification Failed ❌</h2>
+      <p>Hello ${name},</p>
+      <p>Unfortunately, your KYC verification could not be approved.</p>
+      <p><strong>Reason:</strong> ${reason}</p>
+      <p>Please update your documents and try again.</p>
+    </div>
+  `,
+
+  "campaign-created": ({ name, campaign }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #007bff;">Campaign Created 🚀</h2>
+      <p>Hello ${name},</p>
+      <p>Your campaign <strong>${campaign}</strong> has been successfully created.</p>
+      <p>Share it with your network to get more support!</p>
+    </div>
+  `,
+
+  "campaign-updated": ({ name, campaign }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2>Campaign Updated ✏️</h2>
+      <p>Hello ${name},</p>
+      <p>Your campaign <strong>${campaign}</strong> has been updated.</p>
+      <p>Log in to view the latest changes.</p>
+    </div>
+  `,
+
+  "campaign-deleted": ({ name }) => `
+    <div style="font-family: Arial, color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #cc0000;">Campaign Deleted 🗑️</h2>
+      <p>Hello ${name},</p>
+      <p>Your campaign has been successfully deleted from FundWave.</p>
+    </div>
+  `,
+
+  "campaign-ended": ({ name, campaign, total }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #ff9800;">Campaign Ended 📅</h2>
+      <p>Hello ${name},</p>
+      <p>Your campaign <strong>${campaign}</strong> has ended.</p>
+      <p>Total Raised: <strong>$${total}</strong></p>
+      <p>Thank you for being part of the FundWave community!</p>
+    </div>
+  `,
+
+  "payment-complete": ({ name, amount, campaign }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #28a745;">Payment Successful 💳</h2>
+      <p>Hi ${name},</p>
+      <p>Thank you for donating <strong>$${amount}</strong> to <strong>${campaign}</strong>.</p>
+      <p>Your contribution makes a difference!</p>
+    </div>
+  `,
+
+  "payout-sent": ({ name, amount }) => `
+    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+      <h2 style="color: #28a745;">Payout Sent 💰</h2>
+      <p>Hello ${name},</p>
+      <p>We’ve sent a payout of <strong>$${amount}</strong> to your registered bank account.</p>
+      <p>Thanks for trusting FundWave!</p>
+    </div>
+  `,
+};
 
 
-export async function deletedCampaignEmail(
-  email:string,
-  name:string,
-){
+
+// ----------------- EMAIL SENDER -----------------
+export async function sendEmail(
+  type: keyof typeof templates,
+  to: string,
+  subject: string,
+  data: Record<string, string | number>
+) {
+  const html = templates[type](data);
   await transport.sendMail({
-    from: '"Fundwavesl" <no-reply@fundwavesl@gmail.com>',
-    to:email,
-    subject:"Campaign Deleted",
-    html:getCampaignDeletedEmail(name),
-  })
+    from: '"FundWave" <no-reply@fundwave.sl>',
+    to,
+    subject,
+    html,
+  });
 }
+
+
+
+
+
