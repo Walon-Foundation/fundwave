@@ -4,6 +4,7 @@ import { Webhook } from "svix";
 import { db } from "@/db/drizzle";
 import { userTable } from "@/db/schema";
 import { nanoid } from "nanoid";
+import { sendEmail } from "@/lib/nodeMailer";
 
 
 export async function POST(req:NextRequest){
@@ -53,6 +54,9 @@ export async function POST(req:NextRequest){
             //seeing the confirm success message in the console if in development mode
             process.env.NODE_ENV === "development" ? console.log("user added to the database from the hook") : ""
         }
+
+        //sending the welcome email
+        await sendEmail("welcome", data.email_addresses.email_address, "Welcome to Fundwave", { name: data.first_name})
 
         return NextResponse.json({ok:true, message:"hook recieved"}, { status:200 })
     }catch(err){
