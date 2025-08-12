@@ -6,6 +6,7 @@ import { db } from "../../../db/drizzle";
 import { campaignTable, teamMemberTable, userTable } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { sendEmail } from "@/lib/nodeMailer";
 
 
 export async function POST(req:NextRequest){
@@ -113,7 +114,10 @@ export async function POST(req:NextRequest){
             await db.insert(teamMemberTable).values(membersWithCampaignId)
         }
 
+        //send email to confirm campaign creation
+        await sendEmail("campaign-created", userExist[0].email, "Campaign has been created", { name: userExist[0].name, campaign:newCampaign.title })
 
+        //sending the response to client
         return NextResponse.json({
             message:"campaign created",
         }, { status:201 })
