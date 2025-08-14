@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken"
 import { db } from "../../../../../../db/drizzle";
 import { commentTable, userTable } from "../../../../../../db/schema";
 import { and, eq } from "drizzle-orm";
@@ -8,7 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
 
 
-export async function Delete(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
+export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
     try{
         //authenticating the user
         const { userId } = await auth()

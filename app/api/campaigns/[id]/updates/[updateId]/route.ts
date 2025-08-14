@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 
 
-export async function Delete(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
+export async function DELETE(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
     try{
         const { userId } = await auth()
         const user = (await db.select().from(userTable).where(eq(userTable.clerkId, userId as string)).limit(1))[0]

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { platform, userId } = await request.json()
 
@@ -8,10 +8,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({
       success: true,
       shareId: `share_${Date.now()}`,
-      campaignId: params.id,
+      campaignId: (await params).id,
       platform,
       userId,
-      shareUrl: `https://fundwavesl.com/campaigns/${params.id}?ref=${userId}`,
+      shareUrl: `https://fundwavesl.com/campaigns/${(await params).id}?ref=${userId}`,
       createdAt: new Date().toISOString(),
     })
   } catch (error) {
