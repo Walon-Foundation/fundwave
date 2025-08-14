@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag } from "lucide-react"
 import DonationModal from "../../../components/donation-modal"
 import { axiosInstance } from "@/lib/axiosInstance"
+import { useParams } from "next/navigation"
 
 // Mock campaign data matching the exact database schema
 const mockCampaign = {
@@ -81,6 +82,7 @@ const mockTeamMembers = [
     role: "Project Lead & Community Organizer",
     bio: "Community organizer with 10+ years experience in water infrastructure projects. Led 5 successful water projects across Northern Province.",
     campaignId: "camp_1234567890",
+    avatar:""
   },
   {
     id: "team_002",
@@ -88,6 +90,7 @@ const mockTeamMembers = [
     role: "Technical Engineer",
     bio: "Water systems engineer specializing in rural community projects. Certified in solar pump installation and maintenance.",
     campaignId: "camp_1234567890",
+    avatar:""
   },
   {
     id: "team_003",
@@ -95,6 +98,7 @@ const mockTeamMembers = [
     role: "Community Liaison",
     bio: "Local community leader ensuring project meets community needs. Fluent in Temne and Krio languages.",
     campaignId: "camp_1234567890",
+    avatar:""
   },
 ]
 
@@ -177,8 +181,8 @@ const mockRecentDonors = [
   { name: "Anonymous", amount: 300000, time: "2 days ago" },
 ]
 
-export default function CampaignDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params
+export default function CampaignDetailPage() {
+  const params = useParams<{id:string}>()
   const [campaign] = useState(mockCampaign)
   const [creator] = useState(mockCreator)
   const [teamMembers] = useState(mockTeamMembers)
@@ -200,7 +204,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   useEffect(() => {
     const getInfo = async () => {
       try {
-        const res = await axiosInstance.get(`/campaigns/${id}`)
+        const res = await axiosInstance.get(`/campaigns/${params.id}`)
         if (res.status === 200) {
           setRealCampaignInfo(res.data.data)
         }
@@ -761,7 +765,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />}
+      {/* {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />} */}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Plus, Edit, Trash2, Calendar, Eye, MessageCircle } from "lucide-react"
 import Image from "next/image"
+import { useParams } from "next/navigation"
 
 // Mock updates data
 const mockUpdates = [
@@ -42,7 +43,8 @@ const mockUpdates = [
   },
 ]
 
-export default function CampaignUpdatesPage({ params }: { params: { id: string } }) {
+export default function CampaignUpdatesPage() {
+  const param = useParams<{id:string}>()
   const [updates, setUpdates] = useState(mockUpdates)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newUpdate, setNewUpdate] = useState({
@@ -93,7 +95,7 @@ export default function CampaignUpdatesPage({ params }: { params: { id: string }
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/campaigns/${params.id}`}
+            href={`/campaigns/${param.id}`}
             className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

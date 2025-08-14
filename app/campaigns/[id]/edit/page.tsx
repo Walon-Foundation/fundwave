@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Upload, X, Plus, Save, ArrowLeft } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -35,7 +35,8 @@ const mockCampaign = {
   tags: ["water", "community", "health"],
 }
 
-export default function EditCampaignPage({ params }: { params: { id: string } }) {
+export default function EditCampaignPage() {
+  const params = useParams<{id:string}>()
   const [formData, setFormData] = useState(mockCampaign)
   const [currentTag, setCurrentTag] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -88,7 +89,7 @@ export default function EditCampaignPage({ params }: { params: { id: string } })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     alert("Campaign updated successfully!")
-    router.push(`/campaigns/${params.id}`)
+    router.push(`/campaigns/${(await params).id}`)
   }
 
   return (
