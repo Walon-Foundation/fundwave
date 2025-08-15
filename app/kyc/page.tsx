@@ -1,10 +1,11 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { Upload, ChevronLeft, ChevronRight } from "lucide-react"
+import { Upload, ChevronLeft, ChevronRight, User, FileText, CheckCircle2, Shield, AlertCircle } from "lucide-react"
 import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
-import { PhoneNumber } from "@clerk/nextjs/server"
 
 export default function KYCPage() {
   const [step, setStep] = useState(1)
@@ -19,7 +20,7 @@ export default function KYCPage() {
     nationality: "Sierra Leonean",
     profilePicture: null as File | null,
     age: "",
-    phoneNumber:""
+    phoneNumber: "",
   })
 
   const router = useRouter()
@@ -33,31 +34,31 @@ export default function KYCPage() {
     if (!files || files.length === 0) return
 
     const file = files[0]
-    setFormData(prev => ({ ...prev, [field]: file }))
-    
+    setFormData((prev) => ({ ...prev, [field]: file }))
+
     // Create preview
-    setPreviewImages(prev => ({
+    setPreviewImages((prev) => ({
       ...prev,
-      [field]: URL.createObjectURL(file)
+      [field]: URL.createObjectURL(file),
     }))
   }
 
   const removeFile = (field: string) => {
-    setFormData(prev => ({ ...prev, [field]: null }))
-    setPreviewImages(prev => ({ ...prev, [field]: "" }))
+    setFormData((prev) => ({ ...prev, [field]: null }))
+    setPreviewImages((prev) => ({ ...prev, [field]: "" }))
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const nextStep = () => setStep(prev => prev + 1)
-  const prevStep = () => setStep(prev => prev - 1)
+  const nextStep = () => setStep((prev) => prev + 1)
+  const prevStep = () => setStep((prev) => prev - 1)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.documentPhoto || !formData.profilePicture) {
       alert("Please upload both document photo and profile picture")
       return
@@ -67,7 +68,7 @@ export default function KYCPage() {
 
     // Create FormData object for backend submission
     const submitData = new FormData()
-    
+
     submitData.append("address", formData.address)
     submitData.append("district", formData.district)
     submitData.append("documentType", formData.documentType)
@@ -76,18 +77,18 @@ export default function KYCPage() {
     submitData.append("nationality", formData.nationality)
     submitData.append("age", formData.age)
     submitData.append("phoneNumber", formData.phoneNumber)
-    
+
     if (formData.profilePicture) {
       submitData.append("profilePicture", formData.profilePicture)
     }
-    
+
     if (formData.documentPhoto) {
       submitData.append("documentPhoto", formData.documentPhoto)
     }
-    
+
     try {
       const res = await axiosInstance.patch("/users/kyc", submitData)
-      if(res.status === 200){
+      if (res.status === 200) {
         router.push("/dashboard")
         alert("KYC completed successfully")
       }
@@ -100,72 +101,74 @@ export default function KYCPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">KYC Verification</h1>
-          <p className="text-xl text-slate-600">Verify your identity to unlock all FundWaveSL features</p>
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2 sm:mb-4">KYC Verification</h1>
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+            Verify your identity to unlock all FundWaveSL features and start fundraising
+          </p>
         </div>
 
-        {/* Stepper */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3].map((stepNumber) => (
-              <div key={stepNumber} className="flex flex-col items-center">
+        <div className="mb-8 sm:mb-12">
+          <div className="flex items-center justify-between mb-6">
+            {[
+              { number: 1, label: "Personal", icon: User },
+              { number: 2, label: "Documents", icon: FileText },
+              { number: 3, label: "Review", icon: CheckCircle2 },
+            ].map(({ number, label, icon: Icon }) => (
+              <div key={number} className="flex flex-col items-center flex-1">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step === stepNumber
-                      ? "bg-indigo-600 text-white"
-                      : step > stepNumber
-                      ? "bg-green-100 text-green-600"
-                      : "bg-slate-200 text-slate-600"
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    step === number
+                      ? "bg-indigo-600 text-white shadow-lg scale-110"
+                      : step > number
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-slate-200 text-slate-600"
                   }`}
                 >
-                  {stepNumber}
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-sm mt-2 text-slate-600">
-                  {stepNumber === 1 ? "Personal" : stepNumber === 2 ? "Documents" : "Review"}
-                </span>
+                <span className="text-xs sm:text-sm mt-2 text-slate-600 font-medium">{label}</span>
               </div>
             ))}
           </div>
-          <div className="w-full bg-slate-200 h-1 rounded-full">
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-indigo-600 h-1 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${((step - 1) / 2) * 100}%` }}
             ></div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           {/* Step 1: Personal Information */}
           {step === 1 && (
-            <div className="card space-y-6">
-              <h2 className="text-2xl font-semibold text-slate-900">Personal Information</h2>
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <User className="w-6 h-6 text-indigo-600" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Personal Information</h2>
+              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture *</label>
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 sm:p-6 bg-slate-50 rounded-xl">
+                <div className="flex justify-center sm:justify-start">
                   <div className="relative">
                     {previewImages.profilePicture ? (
                       <>
                         <img
-                          src={previewImages.profilePicture}
+                          src={previewImages.profilePicture || "/placeholder.svg"}
                           alt="Profile preview"
-                          className="w-20 h-20 rounded-full object-cover"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
                         />
                         <button
                           type="button"
                           onClick={() => removeFile("profilePicture")}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -176,31 +179,34 @@ export default function KYCPage() {
                         </button>
                       </>
                     ) : (
-                      <div className="border-2 border-dashed border-slate-300 rounded-full w-20 h-20 flex items-center justify-center">
-                        <Upload className="w-6 h-6 text-slate-400" />
+                      <div className="border-2 border-dashed border-slate-300 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center bg-white">
+                        <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
                       </div>
                     )}
                   </div>
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload("profilePicture", e.target.files)}
-                      className="hidden"
-                      id="profile-upload"
-                      required
-                    />
-                    <label
-                      htmlFor="profile-upload"
-                      className="text-sm text-indigo-600 cursor-pointer hover:text-indigo-500"
-                    >
-                      {formData.profilePicture ? "Change Photo" : "Upload Photo"}
-                    </label>
-                  </div>
+                </div>
+                <div className="text-center sm:text-left">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture *</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload("profilePicture", e.target.files)}
+                    className="hidden"
+                    id="profile-upload"
+                    required
+                  />
+                  <label
+                    htmlFor="profile-upload"
+                    className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {formData.profilePicture ? "Change Photo" : "Upload Photo"}
+                  </label>
+                  <p className="text-xs text-slate-500 mt-2">JPG, PNG or GIF (max 5MB)</p>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Age *</label>
                   <input
@@ -209,9 +215,10 @@ export default function KYCPage() {
                     required
                     min="18"
                     max="120"
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.age}
                     onChange={handleChange}
+                    placeholder="Enter your age"
                   />
                 </div>
 
@@ -220,7 +227,7 @@ export default function KYCPage() {
                   <select
                     name="nationality"
                     required
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.nationality}
                     onChange={handleChange}
                   >
@@ -235,34 +242,36 @@ export default function KYCPage() {
                     type="text"
                     name="occupation"
                     required
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.occupation}
                     onChange={handleChange}
+                    placeholder="Your occupation"
                   />
                 </div>
-                  <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">PhoneNumber *</label>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number *</label>
                   <input
                     type="text"
                     name="phoneNumber"
                     required
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.phoneNumber}
                     onChange={handleChange}
+                    placeholder="+232 XX XXX XXX"
                   />
                 </div>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Address *</label>
                   <input
                     type="text"
                     name="address"
                     required
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.address}
                     onChange={handleChange}
+                    placeholder="Your full address"
                   />
                 </div>
 
@@ -271,7 +280,7 @@ export default function KYCPage() {
                   <select
                     name="district"
                     required
-                    className="input"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                     value={formData.district}
                     onChange={handleChange}
                   >
@@ -296,14 +305,20 @@ export default function KYCPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-4">
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="btn-primary px-8 py-3 flex items-center"
-                  disabled={!formData.age || !formData.address || !formData.district || !formData.occupation || !formData.profilePicture}
+                  className="px-6 sm:px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={
+                    !formData.age ||
+                    !formData.address ||
+                    !formData.district ||
+                    !formData.occupation ||
+                    !formData.profilePicture
+                  }
                 >
-                  Next <ChevronRight className="ml-2" />
+                  Next Step <ChevronRight className="ml-2 w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -311,17 +326,20 @@ export default function KYCPage() {
 
           {/* Step 2: Document Upload */}
           {step === 2 && (
-            <div className="card space-y-6">
-              <h2 className="text-2xl font-semibold text-slate-900">Identity Documents</h2>
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <FileText className="w-6 h-6 text-indigo-600" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Identity Documents</h2>
+              </div>
 
               <div className="grid gap-6">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Document Type *</label>
                     <select
                       name="documentType"
                       required
-                      className="input"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                       value={formData.documentType}
                       onChange={handleChange}
                     >
@@ -339,37 +357,30 @@ export default function KYCPage() {
                       type="text"
                       name="documentNumber"
                       required
-                      className="input"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                       value={formData.documentNumber}
                       onChange={handleChange}
+                      placeholder="Enter document number"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Document Photo *
-                  </label>
-                  <div className="border-2 border-dashed border-slate-300 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-3">Document Photo *</label>
+                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 sm:p-8 bg-slate-50 hover:bg-slate-100 transition-colors">
                     {previewImages.documentPhoto ? (
                       <div className="relative">
                         <img
-                          src={previewImages.documentPhoto}
+                          src={previewImages.documentPhoto || "/placeholder.svg"}
                           alt="Document preview"
-                          className="w-full h-48 object-contain rounded"
+                          className="w-full max-w-md mx-auto h-48 sm:h-64 object-contain rounded-lg shadow-md"
                         />
                         <button
                           type="button"
                           onClick={() => removeFile("documentPhoto")}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -381,7 +392,7 @@ export default function KYCPage() {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                        <Upload className="w-12 h-12 sm:w-16 sm:h-16 text-slate-400 mx-auto mb-4" />
                         <input
                           type="file"
                           accept="image/*"
@@ -392,31 +403,35 @@ export default function KYCPage() {
                         />
                         <label
                           htmlFor="document-upload"
-                          className="text-sm text-indigo-600 cursor-pointer hover:text-indigo-500"
+                          className="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg cursor-pointer transition-colors"
                         >
+                          <Upload className="w-4 h-4 mr-2" />
                           Upload Document Photo
                         </label>
+                        <p className="text-sm text-slate-500 mt-3">
+                          Clear photo of your ID document (JPG, PNG - max 10MB)
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="btn-outline px-8 py-3 flex items-center"
+                  className="px-6 sm:px-8 py-3 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg flex items-center justify-center transition-colors"
                 >
-                  <ChevronLeft className="mr-2" /> Back
+                  <ChevronLeft className="mr-2 w-4 h-4" /> Back
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="btn-primary px-8 py-3 flex items-center"
+                  className="px-6 sm:px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={!formData.documentType || !formData.documentNumber || !formData.documentPhoto}
                 >
-                  Next <ChevronRight className="ml-2" />
+                  Review Details <ChevronRight className="ml-2 w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -424,102 +439,152 @@ export default function KYCPage() {
 
           {/* Step 3: Review and Submit */}
           {step === 3 && (
-            <div className="card space-y-6">
-              <h2 className="text-2xl font-semibold text-slate-900">Review Your Information</h2>
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <CheckCircle2 className="w-6 h-6 text-indigo-600" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Review Your Information</h2>
+              </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium text-slate-700 mb-4">Personal Information</h3>
-                  <div className="space-y-2">
-                    <p>
-                      <span className="font-medium">Age:</span> {formData.age}
-                    </p>
-                    <p>
-                      <span className="font-medium">Nationality:</span> {formData.nationality}
-                    </p>
-                    <p>
-                      <span className="font-medium">Occupation:</span> {formData.occupation}
-                    </p>
-                    <p>
-                      <span className="font-medium">Address:</span> {formData.address}
-                    </p>
-                    <p>
-                      <span className="font-medium">District:</span> {formData.district}
-                    </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2">
+                    Personal Information
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { label: "Age", value: formData.age },
+                      { label: "Nationality", value: formData.nationality },
+                      { label: "Occupation", value: formData.occupation },
+                      { label: "Phone Number", value: formData.phoneNumber },
+                      { label: "Address", value: formData.address },
+                      { label: "District", value: formData.district },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex justify-between py-2 border-b border-slate-100">
+                        <span className="font-medium text-slate-600">{label}:</span>
+                        <span className="text-slate-900">{value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-medium text-slate-700 mb-4">Document Information</h3>
-                  <div className="space-y-2">
-                    <p>
-                      <span className="font-medium">Document Type:</span> {formData.documentType}
-                    </p>
-                    <p>
-                      <span className="font-medium">Document Number:</span> {formData.documentNumber}
-                    </p>
-                    <div className="flex items-center space-x-4 mt-4">
-                      <div className="relative">
-                        {previewImages.profilePicture && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2">
+                    Document Information
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between py-2 border-b border-slate-100">
+                      <span className="font-medium text-slate-600">Document Type:</span>
+                      <span className="text-slate-900 capitalize">{formData.documentType?.replace("-", " ")}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-slate-100">
+                      <span className="font-medium text-slate-600">Document Number:</span>
+                      <span className="text-slate-900">{formData.documentNumber}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <h4 className="font-medium text-slate-700 mb-3">Uploaded Images</h4>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {previewImages.profilePicture && (
+                        <div className="text-center">
                           <img
-                            src={previewImages.profilePicture}
+                            src={previewImages.profilePicture || "/placeholder.svg"}
                             alt="Profile preview"
-                            className="w-16 h-16 rounded-full object-cover"
+                            className="w-20 h-20 rounded-full object-cover mx-auto border-2 border-slate-200"
                           />
-                        )}
-                      </div>
-                      <div className="relative">
-                        {previewImages.documentPhoto && (
+                          <p className="text-xs text-slate-500 mt-1">Profile Photo</p>
+                        </div>
+                      )}
+                      {previewImages.documentPhoto && (
+                        <div className="text-center">
                           <img
-                            src={previewImages.documentPhoto}
+                            src={previewImages.documentPhoto || "/placeholder.svg"}
                             alt="Document preview"
-                            className="w-16 h-16 object-cover rounded"
+                            className="w-20 h-20 object-cover rounded mx-auto border-2 border-slate-200"
                           />
-                        )}
-                      </div>
+                          <p className="text-xs text-slate-500 mt-1">Document Photo</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="btn-outline px-8 py-3 flex items-center"
+                  className="px-6 sm:px-8 py-3 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg flex items-center justify-center transition-colors"
                   disabled={isLoading}
                 >
-                  <ChevronLeft className="mr-2" /> Back
+                  <ChevronLeft className="mr-2 w-4 h-4" /> Back
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary px-8 py-3 flex items-center justify-center min-w-32"
+                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg flex items-center justify-center min-w-40 transition-all shadow-lg"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Processing...
                     </>
-                  ) : "Submit Verification"}
+                  ) : (
+                    <>
+                      <Shield className="mr-2 w-4 h-4" />
+                      Submit Verification
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           )}
         </form>
 
-        {/* Additional Information */}
-        <div className="card mt-8">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Why do we need KYC verification?</h3>
-          <ul className="space-y-2 text-slate-600">
-            <li>• Comply with Sierra Leone financial regulations</li>
-            <li>• Prevent fraud and protect all users</li>
-            <li>• Enable secure fund withdrawals</li>
-            <li>• Build trust in the FundWaveSL community</li>
-          </ul>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 mt-8 border border-blue-100">
+          <div className="flex items-start space-x-3">
+            <AlertCircle className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-3">Why do we need KYC verification?</h3>
+              <ul className="space-y-2 text-slate-700">
+                <li className="flex items-start space-x-2">
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                  <span>Comply with Sierra Leone financial regulations</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                  <span>Prevent fraud and protect all users</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                  <span>Enable secure fund withdrawals</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                  <span>Build trust in the FundWaveSL community</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
