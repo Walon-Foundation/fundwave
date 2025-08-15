@@ -765,7 +765,7 @@ export default function CampaignDetailPage() {
       </div>
 
       {/* Donation Modal */}
-      {/* {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />} */}
+      {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />}
     </div>
   )
 }
