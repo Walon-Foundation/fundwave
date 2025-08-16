@@ -36,7 +36,7 @@ export class API {
     }
 
     async getCampaignDetails(id:string):Promise<CampaignDetails>{
-        return this.client.get(`campaigns/${id}`).then(res => res.data as CampaignDetails)
+        return this.client.get(`campaigns/${id}`).then(res => res.data.data as CampaignDetails)
     }
 
     //comments
@@ -56,20 +56,20 @@ export class API {
 
     //dashboard
     async getUserDashboard():Promise<Dashboard>{
-        return this.client.get('/dashboard').then(res => res.data as Dashboard)
+        return this.client.get('/dashboard').then(res => res.data.data as Dashboard)
     }
 
     //user profile
     async getProfile():Promise<UserProfile>{
-        return this.client.get('users/profile').then(res => res.data as UserProfile)
+        return this.client.get('users/profile').then(res => res.data.data as UserProfile)
     }
 
     async getDonation():Promise<Donation>{
-        return this.client.get('users/donations').then(res => res.data as Donation)
+        return this.client.get('users/donations').then(res => res.data.data as Donation)
     }
 
     async userCampaign():Promise<Campaign>{
-        return this.client.get('users/activity').then(res => res.data as Campaign)
+        return this.client.get('users/activity').then(res => res.data.data as Campaign)
     }
 
     //kyc
