@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 import { NextResponse, NextRequest } from "next/server";
 import { kycSchema } from "../../../../validations/user";
 import { db } from "../../../../db/drizzle";
@@ -13,16 +13,18 @@ export async function PATCH(req:NextRequest){
   try{
     //authenticating the user
     const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // if (!userId) {
+    //   console.log("no auth")
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     //getting the user details from clerk
-    const user = (await clerkClient()).users.getUser(userId)
+    // const user = (await clerkClient()).users.getUser(userId)
 
-    const userExist = await db.select().from(userTable).where(eq(userTable.id, (await user).id)).limit(1)
+    const userExist = await db.select().from(userTable).where(eq(userTable.clerkId, userId!)).limit(1)
     
-    if(!user || userExist.length === 0){
+    if(!userId || userExist.length === 0){
+      console.log("user nor dea")
       return NextResponse.json({
         error:"user auth token is invalid",
       }, { status:401 })
@@ -31,7 +33,7 @@ export async function PATCH(req:NextRequest){
     if(userExist[0].isKyc){
       return NextResponse.json({
         message:"user has already done the kyc",
-      }, {status:200 })
+      }, { status:200 })
     }
 
     //getting the value
@@ -105,11 +107,7 @@ export async function PATCH(req:NextRequest){
     const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
     const documentUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadDocumentData.fullPath}`
 
-    const newUser = await db.insert(userTable).values({
-      id:nanoid(16),
-      clerkId:(await user).id,
-      name:(await user).fullName || "",
-      email:(await user).primaryEmailAddress?.emailAddress || "",
+    const newUser = await db.update(userTable).set({
       isKyc:true,
       isVerified:true,
       occupation:data.occupation,
@@ -119,7 +117,7 @@ export async function PATCH(req:NextRequest){
       profilePicture:url,
       district:data.district,
       phone:data.phoneNumber
-    }).returning()
+    }).where(eq(userTable.clerkId, userId)).returning()
     
 
    //saving the document and sending the email
@@ -131,7 +129,7 @@ export async function PATCH(req:NextRequest){
         id:nanoid(16),
         userId:newUser[0].id
       }),
-      sendEmail("kyc-complete", (await user).primaryEmailAddress?.emailAddress!, "Kyc has being completed", { name: (await user).fullName! })
+      sendEmail("kyc-complete", newUser[0].email, "Kyc has being completed", { name: newUser[0].name })
    ])
 
     return NextResponse.json({
