@@ -1,4 +1,4 @@
-import { ApiError, Campaign, CampaignDetails, CreateCampaign, CreateComment, CreatePayment, CreateUpdate, Dashboard, Donation, UserKYC, UserProfile } from "@/types/api"
+import { ApiError, Campaign, CampaignDetails, CreateComment, CreatePayment,  Dashboard, Donation, UserProfile } from "@/types/api"
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 
 export class API {
@@ -31,7 +31,7 @@ export class API {
         return this.client.get('/campaigns').then(res => res.data.data as Campaign[])
     }
 
-    async createCampaign(data:CreateCampaign){
+    async createCampaign(data:FormData){
         return this.client.post("/campaigns", data).then(res => res)
     }
 
@@ -45,7 +45,7 @@ export class API {
     }
 
     //updates
-    async createUpdate(data:CreateUpdate, id:string){
+    async createUpdate(data:FormData, id:string){
         return this.client.post(`/campaigns/${id}/updates`, data).then(res => res)
     }
 
@@ -73,7 +73,7 @@ export class API {
     }
 
     //kyc
-    async createKYC(data:UserKYC){
+    async createKYC(data:FormData){
         return this.client.post('/users/kyc', data).then(res => res)
     }
 } 

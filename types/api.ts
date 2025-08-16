@@ -10,27 +10,16 @@ export interface Campaign {
     category: string;
     image: string;
     shortDescription: string;
-    fullStory: string;
+    problemStatement:string;
+    solution:string;
+    impact:string;
+    campaignType:"business"| "project" |"personal"| "community";
     tags: string[];
     status: "active" | "pending" | "rejected" | "completed";
     createdAt: Date;
     updatedAt: Date;
 }
 
-
-export interface CreateCampaign {
-    title:string
-    description:string
-    fullDescription:string
-    location:string
-    endDate:Date
-    targetAmount: number
-    tag:string[]
-    campaignType:string
-    category:string
-    teamMembers:string[]
-    image:File
-}
 
 export interface Comments {
     id: string;
@@ -117,18 +106,7 @@ export interface UserProfile {
 }
 
 
-export interface UserKYC {
-    address:string
-    district:string
-    documentType:string
-    documentNumber:string
-    occupation:string
-    nationality:string
-    age:number
-    phoneNumber:string
-    profilePicture:File
-    documentPhoto:File
-}
+
 
 
 export interface Donation {
@@ -173,7 +151,10 @@ export interface CampaignDetails {
         category: string;
         image: string;
         shortDescription: string;
-        fullStory: string;
+        problemStatement:string;
+        solution:string;
+        impact:string;
+        campaignType:"business"| "project" |"personal"| "community";
         tags: string[];
         status: "active" | "pending" | "rejected" | "completed";
         createdAt: Date;
