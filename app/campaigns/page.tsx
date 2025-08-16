@@ -1,110 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Grid, List, SlidersHorizontal, TrendingUp } from "lucide-react"
+import { Search, Grid, List, TrendingUp, Filter, X } from "lucide-react"
 import CampaignCard from "../../components/campaign-card"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Badge } from "../../components/ui/badge"
 import { Card, CardContent } from "../../components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
-
-// Mock data
-const mockCampaigns = [
-  {
-    id: "1",
-    title: "Clean Water for Makeni Community",
-    description:
-      "Help us build a clean water system for 500 families in Makeni. This project will provide sustainable access to clean drinking water for the entire community.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 2500000,
-    target: 5000000,
-    donors: 45,
-    category: "Community",
-    creator: "Aminata Kamara",
-    location: "Makeni, Northern Province",
-    daysLeft: 15,
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "Solar Power for Rural School",
-    description:
-      "Bringing electricity to Kono District Primary School to enable evening classes and computer learning for over 200 students.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 1800000,
-    target: 3000000,
-    donors: 32,
-    category: "Education",
-    creator: "Mohamed Sesay",
-    location: "Kono District",
-    daysLeft: 22,
-    featured: false,
-  },
-  {
-    id: "3",
-    title: "Medical Equipment for Hospital",
-    description:
-      "Essential medical equipment for Freetown General Hospital to improve healthcare services for thousands of patients in the capital.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 4200000,
-    target: 8000000,
-    donors: 78,
-    category: "Healthcare",
-    creator: "Dr. Fatima Bangura",
-    location: "Freetown, Western Area",
-    daysLeft: 8,
-    featured: true,
-  },
-  {
-    id: "4",
-    title: "Youth Skills Training Center",
-    description:
-      "Building a vocational training center for unemployed youth to learn valuable skills and start their own businesses.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 3100000,
-    target: 6000000,
-    donors: 56,
-    category: "Education",
-    creator: "Ibrahim Koroma",
-    location: "Bo, Southern Province",
-    daysLeft: 30,
-    featured: false,
-  },
-  {
-    id: "5",
-    title: "Emergency Food Relief",
-    description:
-      "Providing food assistance to flood-affected families in rural communities during this difficult time.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 1200000,
-    target: 2000000,
-    donors: 89,
-    category: "Emergency",
-    creator: "Mercy Foundation",
-    location: "Multiple Districts",
-    daysLeft: 5,
-    featured: false,
-  },
-  {
-    id: "6",
-    title: "Women's Cooperative Farm",
-    description:
-      "Supporting women farmers with modern equipment and training to increase agricultural productivity and income.",
-    image: "/placeholder.svg?height=250&width=400",
-    raised: 800000,
-    target: 1500000,
-    donors: 23,
-    category: "Agriculture",
-    creator: "Hawa Turay",
-    location: "Kenema District",
-    daysLeft: 45,
-    featured: false,
-  },
-]
+import { api } from "@/lib/api/api"
+import { Campaign } from "@/types/api"
+import { useAuth } from "@clerk/nextjs"
+import axios from "axios"
+import { axiosInstance } from "@/lib/axiosInstance"
 
 const categories = [
-  "All",
   "Community",
   "Education",
   "Healthcare",
@@ -112,89 +22,166 @@ const categories = [
   "Agriculture",
   "Technology",
   "Arts & Culture",
+  "Sports",
+  "Environment",
+  "Business",
+]
+
+const campaignTypes = [
+  { value: "all", label: "All Types" },
+  { value: "personal", label: "Personal" },
+  { value: "business", label: "Business" },
+  { value: "project", label: "Project" },
+  { value: "community", label: "Community" },
+]
+
+const statusOptions = [
+  { value: "all", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "pending", label: "Pending" },
+  { value: "completed", label: "Completed" },
 ]
 
 const sortOptions = [
   { value: "recent", label: "Most Recent" },
-  { value: "popular", label: "Most Popular" },
+  { value: "popular", label: "Most Funded" },
   { value: "progress", label: "Highest Progress" },
   { value: "goal", label: "Highest Goal" },
   { value: "ending", label: "Ending Soon" },
 ]
 
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState(mockCampaigns)
-  const [filteredCampaigns, setFilteredCampaigns] = useState(mockCampaigns)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedType, setSelectedType] = useState("all")
+  const [selectedStatus, setSelectedStatus] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState("recent")
   const [showFilters, setShowFilters] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Mock API call
   useEffect(() => {
     const fetchCampaigns = async () => {
       setIsLoading(true)
-      await new Promise((resolve) => setTimeout(resolve, 800))
-      setCampaigns(mockCampaigns)
-      setIsLoading(false)
+      try {
+        const data = await api.getCampaigns()
+        setCampaigns(Array.isArray(data) ? data : [])
+        setFilteredCampaigns(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.log(err)
+        setCampaigns([])
+        setFilteredCampaigns([])
+      } finally {
+        setIsLoading(false)
+      }
     }
     fetchCampaigns()
   }, [])
 
-  // Filter and search logic
+
+
   useEffect(() => {
-    let filtered = campaigns
+    let filtered = Array.isArray(campaigns) ? [...campaigns] : []
 
     // Filter by category
     if (selectedCategory !== "All") {
-      filtered = filtered.filter((campaign) => campaign.category === selectedCategory)
+      filtered = filtered.filter((campaign) => campaign?.category === selectedCategory)
     }
 
-    // Filter by search term
+    // Filter by campaign type
+    if (selectedType !== "all") {
+      filtered = filtered.filter((campaign) => campaign?.campaignType === selectedType)
+    }
+
+    // Filter by status
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter((campaign) => campaign?.status === selectedStatus)
+    }
+
+    // Enhanced search functionality
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
       filtered = filtered.filter(
         (campaign) =>
-          campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          campaign.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          campaign.creator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          campaign.location.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
+          campaign?.title?.toLowerCase()?.includes(searchLower) ||
+          campaign?.shortDescription?.toLowerCase()?.includes(searchLower) ||
+          campaign?.creatorName?.toLowerCase()?.includes(searchLower) ||
+          campaign?.location?.toLowerCase()?.includes(searchLower) ||
+          campaign?.category?.toLowerCase()?.includes(searchLower) ||
+          campaign?.problemStatement?.toLowerCase()?.includes(searchLower) ||
+          campaign?.solution?.toLowerCase()?.includes(searchLower)
+  )}
 
-    // Sort campaigns
+    // Sorting
     switch (sortBy) {
       case "recent":
+        filtered = [...filtered].sort(
+          (a, b) => (new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime()
+        ))
         break
       case "popular":
-        filtered = [...filtered].sort((a, b) => b.donors - a.donors)
+        filtered = [...filtered].sort((a, b) => (b?.amountReceived || 0) - (a?.amountReceived || 0))
         break
       case "progress":
-        filtered = [...filtered].sort((a, b) => b.raised / b.target - a.raised / a.target)
+        filtered = [...filtered].sort(
+          (a, b) => 
+            (b?.amountReceived || 0) / (b?.fundingGoal || 1) - 
+            (a?.amountReceived || 0) / (a?.fundingGoal || 1)
+        )
         break
       case "goal":
-        filtered = [...filtered].sort((a, b) => b.target - a.target)
+        filtered = [...filtered].sort((a, b) => (b?.fundingGoal || 0) - (a?.fundingGoal || 0))
         break
       case "ending":
-        filtered = [...filtered].sort((a, b) => a.daysLeft - b.daysLeft)
+        filtered = [...filtered].sort(
+          (a, b) => 
+            new Date(a?.campaignEndDate || 0).getTime() - 
+            new Date(b?.campaignEndDate || 0).getTime()
+        )
         break
     }
 
     setFilteredCampaigns(filtered)
-  }, [campaigns, selectedCategory, searchTerm, sortBy])
+  }, [campaigns, selectedCategory, selectedType, selectedStatus, searchTerm, sortBy])
 
-  const featuredCampaigns = filteredCampaigns.filter((c) => c.featured)
-  const regularCampaigns = filteredCampaigns.filter((c) => !c.featured)
+  const getDaysLeft = (endDate?: Date) => {
+    if (!endDate) return Infinity
+    const now = new Date()
+    const end = new Date(endDate)
+    const diffTime = end.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return Math.max(0, diffDays)
+  }
+
+  const featuredCampaigns = Array.isArray(filteredCampaigns) ? filteredCampaigns.filter((campaign) => {
+    const progress = (campaign?.amountReceived || 0) / (campaign?.fundingGoal || 1)
+    const daysLeft = getDaysLeft(campaign?.campaignEndDate || new Date())
+    return progress > 0.7 || daysLeft <= 10
+  }) : []
+
+  const regularCampaigns = Array.isArray(filteredCampaigns) ? filteredCampaigns.filter((campaign) => {
+    const progress = (campaign?.amountReceived || 0) / (campaign?.fundingGoal || 1)
+    const daysLeft = getDaysLeft(campaign?.campaignEndDate || new Date())
+    return progress <= 0.7 && daysLeft > 10
+  }) : []
+
+  const clearAllFilters = () => {
+    setSearchTerm("")
+    setSelectedCategory("All")
+    setSelectedType("all")
+    setSelectedStatus("all")
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-ocean-50/30 py-8">
-        <div className="max-w-7xl mx-auto container-padding">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-8">
             <div className="h-12 bg-slate-200 rounded-lg w-1/3"></div>
             <div className="h-32 bg-slate-200 rounded-xl"></div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="h-80 bg-slate-200 rounded-xl"></div>
               ))}
@@ -206,31 +193,34 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-ocean-50/30 py-8">
-      <div className="max-w-7xl mx-auto container-padding">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <Badge className="mb-4 bg-ocean-100 text-ocean-700 hover:bg-ocean-200">🌟 Discover Amazing Causes</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Explore <span className="gradient-text">Campaigns</span>
+        <div className="mb-6 sm:mb-8 text-center">
+          <Badge className="mb-4 bg-blue-100 text-blue-700 hover:bg-blue-200">🌟 Discover Amazing Causes</Badge>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            Explore{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Campaigns
+            </span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto">
             Discover and support amazing projects across Sierra Leone. Every donation makes a difference.
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-6">
+        {/* Enhanced Search and Filters */}
+        <Card className="mb-6 sm:mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-              {/* Search */}
+              {/* Enhanced Search */}
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <Input
                     type="text"
-                    placeholder="Search campaigns, creators, or locations..."
-                    className="pl-10 h-12 text-lg"
+                    placeholder="Search campaigns, creators, locations..."
+                    className="pl-10 h-12 text-base sm:text-lg"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -238,32 +228,83 @@ export default function CampaignsPage() {
               </div>
 
               {/* Mobile Filter Toggle */}
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="lg:hidden">
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="lg:hidden h-12">
+                <Filter className="w-4 h-4 mr-2" />
                 Filters
+                {(selectedCategory !== "All" ||
+                  selectedType !== "all" ||
+                  selectedStatus !== "all") && (
+                  <Badge className="ml-2 bg-blue-100 text-blue-700">
+                    {[
+                      selectedCategory !== "All" ? 1 : 0,
+                      selectedType !== "all" ? 1 : 0,
+                      selectedStatus !== "all" ? 1 : 0,
+                    ].reduce((a, b) => a + b, 0)}
+                  </Badge>
+                )}
               </Button>
             </div>
 
-            {/* Category Filters */}
-            <div className={`${showFilters ? "block" : "hidden"} lg:block space-y-4`}>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    onClick={() => setSelectedCategory(category)}
-                    className={selectedCategory === category ? "btn-primary" : ""}
-                  >
-                    {category}
-                  </Button>
-                ))}
+            {/* Enhanced Filters */}
+            <div className={`${showFilters ? "block" : "hidden"} lg:block space-y-6`}>
+              {/* Category Filters */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-700 mb-3">Categories</h3>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category)}
+                      className={selectedCategory === category ? "bg-blue-600 hover:bg-blue-700" : ""}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Campaign Type and Status Filters */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-slate-700 mb-3">Campaign Type</h3>
+                  <Select value={selectedType} onValueChange={setSelectedType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {campaignTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-slate-700 mb-3">Status</h3>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Sort and View Options */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-slate-200">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full sm:w-48">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
@@ -275,9 +316,21 @@ export default function CampaignsPage() {
                     </SelectContent>
                   </Select>
 
-                  <Badge variant="secondary" className="text-slate-600">
-                    {filteredCampaigns.length} campaigns found
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-slate-600">
+                      {filteredCampaigns.length} campaigns found
+                    </Badge>
+
+                    {(selectedCategory !== "All" ||
+                      selectedType !== "all" ||
+                      selectedStatus !== "all" ||
+                      searchTerm) && (
+                      <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                        <X className="w-4 h-4 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -285,7 +338,7 @@ export default function CampaignsPage() {
                     variant={viewMode === "grid" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
-                    className={viewMode === "grid" ? "btn-primary" : ""}
+                    className={viewMode === "grid" ? "bg-blue-600 hover:bg-blue-700" : ""}
                   >
                     <Grid className="w-4 h-4" />
                   </Button>
@@ -293,7 +346,7 @@ export default function CampaignsPage() {
                     variant={viewMode === "list" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("list")}
-                    className={viewMode === "list" ? "btn-primary" : ""}
+                    className={viewMode === "list" ? "bg-blue-600 hover:bg-blue-700" : ""}
                   >
                     <List className="w-4 h-4" />
                   </Button>
@@ -305,12 +358,12 @@ export default function CampaignsPage() {
 
         {/* Featured Campaigns */}
         {featuredCampaigns.length > 0 && (
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <div className="flex items-center mb-6">
-              <TrendingUp className="w-6 h-6 text-ocean-600 mr-2" />
-              <h2 className="text-2xl font-bold text-slate-900">Featured Campaigns</h2>
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mr-2" />
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Featured Campaigns</h2>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {featuredCampaigns.map((campaign, index) => (
                 <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                   <CampaignCard campaign={campaign} featured />
@@ -321,32 +374,27 @@ export default function CampaignsPage() {
         )}
 
         {/* Regular Campaigns */}
-        {regularCampaigns.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-              <Search className="w-12 h-12 text-slate-400" />
+        {filteredCampaigns.length === 0 ? (
+          <div className="text-center py-12 sm:py-16">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+              <Search className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-semibold text-slate-900 mb-2">No campaigns found</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">No campaigns found</h3>
             <p className="text-slate-600 mb-6">Try adjusting your search terms or filters</p>
-            <Button
-              onClick={() => {
-                setSearchTerm("")
-                setSelectedCategory("All")
-              }}
-            >
-              Clear Filters
+            <Button onClick={clearAllFilters} className="bg-blue-600 hover:bg-blue-700">
+              Clear All Filters
             </Button>
           </div>
         ) : (
           <div>
             {featuredCampaigns.length > 0 && (
               <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-slate-900">All Campaigns</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">All Campaigns</h2>
               </div>
             )}
             <div
-              className={`grid gap-8 ${
-                viewMode === "grid" ? "md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-4xl mx-auto"
+              className={`grid gap-4 sm:gap-6 lg:gap-8 ${
+                viewMode === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-4xl mx-auto"
               }`}
             >
               {regularCampaigns.map((campaign, index) => (
@@ -364,8 +412,12 @@ export default function CampaignsPage() {
 
         {/* Load More Button */}
         {filteredCampaigns.length > 0 && (
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="btn-outline">
+          <div className="text-center mt-8 sm:mt-12">
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent"
+            >
               Load More Campaigns
             </Button>
           </div>

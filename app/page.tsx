@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   ArrowRight,
@@ -19,49 +21,10 @@ import CampaignCard from "../components/campaign-card"
 import ChatSystem from "../components/chat-system"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
+import { Campaign } from "@/types/api"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api/api"
 
-// Mock data
-const featuredCampaigns = [
-  {
-    id: "1",
-    title: "Clean Water for Makeni Community",
-    description:
-      "Help us build a clean water system for 500 families in Makeni. This project will provide sustainable access to clean drinking water.",
-    image: "/placeholder.svg?height=300&width=400",
-    raised: 2500000,
-    target: 5000000,
-    donors: 45,
-    category: "Community",
-    creator: "Aminata Kamara",
-    daysLeft: 15,
-  },
-  {
-    id: "2",
-    title: "Solar Power for Rural School",
-    description:
-      "Bringing electricity to Kono District Primary School to enable evening classes and computer learning for 200+ students.",
-    image: "/placeholder.svg?height=300&width=400",
-    raised: 1800000,
-    target: 3000000,
-    donors: 32,
-    category: "Education",
-    creator: "Mohamed Sesay",
-    daysLeft: 22,
-  },
-  {
-    id: "3",
-    title: "Medical Equipment for Hospital",
-    description:
-      "Essential medical equipment for Freetown General Hospital to improve healthcare services for thousands of patients.",
-    image: "/placeholder.svg?height=300&width=400",
-    raised: 4200000,
-    target: 8000000,
-    donors: 78,
-    category: "Healthcare",
-    creator: "Dr. Fatima Bangura",
-    daysLeft: 8,
-  },
-]
 
 const howItWorksSteps = [
   {
@@ -148,6 +111,17 @@ const testimonials = [
 ]
 
 export default function HomePage() {
+  const [data, setData] = useState<Campaign[]>([])
+
+  useEffect(() => {
+    const getCampaign = async() => {
+      const data = await api.getCampaigns()
+      setData(data)
+    }
+
+    getCampaign()
+  }, [])
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -292,7 +266,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {featuredCampaigns.map((campaign, index) => (
+            {data.map((campaign, index) => (
               <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <CampaignCard campaign={campaign} />
               </div>
