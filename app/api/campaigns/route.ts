@@ -30,10 +30,12 @@ export async function POST(req:NextRequest){
         const body = await req.formData()
         const title = body.get("title")
         const category = body.get("category")
-        const targetAmount = body.get("targetAmount")
-        const description = body.get("description")
-        const fullDescription = body.get("fullDescription")
+        const fundingGoal = body.get("fundingGoal")
+        const shortDescription = body.get("shortDescription")
         const location = body.get("location")
+        const problem = body.get("problem")
+        const solution = body.get("solution")
+        const impact = body.get("impact")
         const endDate = body.get("endDate") as string
         const tag = body.get("tags") as string
         const campaignType = body.get("campaignType")
@@ -45,15 +47,19 @@ export async function POST(req:NextRequest){
             campaignType,
             category,
             tag: JSON.parse(tag),
-            targetAmount: Number(targetAmount),
-            description,
-            fullDescription,
+            fundingGoal: Number(fundingGoal),
+            shortDescription,
             location,
+            problem,
+            impact,
+            solution,
             endDate: new Date(endDate),
             teamMembers: JSON.parse(teamMember) || []
         })
 
         if(!success){
+            console.log("error 1")
+            console.log(error)
             return NextResponse.json({
                 message:"invalid input campaign data",
                 error:error.format(),
@@ -66,7 +72,7 @@ export async function POST(req:NextRequest){
             }, { status:400 })
         }
 
-        const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.title, data.title),eq(campaignTable.shortDescription, data.description))).limit(1)
+        const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.title, data.title),eq(campaignTable.shortDescription, data.shortDescription))).limit(1)
         if(campaign.length > 0){
             return NextResponse.json({
                 message:"campaign already exist",
@@ -93,15 +99,18 @@ export async function POST(req:NextRequest){
         const [newCampaign] = await db.insert(campaignTable).values({
             id:nanoid(16),
             title:data.title,
-            shortDescription:data.description,
+            shortDescription:data.shortDescription,
             location:data.location,
             campaignEndDate:data.endDate,
             tags:data.tag,
-            fullStory:data.fullDescription,
-            fundingGoal:data.targetAmount,
+            problem:data.problem,
+            solution:data.solution,
+            impact:data.impact,
+            fundingGoal:data.fundingGoal,
             image:url,
             category:data.category,
             creatorId: userId,
+            campaignType:data.campaignType,
             creatorName: userExist[0].name,
         }).returning()
 
@@ -140,9 +149,7 @@ export async function GET(req:NextRequest){
         
         return NextResponse.json({
             message:"all campaigns",
-            data:{
-                campaigns:allCampaign
-            }
+            data:allCampaign,
         }, { status:200})
     }catch(err){
         process.env.NODE_ENV === "development" ? console.log(err):""
