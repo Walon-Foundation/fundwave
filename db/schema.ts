@@ -21,7 +21,6 @@ export const userStatusEnum = pgEnum("user_status", [
   "banned",
 ]);
 export const campaignStatusEnum = pgEnum("campaign_status", [
-  "pending",
   "active",
   "rejected",
   "completed",
@@ -117,7 +116,7 @@ export const campaignTable = pgTable("campaigns", {
   impact: text("impact").notNull(),
   tags: text("tags").array().notNull(),
   campaignType: campaignTypeEnum("campaign_type").notNull(),
-  status: campaignStatusEnum("status").default("pending").notNull(),
+  status: campaignStatusEnum("status").default("active").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
