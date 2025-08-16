@@ -1,7 +1,6 @@
 import {
   clerkMiddleware,
   createRouteMatcher,
-  clerkClient,
 } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { db } from "./db/drizzle";
@@ -32,19 +31,28 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    // Get user data in parallel
-    const dbUser = (await db.select().from(userTable).where(eq(userTable.clerkId, userId)))[0]
+    // Get user data
+    const dbUser = (await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.clerkId, userId))
+    )[0];
 
-    // KYC check for create-campaign route
+    
+    if (url.pathname.startsWith("/kyc") && dbUser?.isKyc) {
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+
     if (url.pathname.startsWith("/create-campaign") && !dbUser?.isKyc) {
-      url.pathname = '/kyc';
+      url.pathname = "/kyc";
       return NextResponse.redirect(url);
     }
 
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);
-    // Fallback redirect if something fails
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 });
