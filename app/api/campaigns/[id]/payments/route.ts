@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "../../../../../db/drizzle";
 import { userTable, paymentTable, campaignTable } from "../../../../../db/schema";
-import createPaymentCode from "../../../../../lib/generateCode";
+import createPaymentCode from "../../../../../lib/monime";
 import { createCode } from "../../../../../validations/payment";
 
 export async function POST(req: NextRequest, {params}:{params:Promise<{id:string}>}) {
