@@ -1,0 +1,16 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(req:NextRequest){
+    try{
+        return NextResponse.json({
+            ok:true,
+            message:"user deleted"
+        }, { status:200 })
+    }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err) :""
+        return NextResponse.json({
+            ok:false,
+            message:"internal server error",
+        }, { status:500 })
+    }   
+}
