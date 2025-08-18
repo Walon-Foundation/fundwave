@@ -36,7 +36,7 @@ export async function POST(req:NextRequest){
         const problem = body.get("problem")
         const solution = body.get("solution")
         const impact = body.get("impact")
-        const endDate = body.get("endDate") as string
+        const endDate = body.get("campaignEndDate") as string
         const tag = body.get("tags") as string
         const campaignType = body.get("campaignType")
         const image = body.get("image") as File

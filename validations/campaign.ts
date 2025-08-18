@@ -7,7 +7,7 @@ const teamMember = z.object({
 })
 
 export const createCampaign = z.object({
-    title:z.string().min(5,"title is required"),
+    title:z.string().min(1,"title is required"),
     shortDescription:z.string().min(5,"description is required"),
     location:z.string().min(2,"location is required"),
     endDate:z.date(),

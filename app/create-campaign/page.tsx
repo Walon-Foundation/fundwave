@@ -210,6 +210,8 @@ export default function CreateCampaignPage() {
       submitData.append("image", formData.image)
     }
 
+    console.log(formData)
+
     try {
       const res = await axiosInstance.post("/campaigns", submitData)
       if (res.status === 201) {
