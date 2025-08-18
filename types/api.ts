@@ -188,7 +188,18 @@ export interface CampaignDetails {
     recentDonors: {
         name:string | null,
         amount: number
+        time:Date
     }[];
+    creator:{
+        id:string,
+        name:string,
+        verified:boolean
+        profilePicture:string,
+        location:string,
+        campaignsCreated:number,
+        totalRaised:number
+    }
 }
+
 
 

@@ -36,7 +36,7 @@ export class API {
     }
 
     async getCampaignDetails(id:string):Promise<CampaignDetails>{
-        return this.client.get(`campaigns/${id}`).then(res => res.data.data as CampaignDetails)
+        return this.client.get(`/campaigns/${id}`).then(res => res.data.data as CampaignDetails)
     }
 
     //comments
