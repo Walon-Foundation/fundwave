@@ -47,6 +47,7 @@ export async function PATCH(req:NextRequest){
     const nationality =  body.get("nationality")
     const age =  body.get("age")
     const phoneNumber = body.get("phoneNumber")
+    const bio = body.get("bio")
     const profilePicture =  body.get("profilePicture") as File
     const documentPhoto =  body.get("documentPhoto") as File
 
@@ -64,7 +65,8 @@ export async function PATCH(req:NextRequest){
       occupation,
       nationality,
       phoneNumber,
-      age:Number(age)
+      age:Number(age),
+      bio
     })
 
     if(!success){
@@ -116,7 +118,8 @@ export async function PATCH(req:NextRequest){
       nationality:data.nationality,
       profilePicture:url,
       district:data.district,
-      phone:data.phoneNumber
+      phone:data.phoneNumber,
+      bio:data.bio
     }).where(eq(userTable.clerkId, userId)).returning()
     
 
