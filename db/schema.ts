@@ -44,6 +44,7 @@ export const userTable = pgTable("users", {
   amountContributed: integer("amountContribute").default(0).notNull(),
   isVerified: boolean("isVerifed").notNull().default(false),
   district: text("district"),
+  bio:text("bio"),
   occupation: text("occupation"),
   nationality: text("nationality").default("Sierra Leonean"),
   profilePicture: text("profilePicure"),
@@ -286,6 +287,7 @@ export const notificationTable = pgTable("notification", {
   userId: text("userId").references(() => userTable.id, {
     onDelete: "no action",
   }),
+  read:boolean("read").default(false),
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
