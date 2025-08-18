@@ -1,11 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
-import { ConfirmPayment } from "../../../../../../types/monimeTypes";
-import { db } from "../../../../../../db/drizzle";
+import { ConfirmPayment } from "@/types/monimeTypes";
+import { db } from "@/db/drizzle";
 import {
   campaignTable,
   paymentTable,
   userTable,
-} from "../../../../../../db/schema";
+} from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { sendEmail } from "@/lib/nodeMailer";
 import { sendNotification } from "@/lib/notification";
