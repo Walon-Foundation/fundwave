@@ -21,6 +21,7 @@ export default function KYCPage() {
     profilePicture: null as File | null,
     age: "",
     phoneNumber: "",
+    bio: "",
   })
 
   const router = useRouter()
@@ -48,7 +49,7 @@ export default function KYCPage() {
     setPreviewImages((prev) => ({ ...prev, [field]: "" }))
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -77,6 +78,7 @@ export default function KYCPage() {
     submitData.append("nationality", formData.nationality)
     submitData.append("age", formData.age)
     submitData.append("phoneNumber", formData.phoneNumber)
+    submitData.append("bio", formData.bio)
 
     if (formData.profilePicture) {
       submitData.append("profilePicture", formData.profilePicture)
@@ -204,6 +206,20 @@ export default function KYCPage() {
                   </label>
                   <p className="text-xs text-slate-500 mt-2">JPG, PNG or GIF (max 5MB)</p>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Bio</label>
+                <textarea
+                  name="bio"
+                  rows={4}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  placeholder="Tell us about yourself, your background, and what motivates you to fundraise..."
+                  maxLength={500}
+                />
+                <p className="text-xs text-slate-500 mt-1">{formData.bio.length}/500 characters</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -464,6 +480,12 @@ export default function KYCPage() {
                         <span className="text-slate-900">{value}</span>
                       </div>
                     ))}
+                    {formData.bio && (
+                      <div className="py-2 border-b border-slate-100">
+                        <span className="font-medium text-slate-600">Bio:</span>
+                        <p className="text-slate-900 mt-1 text-sm leading-relaxed">{formData.bio}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
