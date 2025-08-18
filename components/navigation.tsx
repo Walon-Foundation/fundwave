@@ -4,7 +4,6 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useUser, useClerk } from "@clerk/nextjs"
-import { axiosInstance } from "../lib/axiosInstance"
 import {
   Menu,
   X,
@@ -31,6 +30,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Skeleton } from "./ui/skeleton"
+import { api } from "@/lib/api/api"
+import { CombinedUserData } from "@/types/api"
 
 // Define the notification type based on the API response (logTable schema)
 interface Notification {
@@ -45,10 +46,11 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [user, setUser] = useState<CombinedUserData>()
   const [loadingNotifications, setLoadingNotifications] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
-  const { isSignedIn: isAuthenticated, user } = useUser()
+  const { isSignedIn: isAuthenticated, user:clerkUser } = useUser()
   const clerk = useClerk()
 
   useEffect(() => {
@@ -60,24 +62,18 @@ export default function Navigation() {
   }, [])
 
   useEffect(() => {
-    if (isAuthenticated) {
-      setLoadingNotifications(true)
-      const fetchNotifications = async () => {
-        try {
-          const response = await axiosInstance.get<{ data: Notification[] }>("/api/notifications")
-          setNotifications(response.data.data)
-        } catch (error) {
-          console.error("Failed to fetch notifications", error)
-          setNotifications([]) // Clear on error
-        } finally {
-          setLoadingNotifications(false)
+    const getData = async() => {
+      if(isAuthenticated){
+        try{
+          const res = await api.getProfile()
+          console.log(res)
+          setUser(res)
+        }catch(err){
+          console.log(err)
         }
       }
-      fetchNotifications()
-    } else {
-      setNotifications([]) // Clear notifications on logout
-      setLoadingNotifications(false)
     }
+    getData()
   }, [isAuthenticated])
 
   const publicNavLinks = [
@@ -195,9 +191,9 @@ export default function Navigation() {
                         className="flex items-center space-x-2 hover:bg-gray-100 transition-colors"
                       >
                         <Avatar className="w-8 h-8 ring-2 ring-gray-200">
-                          <AvatarImage src={"/placeholder.svg"} alt={user.name} />
+                          <AvatarImage src={user?.profile.profilePicture || ""} alt={user.profile.firstName} />
                           <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
-                            {user.name
+                            {user.profile.firstName
                               ?.split(" ")
                               .map((n) => n[0])
                               .join("")}
@@ -208,8 +204,8 @@ export default function Navigation() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 shadow-xl border-0 bg-white/95 backdrop-blur-md">
                       <DropdownMenuLabel>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-gray-500 font-normal">{user.email}</p>
+                        <p className="font-medium">{`${user.profile.firstName} ${user.profile.lastName}`}</p>
+                        <p className="text-sm text-gray-500 font-normal">{user.profile.email}</p>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
@@ -292,17 +288,17 @@ export default function Navigation() {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                       <Avatar className="w-10 h-10 ring-2 ring-gray-200">
-                        <AvatarImage src={"/placeholder.svg"} alt={user.name} />
+                        <AvatarImage src={user.profile.profilePicture ||"/placeholder.svg"} alt={user.profile.firstName} />
                         <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
-                          {user.name
+                          {user.profile.firstName
                             ?.split(" ")
                             .map((n) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold text-gray-900">{user.name}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
+                        <p className="font-semibold text-gray-900">{user.profile.firstName}</p>
+                        <p className="text-sm text-gray-500">{user.profile.email}</p>
                       </div>
                     </div>
                     <Button
@@ -315,6 +311,14 @@ export default function Navigation() {
                         Create Campaign
                       </Link>
                     </Button>
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all mx-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Profile
+                    </Link>
                     <Button
                       onClick={handleLogout}
                       variant="outline"
