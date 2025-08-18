@@ -82,52 +82,8 @@ export interface Dashboard {
         type: "comment" | "update" | "donations" | "campaignStuff";
         userId: string | null;
         createdAt: Date;
+        read:boolean
     }[];
-}
-
-
-export interface UserProfile {
-    name: string;
-    email: string;
-    totalDonated: number;
-    createdAt: Date;
-    phone: string | null;
-    profile_pic: string | null;
-    isVerified: boolean;
-    campaignCreated: {
-        campaignCreated: number;
-    };
-    totalRaised: {
-        totalRaised: string | null;
-    };
-    campaignSupported: {
-        campaignSupported: number;
-    };
-}
-
-
-
-
-
-export interface Donation {
-    totalDonated: number;
-    paymentDate: Date | undefined;
-    id: string;
-    title: string;
-    fundingGoal: number;
-    amountReceived: number;
-    location: string;
-    campaignEndDate: Date;
-    creatorId: string;
-    creatorName: string;
-    category: string;
-    image: string;
-    shortDescription: string;
-    fullStory: string;
-    tags: string[];
-    status: "active" | "pending" | "rejected" | "completed";
-    createdAt: Date;
-    updatedAt: Date;
 }
 
 
@@ -199,6 +155,62 @@ export interface CampaignDetails {
         campaignsCreated:number,
         totalRaised:number
     }
+}
+
+
+
+
+export interface UserProfile {
+  id: string
+  firstName: string
+  lastName: string
+  username: string
+  email: string
+  phone?: string
+  bio?: string
+  location?: string
+  profilePicture?: string
+  joinDate: string
+  isVerified: boolean
+  totalDonated: number
+  campaignsStarted: number
+  donationsMade: number
+  totalRaised: number
+}
+
+export interface UserCampaign {
+  id: string
+  title: string
+  status: "active" | "completed" | "paused" | "cancelled"
+  amountRaised: number
+  targetAmount: number
+  progress: number
+  createdAt: string
+  endDate?: string
+}
+
+export interface UserDonation {
+  id: string
+  campaignId: string
+  campaignTitle: string
+  amount: number
+  date: string
+  status: "completed" | "pending" | "failed"
+  message?: string
+}
+
+export interface ProfileStats {
+  campaignsStarted: number
+  donationsMade: number
+  totalRaised: number
+  totalDonated: number
+}
+
+export interface CombinedUserData {
+  profile: UserProfile;
+  campaigns: UserCampaign[];
+  donations: UserDonation[];
+  stats: ProfileStats;
 }
 
 

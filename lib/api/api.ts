@@ -1,4 +1,4 @@
-import { ApiError, Campaign, CampaignDetails, CreateComment, CreatePayment,  Dashboard, Donation, UserProfile } from "@/types/api"
+import { ApiError, Campaign, CampaignDetails, CombinedUserData, CreateComment, CreatePayment,  Dashboard,} from "@/types/api"
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 
 export class API {
@@ -60,16 +60,8 @@ export class API {
     }
 
     //user profile
-    async getProfile():Promise<UserProfile>{
-        return this.client.get('users/profile').then(res => res.data.data as UserProfile)
-    }
-
-    async getDonation():Promise<Donation>{
-        return this.client.get('users/donations').then(res => res.data.data as Donation)
-    }
-
-    async userCampaign():Promise<Campaign>{
-        return this.client.get('users/activity').then(res => res.data.data as Campaign)
+    async getProfile():Promise<CombinedUserData>{
+        return this.client.get('users/profile').then(res => res.data.data as CombinedUserData )
     }
 
     //kyc
