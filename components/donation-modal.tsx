@@ -9,9 +9,7 @@ interface DonationModalProps {
   campaign: {
     id: string
     title: string
-    creator: {
-      name: string
-    }
+    financiald:string
   }
   onClose: () => void
 }

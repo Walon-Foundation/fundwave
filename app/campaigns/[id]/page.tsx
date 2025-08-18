@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag } from "lucide-react"
@@ -9,41 +8,82 @@ import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
 import type { CampaignDetails } from "@/types/api"
 
-
 export default function CampaignDetailPage() {
   const params = useParams()
   const id = params.id as string
-  const [campaignInfo, setCampaignInfo] = useState<CampaignDetails>()
-  const [campaign] = useState(campaignInfo?.campaign)
-  const [creator] = useState(campaignInfo?.creator)
-  const [teamMembers] = useState(campaignInfo?.teamMembers)
-  const [updates] = useState(campaignInfo?.updates)
-  const [comments, setComments] = useState(campaignInfo?.comments)
+  const [campaignInfo, setCampaignInfo] = useState<CampaignDetails | null>(null)
   const [activeTab, setActiveTab] = useState("story")
   const [showDonationModal, setShowDonationModal] = useState(false)
   const [newComment, setNewComment] = useState("")
-  const [recentDonors] = useState(campaignInfo?.recentDonors)
-
-  const progress = (campaign?.amountReceived! / campaign?.fundingGoal!) * 100
-  const campaignEndDate = new Date(campaign?.campaignEndDate?.toString() as string)
-  const daysLeft = Math.ceil((campaignEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-  const totalDonors = recentDonors?.length
-
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const getInfo = async () => {
-      console.log(id)
+    const fetchCampaignData = async () => {
       try {
-        console.log(id)
-        const data = await api.getCampaignDetails(`${id}`)
+        setIsLoading(true)
+        const data = await api.getCampaignDetails(id)
         setCampaignInfo(data)
       } catch (err) {
-        process.env.NODE_ENV === "development" ? console.log(err) : ""
+        setError("Failed to load campaign details")
+        console.error("Error fetching campaign:", err)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    getInfo()
+    if (id) {
+      fetchCampaignData()
+    }
   }, [id])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">{error}</div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-primary px-4 py-2"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!campaignInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-slate-500 mb-4">Campaign not found</div>
+        </div>
+      </div>
+    )
+  }
+
+  const {
+    campaign,
+    creator,
+    teamMembers = [],
+    updates = [],
+    comments = [],
+    recentDonors = []
+  } = campaignInfo
+
+  const progress = (campaign.amountReceived / campaign.fundingGoal) * 100
+  const daysLeft = Math.ceil(
+    (new Date(campaign.campaignEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  )
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -53,41 +93,45 @@ export default function CampaignDetailPage() {
     }).format(amount)
   }
 
-  // const formatDate = (dateString: string) => {
-  //   return new Date(dateString).toLocaleDateString("en-US", {
-  //     year: "numeric",
-  //     month: "long",
-  //     day: "numeric",
-  //   })
-  // }
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
 
-  // const formatDateTime = (dateString: string) => {
-  //   return new Date(dateString).toLocaleDateString("en-US", {
-  //     year: "numeric",
-  //     month: "short",
-  //     day: "numeric",
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   })
-  // }
+  const formatDateTime = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim()) return
 
-    const comment = {
-      id: `comment_${Date.now()}`,
-      user: "Current User", // This would come from auth context
-      avatar: "/placeholder.svg?height=40&width=40",
-      content: newComment,
-      date: new Date().toISOString(),
-      likes: 0,
+    // In a real app, you would call an API to post the comment
+    const newCommentObj = {
+      id: `temp_${Date.now()}`,
+      message: newComment,
+      username: "You", // Replace with actual user data
+      userId: "temp-user",
+      campaignId: campaign.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
 
-    setComments([comment, ...comments!])
+    setCampaignInfo(prev => ({
+      ...prev!,
+      comments: [newCommentObj, ...prev!.comments]
+    }))
     setNewComment("")
   }
-
 
   return (
     <div className="min-h-screen py-4 sm:py-8">
@@ -98,34 +142,35 @@ export default function CampaignDetailPage() {
             {/* Campaign Image */}
             <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-4 sm:mb-6">
               <Image
-                src={(campaign?.image as string)}
-                alt={campaign?.title as string}
+                src={campaign.image || "/placeholder.svg"}
+                alt={campaign.title}
                 fill
                 className="object-cover"
+                priority
               />
             </div>
 
             {/* Campaign Header */}
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
-                {campaign?.title}
+                {campaign.title}
               </h1>
 
               {/* Campaign Meta */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-slate-600 mb-4">
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{campaign?.location}</span>
+                  <span className="text-sm sm:text-base">{campaign.location}</span>
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span className="text-sm sm:text-base">
-                    Ends {campaign?.campaignEndDate?.toString() as string}
+                    Ends {formatDate(campaign.campaignEndDate)}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <Users className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{totalDonors} donors</span>
+                  <span className="text-sm sm:text-base">{recentDonors.length} donors</span>
                 </div>
               </div>
 
@@ -146,9 +191,9 @@ export default function CampaignDetailPage() {
               </div>
 
               {/* Tags */}
-              {campaign?.tags && campaign?.tags.length > 0 && (
+              {campaign.tags && campaign.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4 sm:mt-6">
-                  {campaign?.tags?.map((tag, index) => (
+                  {campaign.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-2 sm:px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm hover:bg-slate-200 transition-colors"
@@ -175,9 +220,9 @@ export default function CampaignDetailPage() {
                     }`}
                   >
                     {tab}
-                    {tab === "team" && ` (${teamMembers?.length})`}
-                    {tab === "updates" && ` (${updates?.length})`}
-                    {tab === "comments" && ` (${comments?.length})`}
+                    {tab === "team" && ` (${teamMembers.length})`}
+                    {tab === "updates" && ` (${updates.length})`}
+                    {tab === "comments" && ` (${comments.length})`}
                   </button>
                 ))}
               </nav>
@@ -212,7 +257,7 @@ export default function CampaignDetailPage() {
                           </div>
                           <div className="prose prose-slate max-w-none">
                             <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign?.problemStatement}
+                              {campaign.problemStatement}
                             </p>
                           </div>
                         </div>
@@ -239,7 +284,7 @@ export default function CampaignDetailPage() {
                           </div>
                           <div className="prose prose-slate max-w-none">
                             <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign?.solution }
+                              {campaign.solution}
                             </p>
                           </div>
                         </div>
@@ -266,7 +311,7 @@ export default function CampaignDetailPage() {
                           </div>
                           <div className="prose prose-slate max-w-none">
                             <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign?.impact }
+                              {campaign.impact}
                             </p>
                           </div>
                         </div>
@@ -315,7 +360,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Campaign ID</p>
-                              <p className="font-mono text-xs text-slate-900 break-all mt-1">{campaign?.id}</p>
+                              <p className="font-mono text-xs text-slate-900 break-all mt-1">{campaign.id}</p>
                             </div>
                           </div>
                         </div>
@@ -339,7 +384,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Category</p>
-                              <p className="font-semibold text-slate-900 mt-1">{campaign?.category}</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign.category}</p>
                             </div>
                           </div>
                         </div>
@@ -364,7 +409,7 @@ export default function CampaignDetailPage() {
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Created</p>
                               <p className="font-semibold text-slate-900 mt-1">
-                                {campaign?.createdAt?.toString() as string}
+                                {formatDate(campaign.createdAt)}
                               </p>
                             </div>
                           </div>
@@ -390,7 +435,7 @@ export default function CampaignDetailPage() {
                             <div>
                               <p className="text-sm text-slate-600 font-medium">End Date</p>
                               <p className="font-semibold text-slate-900 mt-1">
-                                {campaign?.campaignEndDate?.toString() as string}
+                                {formatDate(campaign.campaignEndDate)}
                               </p>
                             </div>
                           </div>
@@ -416,7 +461,7 @@ export default function CampaignDetailPage() {
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Last Updated</p>
                               <p className="font-semibold text-slate-900 mt-1">
-                                {campaign?.updatedAt?.toString() as string}
+                                {formatDate(campaign.updatedAt)}
                               </p>
                             </div>
                           </div>
@@ -447,7 +492,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Location</p>
-                              <p className="font-semibold text-slate-900 mt-1">{campaign?.location}</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign.location}</p>
                             </div>
                           </div>
                         </div>
@@ -459,49 +504,54 @@ export default function CampaignDetailPage() {
 
               {activeTab === "team" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {teamMembers?.map((member) => (
-                    <div key={member.id} className="card">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                        <Image
-                          src={member?.name?.charAt(0) || "/placeholder.svg"}
-                          alt={member.name}
-                          width={60}
-                          height={60}
-                          className="rounded-full mx-auto sm:mx-0"
-                        />
-                        <div className="flex-1 text-center sm:text-left">
-                          <h3 className="text-lg font-semibold text-slate-900">{member.name}</h3>
-                          <p className="text-indigo-600 font-medium mb-2">{member.role}</p>
-                          <p className="text-slate-600 text-sm leading-relaxed">{member.bio}</p>
+                  {teamMembers.length > 0 ? (
+                    teamMembers.map((member) => (
+                      <div key={member.id} className="card">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                          <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mx-auto sm:mx-0">
+                            {member.name.charAt(0)}
+                          </div>
+                          <div className="flex-1 text-center sm:text-left">
+                            <h3 className="text-lg font-semibold text-slate-900">{member.name}</h3>
+                            <p className="text-indigo-600 font-medium mb-2">{member.role}</p>
+                            <p className="text-slate-600 text-sm leading-relaxed">{member.bio}</p>
+                          </div>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 sm:py-12">
+                      <Users className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2">No team members yet</h3>
+                      <p className="text-slate-600 text-sm sm:text-base">
+                        Check back later for team information!
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
 
               {activeTab === "updates" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {updates!.length > 0 ? (
-                    updates?.map((update) => (
+                  {updates.length > 0 ? (
+                    updates.map((update) => (
                       <div key={update.id} className="card">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                           <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
                           <span className="text-sm text-slate-500">
-                            {update?.createdAt?.toString() as string}
+                            {formatDateTime(update.createdAt)}
                           </span>
                         </div>
-                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update?.message}</p>
-                        {update?.image && (
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <Image
-                                key={update?.id}
-                                src={update?.image || "/placeholder.svg"}
-                                alt={`Update ${update.id} image`}
-                                width={300}
-                                height={200}
-                                className="rounded-lg"
-                              />
+                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
+                        {update.image && (
+                          <div className="mt-4">
+                            <Image
+                              src={update.image}
+                              alt={`Update ${update.id} image`}
+                              width={600}
+                              height={400}
+                              className="rounded-lg w-full h-auto"
+                            />
                           </div>
                         )}
                       </div>
@@ -544,27 +594,27 @@ export default function CampaignDetailPage() {
 
                   {/* Comments List */}
                   <div className="space-y-4">
-                    {comments?.length! > 0 ? (
-                      comments?.map((comment) => (
+                    {comments.length > 0 ? (
+                      comments.map((comment) => (
                         <div key={comment.id} className="card">
                           <div className="flex items-start space-x-3">
-                            <Image
-                              src={comment?.username?.charAt(0) as string || "/placeholder.svg"}
-                              alt={comment?.username}
-                              width={40}
-                              height={40}
-                              className="rounded-full flex-shrink-0"
-                            />
+                            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
+                              {comment.username.charAt(0)}
+                            </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment?.username}</h4>
+                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment.username}</h4>
                                 <span className="text-xs sm:text-sm text-slate-500">
-                                  {comment?.createdAt?.toString() as string}
+                                  {formatDateTime(comment.createdAt)}
                                 </span>
                               </div>
                               <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
                                 {comment.message}
                               </p>
+                              <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center">
+                                <ThumbsUp className="w-3 h-3 mr-1" />
+                                Like
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -591,7 +641,7 @@ export default function CampaignDetailPage() {
               <div className="card mb-4 sm:mb-6">
                 <div className="mb-4 sm:mb-6">
                   <div className="flex justify-between text-xs sm:text-sm text-slate-600 mb-2">
-                    <span>Raised: {formatCurrency(campaign?.amountReceived as number)}</span>
+                    <span>Raised: {formatCurrency(campaign.amountReceived)}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2 sm:h-3 mb-2">
@@ -601,13 +651,13 @@ export default function CampaignDetailPage() {
                     />
                   </div>
                   <div className="text-xs sm:text-sm text-slate-500">
-                    Goal: {formatCurrency(campaign?.fundingGoal as number)}
+                    Goal: {formatCurrency(campaign.fundingGoal)}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="text-center">
-                    <div className="text-xl sm:text-2xl font-bold text-slate-900">{totalDonors}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-slate-900">{recentDonors.length}</div>
                     <div className="text-xs sm:text-sm text-slate-600">Donors</div>
                   </div>
                   <div className="text-center">
@@ -626,7 +676,7 @@ export default function CampaignDetailPage() {
 
                 <div className="text-center text-xs sm:text-sm text-slate-600">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                  Campaign ends on {campaign?.campaignEndDate.toString() as string}
+                  Campaign ends on {formatDate(campaign.campaignEndDate)}
                 </div>
               </div>
 
@@ -634,48 +684,64 @@ export default function CampaignDetailPage() {
               <div className="card">
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Recent Donors</h3>
                 <div className="space-y-3">
-                  {recentDonors?.map((donor, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
+                  {recentDonors.length > 0 ? (
+                    recentDonors.map((donor, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs sm:text-sm font-medium text-slate-900 truncate">
+                            {donor.name || "Anonymous"}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {donor.time ? formatDateTime(donor.time) : "Recently"}
+                          </div>
+                        </div>
+                        <div className="text-xs sm:text-sm font-semibold text-indigo-600 flex-shrink-0">
+                          {formatCurrency(donor.amount)}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs sm:text-sm font-medium text-slate-900 truncate">{donor.name}</div>
-                        <div className="text-xs text-slate-500">{donor?.time?.toUTCString() as string}</div>
-                      </div>
-                      <div className="text-xs sm:text-sm font-semibold text-indigo-600 flex-shrink-0">
-                        {formatCurrency(donor.amount)}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-sm text-slate-500">No recent donors yet</div>
                     </div>
-                  ))}
+                  )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <button className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                    View all donors →
-                  </button>
-                </div>
+                {recentDonors.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <button className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                      View all donors →
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Creator Info */}
               <div className="card mt-4 sm:mt-6">
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Campaign Creator</h3>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
-                  <Image
-                    src={creator?.profilePicture as string || "/placeholder.svg"}
-                    alt={creator?.name!}
-                    width={60}
-                    height={60}
-                    className="rounded-full"
-                  />
+                  <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold">
+                    {creator.name.charAt(0)}
+                  </div>
                   <div className="flex-1 text-center sm:text-left">
-                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{creator?.name}</h4>
-                    <p className="text-xs sm:text-sm text-slate-600 mb-2">{creator?.location}</p>
-                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{"Hello"}</p>
+                    <div className="flex items-center justify-center sm:justify-start gap-2">
+                      <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{creator.name}</h4>
+                      {creator.verified && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-2">{creator.location}</p>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      {creator.campaignsCreated} campaigns created
+                    </p>
                     <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      <span className="text-xs text-slate-500">{creator?.campaignsCreated} campaigns</span>
                       <span className="text-xs text-slate-500">
-                        {formatCurrency(creator?.totalRaised as number)} raised
+                        {formatCurrency(creator.totalRaised)} raised
                       </span>
                     </div>
                   </div>
@@ -687,7 +753,16 @@ export default function CampaignDetailPage() {
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal  onClose={() => setShowDonationModal(false)} />}
+      {showDonationModal && (
+        <DonationModal 
+          campaign={{
+            id:campaign.id,
+            title:campaign.title,
+            financiald:""
+          }}
+          onClose={() => setShowDonationModal(false)} 
+        />
+      )}
     </div>
   )
 }
