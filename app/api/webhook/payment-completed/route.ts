@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
     process.env.NODE_ENV === "development" ? console.log(err) : "";
     return NextResponse.json(
       {
+        ok:false,
         error: "internal server error",
       },
       { status: 500 }

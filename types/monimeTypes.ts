@@ -1,50 +1,65 @@
 export interface GenerateCode {
   success: boolean;
-  messages: string[];
-  result: Result;
-}
-
-interface Result {
-  id: string;
-  name: string;
-  mode: string;
-  isActive: boolean;
-  status: string;
-  ussdCode: string;
-  amount: Amount;
-  customerTarget: CustomerTarget;
-  financialTarget: FinancialTarget;
-  allowedProviders: string[];
-  progress: Progress;
-  financialAccountId: string;
-  expireTime: string;
-  createTime: string;
-  metadata: Metadata;
-}
-
-interface Metadata {
-}
-
-interface Progress {
-  isCompleted: boolean;
-  totalPaymentCount: number;
-  totalPaymentSum: Amount;
-}
-
-interface FinancialTarget {
-  expectedPaymentCount: number;
-  expectedPaymentSum: Amount;
-}
-
-interface CustomerTarget {
-  name: string;
-  reference: string;
-  payingPhoneNumber: string;
-}
-
-interface Amount {
-  currency: string;
-  value: number;
+  messages: any[];
+  result: {
+    id: string;
+    mode: 'one_time' | string; // Assuming other modes might exist
+    status: string;
+    name: string;
+    amount: {
+      currency: string;
+      value: number;
+    };
+    enable: boolean;
+    expireTime: string; // ISO format date string
+    customer: {
+      name: string;
+    };
+    ussdCode: string;
+    reference: string;
+    authorizedProviders: string[];
+    authorizedPhoneNumber: string;
+    recurrentPaymentTarget: {
+      expectedPaymentCount: number;
+      expectedPaymentTotal: {
+        currency: string;
+        value: number;
+      };
+    };
+    financialAccountId: string;
+    processedPaymentData: {
+      amount: {
+        currency: string;
+        value: number;
+      };
+      orderId: string;
+      paymentId: string;
+      orderNumber: string;
+      channelData: {
+        providerId: string;
+        accountId: string;
+        reference: string;
+      };
+      financialTransactionReference: string;
+      metadata: Record<string, unknown>;
+    };
+    createTime: string;
+    updateTime: string; 
+    ownershipGraph: {
+      owner: {
+        id: string;
+        type: string;
+        metadata: Record<string, unknown>;
+        owner?: {
+          id: string;
+          type: string;
+          metadata: any;
+          owner?: any;
+        };
+      };
+    };
+    metadata: Record<string, unknown>;
+  };
 }
 
 
@@ -81,4 +96,29 @@ interface CustomerTarget {
 interface Amount {
   currency: string;
   value: number;
+}
+
+
+
+
+export interface GenerateAccount {
+  success:boolean,
+  message:string[],
+  result:{
+    id:string,
+    uvan:string,
+    name:string,
+    currency:string,
+    reference:string,
+    description:string,
+    balance:{
+      available:{
+        currency:string,
+        value:number
+      }
+    },
+    createTime:string,
+    updateTime:string,
+    metadata:any
+  }
 }
