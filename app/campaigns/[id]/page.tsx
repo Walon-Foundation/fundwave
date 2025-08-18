@@ -1,220 +1,49 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag } from "lucide-react"
 import DonationModal from "../../../components/donation-modal"
-import { axiosInstance } from "@/lib/axiosInstance"
 import { useParams } from "next/navigation"
+import { api } from "@/lib/api/api"
+import type { CampaignDetails } from "@/types/api"
 
-// Mock campaign data matching the exact database schema
-const mockCampaign = {
-  id: "camp_1234567890",
-  title: "Clean Water for Makeni Community",
-  fundingGoal: 5000000,
-  amountReceived: 2500000, // Note: using correct spelling from schema (amountRecieved)
-  location: "Makeni, Northern Province",
-  campaignEndDate: "2025-10-29T23:59:59.000Z",
-  creatorId: "user_1234567890",
-  category: "Community",
-  image: "/placeholder.svg?height=400&width=600", // Single image as per schema
-  shortDescription:
-    "Help us bring clean, safe drinking water to over 500 families in Makeni community through sustainable infrastructure development.",
-  fullStory: `
-    <h3>The Problem</h3>
-    <p>The Makeni community has been struggling with water scarcity for over a decade. Families have to walk miles to fetch water from unsafe sources, leading to waterborne diseases and lost time that could be spent on education and economic activities.</p>
-    
-    <h3>Our Solution</h3>
-    <p>We plan to build a comprehensive water system including:</p>
-    <ul>
-      <li>Deep water well with solar-powered pump</li>
-      <li>Water storage tanks (5,000L capacity)</li>
-      <li>Distribution network to key community points</li>
-      <li>Water quality testing equipment</li>
-      <li>Community training for maintenance</li>
-    </ul>
-    
-    <h3>Impact</h3>
-    <p>This project will directly benefit 500 families (approximately 2,500 individuals) by providing clean, safe drinking water within walking distance of their homes. Children will spend more time in school instead of fetching water, and families will have better health outcomes.</p>
-    k
-    <h3>Budget Breakdown</h3>
-    <p>Your donations will be used as follows:</p>
-    <ul>
-      <li>60% - Water pump and drilling equipment (SLL 3,000,000)</li>
-      <li>25% - Storage tanks and distribution pipes (SLL 1,250,000)</li>
-      <li>10% - Installation and labor costs (SLL 500,000)</li>
-      <li>5% - Maintenance training and tools (SLL 250,000)</li>
-    </ul>
-    
-    <h3>Timeline</h3>
-    <p>The project will be completed in phases over 4 months:</p>
-    <ul>
-      <li>Month 1: Site preparation and drilling</li>
-      <li>Month 2: Pump installation and testing</li>
-      <li>Month 3: Storage and distribution system</li>
-      <li>Month 4: Community training and handover</li>
-    </ul>
-  `,
-  tags: ["water", "community", "health", "infrastructure", "sierra-leone", "sustainability"],
-  createdAt: "2024-09-15T10:00:00.000Z",
-  updatedAt: "2024-01-20T15:30:00.000Z",
-}
-
-// Mock creator data (would come from userTable)
-const mockCreator = {
-  id: "user_1234567890",
-  name: "Aminata Kamara",
-  avatar: "/placeholder.svg?height=50&width=50",
-  verified: true,
-  bio: "Community organizer and water rights advocate",
-  location: "Makeni, Northern Province",
-  campaignsCreated: 5,
-  totalRaised: 10000000,
-}
-
-// Mock team members data matching the teamMemberTable schema
-const mockTeamMembers = [
-  {
-    id: "team_001",
-    name: "Aminata Kamara",
-    role: "Project Lead & Community Organizer",
-    bio: "Community organizer with 10+ years experience in water infrastructure projects. Led 5 successful water projects across Northern Province.",
-    campaignId: "camp_1234567890",
-    avatar:""
-  },
-  {
-    id: "team_002",
-    name: "Mohamed Bangura",
-    role: "Technical Engineer",
-    bio: "Water systems engineer specializing in rural community projects. Certified in solar pump installation and maintenance.",
-    campaignId: "camp_1234567890",
-    avatar:""
-  },
-  {
-    id: "team_003",
-    name: "Fatima Sesay",
-    role: "Community Liaison",
-    bio: "Local community leader ensuring project meets community needs. Fluent in Temne and Krio languages.",
-    campaignId: "camp_1234567890",
-    avatar:""
-  },
-]
-
-// Mock updates data
-const mockUpdates = [
-  {
-    id: "update_001",
-    title: "Site Survey Completed Successfully",
-    content:
-      "We have completed the initial site survey and identified the optimal location for the water well. The geological survey shows excellent water table conditions at 45 meters depth. Local authorities have confirmed the site meets all regulatory requirements.",
-    date: "2024-01-20T10:00:00.000Z",
-    author: "Aminata Kamara",
-    images: ["/placeholder.svg?height=200&width=300"],
-  },
-  {
-    id: "update_002",
-    title: "All Permits Approved - Ready to Begin!",
-    content:
-      "Excellent news! All necessary permits have been approved by local authorities and the Ministry of Water Resources. We can now proceed with equipment procurement and expect drilling to begin next week.",
-    date: "2024-01-25T14:30:00.000Z",
-    author: "Mohamed Bangura",
-    images: [],
-  },
-  {
-    id: "update_003",
-    title: "Community Meeting - 100% Support",
-    content:
-      "Held a community meeting with over 200 residents. The response was overwhelming - 100% support for the project! Community members have volunteered to help with construction and committed to ongoing maintenance.",
-    date: "2024-01-28T16:45:00.000Z",
-    author: "Fatima Sesay",
-    images: ["/placeholder.svg?height=200&width=300", "/placeholder.svg?height=200&width=300"],
-  },
-]
-
-// Mock comments data
-const mockComments = [
-  {
-    id: "comment_001",
-    user: "Mohamed Bangura",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content:
-      "This is such an important project. Clean water will transform this community! I've seen similar projects succeed and the impact is incredible.",
-    date: "2024-01-22T09:15:00.000Z",
-    likes: 12,
-  },
-  {
-    id: "comment_002",
-    user: "Fatima Sesay",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content:
-      "I grew up in a similar community. Water scarcity is a real problem that affects everything - health, education, economic opportunities. Thank you for this initiative!",
-    date: "2024-01-23T16:45:00.000Z",
-    likes: 8,
-  },
-  {
-    id: "comment_003",
-    user: "Ibrahim Koroma",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content:
-      "How will you ensure the sustainability of this project? Will there be ongoing maintenance training for the community?",
-    date: "2024-01-24T11:20:00.000Z",
-    likes: 5,
-  },
-  {
-    id: "comment_004",
-    user: "Adama Conteh",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content: "Amazing work! I donated last week and I'm excited to see the progress. Keep up the great work team!",
-    date: "2024-01-26T08:30:00.000Z",
-    likes: 15,
-  },
-]
-
-// Mock recent donors
-const mockRecentDonors = [
-  { name: "Anonymous", amount: 250000, time: "2 hours ago" },
-  { name: "Sarah Johnson", amount: 150000, time: "5 hours ago" },
-  { name: "Anonymous", amount: 500000, time: "1 day ago" },
-  { name: "Michael Chen", amount: 100000, time: "1 day ago" },
-  { name: "Anonymous", amount: 300000, time: "2 days ago" },
-]
 
 export default function CampaignDetailPage() {
-  const params = useParams<{id:string}>()
-  const [campaign] = useState(mockCampaign)
-  const [creator] = useState(mockCreator)
-  const [teamMembers] = useState(mockTeamMembers)
-  const [updates] = useState(mockUpdates)
-  const [comments, setComments] = useState(mockComments)
+  const params = useParams()
+  const id = params.id as string
+  const [campaignInfo, setCampaignInfo] = useState<CampaignDetails>()
+  const [campaign] = useState(campaignInfo?.campaign)
+  const [creator] = useState(campaignInfo?.creator)
+  const [teamMembers] = useState(campaignInfo?.teamMembers)
+  const [updates] = useState(campaignInfo?.updates)
+  const [comments, setComments] = useState(campaignInfo?.comments)
   const [activeTab, setActiveTab] = useState("story")
   const [showDonationModal, setShowDonationModal] = useState(false)
   const [newComment, setNewComment] = useState("")
-  const [recentDonors] = useState(mockRecentDonors) // Declare recentDonors variable
+  const [recentDonors] = useState(campaignInfo?.recentDonors)
 
-  const progress = (campaign.amountReceived / campaign.fundingGoal) * 100
-  const campaignEndDate = new Date(campaign.campaignEndDate)
+  const progress = (campaign?.amountReceived! / campaign?.fundingGoal!) * 100
+  const campaignEndDate = new Date(campaign?.campaignEndDate?.toString() as string)
   const daysLeft = Math.ceil((campaignEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-  const totalDonors = 45 // This would come from donations count
+  const totalDonors = recentDonors?.length
 
-  const [realCampaignInfo, setRealCampaignInfo] = useState({})
 
-  // Getting the info from the server
   useEffect(() => {
     const getInfo = async () => {
+      console.log(id)
       try {
-        const res = await axiosInstance.get(`/campaigns/${params.id}`)
-        if (res.status === 200) {
-          setRealCampaignInfo(res.data.data)
-        }
+        console.log(id)
+        const data = await api.getCampaignDetails(`${id}`)
+        setCampaignInfo(data)
       } catch (err) {
         process.env.NODE_ENV === "development" ? console.log(err) : ""
       }
     }
 
     getInfo()
-  }, [params])
+  }, [id])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -224,23 +53,23 @@ export default function CampaignDetailPage() {
     }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
+  // const formatDate = (dateString: string) => {
+  //   return new Date(dateString).toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   })
+  // }
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  // const formatDateTime = (dateString: string) => {
+  //   return new Date(dateString).toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "short",
+  //     day: "numeric",
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   })
+  // }
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -255,15 +84,10 @@ export default function CampaignDetailPage() {
       likes: 0,
     }
 
-    setComments([comment, ...comments])
+    setComments([comment, ...comments!])
     setNewComment("")
   }
 
-  const handleLikeComment = (commentId: string) => {
-    setComments(
-      comments.map((comment) => (comment.id === commentId ? { ...comment, likes: comment.likes + 1 } : comment)),
-    )
-  }
 
   return (
     <div className="min-h-screen py-4 sm:py-8">
@@ -273,24 +97,31 @@ export default function CampaignDetailPage() {
           <div className="lg:col-span-2 order-2 lg:order-1">
             {/* Campaign Image */}
             <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-4 sm:mb-6">
-              <Image src={campaign.image || "/placeholder.svg"} alt={campaign.title} fill className="object-cover" />
+              <Image
+                src={(campaign?.image as string)}
+                alt={campaign?.title as string}
+                fill
+                className="object-cover"
+              />
             </div>
 
             {/* Campaign Header */}
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
-                {campaign.title}
+                {campaign?.title}
               </h1>
 
               {/* Campaign Meta */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-slate-600 mb-4">
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{campaign.location}</span>
+                  <span className="text-sm sm:text-base">{campaign?.location}</span>
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">Ends {formatDate(campaign.campaignEndDate)}</span>
+                  <span className="text-sm sm:text-base">
+                    Ends {campaign?.campaignEndDate?.toString() as string}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <Users className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -315,9 +146,9 @@ export default function CampaignDetailPage() {
               </div>
 
               {/* Tags */}
-              {campaign.tags && campaign.tags.length > 0 && (
+              {campaign?.tags && campaign?.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4 sm:mt-6">
-                  {campaign.tags.map((tag, index) => (
+                  {campaign?.tags?.map((tag, index) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-2 sm:px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm hover:bg-slate-200 transition-colors"
@@ -344,9 +175,9 @@ export default function CampaignDetailPage() {
                     }`}
                   >
                     {tab}
-                    {tab === "team" && ` (${teamMembers.length})`}
-                    {tab === "updates" && ` (${updates.length})`}
-                    {tab === "comments" && ` (${comments.length})`}
+                    {tab === "team" && ` (${teamMembers?.length})`}
+                    {tab === "updates" && ` (${updates?.length})`}
+                    {tab === "comments" && ` (${comments?.length})`}
                   </button>
                 ))}
               </nav>
@@ -358,11 +189,87 @@ export default function CampaignDetailPage() {
                 <div className="space-y-6 sm:space-y-8">
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-6 sm:p-8">
-                      <div className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:leading-relaxed prose-a:text-indigo-600 prose-strong:text-slate-900">
-                        <div
-                          className="text-base sm:text-lg leading-relaxed"
-                          dangerouslySetInnerHTML={{ __html: campaign.fullStory }}
-                        />
+                      <div className="space-y-8">
+                        {/* Problem Statement Section */}
+                        <div>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-5 h-5 text-red-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                />
+                              </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">The Problem</h3>
+                          </div>
+                          <div className="prose prose-slate max-w-none">
+                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
+                              {campaign?.problemStatement}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Solution Section */}
+                        <div>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-5 h-5 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                />
+                              </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">Our Solution</h3>
+                          </div>
+                          <div className="prose prose-slate max-w-none">
+                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
+                              {campaign?.solution }
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Impact Section */}
+                        <div>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-5 h-5 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">Expected Impact</h3>
+                          </div>
+                          <div className="prose prose-slate max-w-none">
+                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
+                              {campaign?.impact }
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -408,7 +315,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Campaign ID</p>
-                              <p className="font-mono text-xs text-slate-900 break-all mt-1">{campaign.id}</p>
+                              <p className="font-mono text-xs text-slate-900 break-all mt-1">{campaign?.id}</p>
                             </div>
                           </div>
                         </div>
@@ -432,7 +339,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Category</p>
-                              <p className="font-semibold text-slate-900 mt-1">{campaign.category}</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign?.category}</p>
                             </div>
                           </div>
                         </div>
@@ -456,7 +363,9 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Created</p>
-                              <p className="font-semibold text-slate-900 mt-1">{formatDate(campaign.createdAt)}</p>
+                              <p className="font-semibold text-slate-900 mt-1">
+                                {campaign?.createdAt?.toString() as string}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -481,7 +390,7 @@ export default function CampaignDetailPage() {
                             <div>
                               <p className="text-sm text-slate-600 font-medium">End Date</p>
                               <p className="font-semibold text-slate-900 mt-1">
-                                {formatDate(campaign.campaignEndDate)}
+                                {campaign?.campaignEndDate?.toString() as string}
                               </p>
                             </div>
                           </div>
@@ -506,7 +415,9 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Last Updated</p>
-                              <p className="font-semibold text-slate-900 mt-1">{formatDate(campaign.updatedAt)}</p>
+                              <p className="font-semibold text-slate-900 mt-1">
+                                {campaign?.updatedAt?.toString() as string}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -536,7 +447,7 @@ export default function CampaignDetailPage() {
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 font-medium">Location</p>
-                              <p className="font-semibold text-slate-900 mt-1">{campaign.location}</p>
+                              <p className="font-semibold text-slate-900 mt-1">{campaign?.location}</p>
                             </div>
                           </div>
                         </div>
@@ -548,11 +459,11 @@ export default function CampaignDetailPage() {
 
               {activeTab === "team" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {teamMembers.map((member) => (
+                  {teamMembers?.map((member) => (
                     <div key={member.id} className="card">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                         <Image
-                          src={member.avatar || "/placeholder.svg"}
+                          src={member?.name?.charAt(0) || "/placeholder.svg"}
                           alt={member.name}
                           width={60}
                           height={60}
@@ -571,14 +482,28 @@ export default function CampaignDetailPage() {
 
               {activeTab === "updates" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {updates.length > 0 ? (
-                    updates.map((update) => (
+                  {updates!.length > 0 ? (
+                    updates?.map((update) => (
                       <div key={update.id} className="card">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                           <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
-                          <span className="text-sm text-slate-500">{formatDate(update.date)}</span>
+                          <span className="text-sm text-slate-500">
+                            {update?.createdAt?.toString() as string}
+                          </span>
                         </div>
-                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.content}</p>
+                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update?.message}</p>
+                        {update?.image && (
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <Image
+                                key={update?.id}
+                                src={update?.image || "/placeholder.svg"}
+                                alt={`Update ${update.id} image`}
+                                width={300}
+                                height={200}
+                                className="rounded-lg"
+                              />
+                          </div>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -619,34 +544,27 @@ export default function CampaignDetailPage() {
 
                   {/* Comments List */}
                   <div className="space-y-4">
-                    {comments.length > 0 ? (
-                      comments.map((comment) => (
+                    {comments?.length! > 0 ? (
+                      comments?.map((comment) => (
                         <div key={comment.id} className="card">
                           <div className="flex items-start space-x-3">
                             <Image
-                              src={comment.avatar || "/placeholder.svg"}
-                              alt={comment.user}
+                              src={comment?.username?.charAt(0) as string || "/placeholder.svg"}
+                              alt={comment?.username}
                               width={40}
                               height={40}
                               className="rounded-full flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment.user}</h4>
+                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment?.username}</h4>
                                 <span className="text-xs sm:text-sm text-slate-500">
-                                  {formatDateTime(comment.date)}
+                                  {comment?.createdAt?.toString() as string}
                                 </span>
                               </div>
                               <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
-                                {comment.content}
+                                {comment.message}
                               </p>
-                              <button
-                                onClick={() => handleLikeComment(comment.id)}
-                                className="flex items-center text-xs sm:text-sm text-slate-500 hover:text-indigo-600 transition-colors"
-                              >
-                                <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                                {comment.likes} {comment.likes === 1 ? "like" : "likes"}
-                              </button>
                             </div>
                           </div>
                         </div>
@@ -673,7 +591,7 @@ export default function CampaignDetailPage() {
               <div className="card mb-4 sm:mb-6">
                 <div className="mb-4 sm:mb-6">
                   <div className="flex justify-between text-xs sm:text-sm text-slate-600 mb-2">
-                    <span>Raised: {formatCurrency(campaign.amountReceived)}</span>
+                    <span>Raised: {formatCurrency(campaign?.amountReceived as number)}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2 sm:h-3 mb-2">
@@ -682,7 +600,9 @@ export default function CampaignDetailPage() {
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-500">Goal: {formatCurrency(campaign.fundingGoal)}</div>
+                  <div className="text-xs sm:text-sm text-slate-500">
+                    Goal: {formatCurrency(campaign?.fundingGoal as number)}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -706,7 +626,7 @@ export default function CampaignDetailPage() {
 
                 <div className="text-center text-xs sm:text-sm text-slate-600">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                  Campaign ends on {formatDate(campaign.campaignEndDate)}
+                  Campaign ends on {campaign?.campaignEndDate.toString() as string}
                 </div>
               </div>
 
@@ -714,14 +634,14 @@ export default function CampaignDetailPage() {
               <div className="card">
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Recent Donors</h3>
                 <div className="space-y-3">
-                  {recentDonors.map((donor, index) => (
+                  {recentDonors?.map((donor, index) => (
                     <div key={index} className="flex items-center space-x-3">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <Users className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs sm:text-sm font-medium text-slate-900 truncate">{donor.name}</div>
-                        <div className="text-xs text-slate-500">{donor.time}</div>
+                        <div className="text-xs text-slate-500">{donor?.time?.toUTCString() as string}</div>
                       </div>
                       <div className="text-xs sm:text-sm font-semibold text-indigo-600 flex-shrink-0">
                         {formatCurrency(donor.amount)}
@@ -742,19 +662,21 @@ export default function CampaignDetailPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Campaign Creator</h3>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
                   <Image
-                    src={creator.avatar || "/placeholder.svg"}
-                    alt={creator.name}
+                    src={creator?.profilePicture as string || "/placeholder.svg"}
+                    alt={creator?.name!}
                     width={60}
                     height={60}
                     className="rounded-full"
                   />
                   <div className="flex-1 text-center sm:text-left">
-                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{creator.name}</h4>
-                    <p className="text-xs sm:text-sm text-slate-600 mb-2">{creator.location}</p>
-                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{creator.bio}</p>
+                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{creator?.name}</h4>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-2">{creator?.location}</p>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{"Hello"}</p>
                     <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      <span className="text-xs text-slate-500">{creator.campaignsCreated} campaigns</span>
-                      <span className="text-xs text-slate-500">{formatCurrency(creator.totalRaised)} raised</span>
+                      <span className="text-xs text-slate-500">{creator?.campaignsCreated} campaigns</span>
+                      <span className="text-xs text-slate-500">
+                        {formatCurrency(creator?.totalRaised as number)} raised
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -765,7 +687,7 @@ export default function CampaignDetailPage() {
       </div>
 
       {/* Donation Modal */}
-      {showDonationModal && <DonationModal campaign={campaign} onClose={() => setShowDonationModal(false)} />}
+      {showDonationModal && <DonationModal  onClose={() => setShowDonationModal(false)} />}
     </div>
   )
 }

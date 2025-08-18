@@ -21,106 +21,106 @@ import CampaignCard from "../components/campaign-card"
 import ChatSystem from "../components/chat-system"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
-import { Campaign } from "@/types/api"
+import type { Campaign } from "@/types/api"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api/api"
-
-
-const howItWorksSteps = [
-  {
-    icon: Target,
-    title: "Create Your Campaign",
-    description: "Set up your fundraising campaign with compelling photos, your story, and funding goal in minutes",
-    color: "from-azure-500 to-ocean-500",
-  },
-  {
-    icon: Users,
-    title: "Share & Promote",
-    description: "Share your campaign across social networks, WhatsApp, and with your community to maximize reach",
-    color: "from-ocean-500 to-teal-500",
-  },
-  {
-    icon: TrendingUp,
-    title: "Receive Donations",
-    description: "Collect donations seamlessly through mobile money, bank transfers, and international payments",
-    color: "from-teal-500 to-azure-500",
-  },
-  {
-    icon: Shield,
-    title: "Withdraw Funds",
-    description: "Access your funds securely after KYC verification with transparent tracking throughout",
-    color: "from-azure-600 to-ocean-600",
-  },
-]
-
-const stats = [
-  { value: "500+", label: "Successful Campaigns", icon: Award },
-  { value: "Le 2.5B+", label: "Raised for Communities", icon: TrendingUp },
-  { value: "50K+", label: "Happy Donors", icon: Users },
-  { value: "98%", label: "Success Rate", icon: Star },
-]
-
-const features = [
-  {
-    icon: Smartphone,
-    title: "Mobile Money Integration",
-    description: "Seamless integration with Orange Money, Africell Money, and other local payment methods",
-  },
-  {
-    icon: Globe,
-    title: "Global Reach",
-    description: "Accept donations from Sierra Leoneans worldwide through international payment gateways",
-  },
-  {
-    icon: Shield,
-    title: "Secure & Transparent",
-    description: "Bank-level security with real-time tracking and transparent fund management",
-  },
-  {
-    icon: Zap,
-    title: "Instant Notifications",
-    description: "Real-time updates via SMS, WhatsApp, and email for all campaign activities",
-  },
-]
-
-const testimonials = [
-  {
-    name: "Aminata Kamara",
-    role: "Community Leader",
-    image: "/placeholder.svg?height=60&width=60",
-    quote:
-      "FundWaveSL helped us raise Le 5M for our community well. The platform is so easy to use and the support team is amazing!",
-    campaign: "Clean Water Project",
-  },
-  {
-    name: "Dr. Mohamed Bangura",
-    role: "Healthcare Professional",
-    image: "/placeholder.svg?height=60&width=60",
-    quote:
-      "We successfully funded medical equipment for our clinic. The transparent tracking gave donors confidence in our project.",
-    campaign: "Medical Equipment Fund",
-  },
-  {
-    name: "Fatima Sesay",
-    role: "Education Advocate",
-    image: "/placeholder.svg?height=60&width=60",
-    quote:
-      "Thanks to FundWaveSL, we built a computer lab for our school. The mobile money integration made it accessible to everyone.",
-    campaign: "Digital Learning Initiative",
-  },
-]
+import Footer from "../components/footer"
 
 export default function HomePage() {
   const [data, setData] = useState<Campaign[]>([])
 
   useEffect(() => {
-    const getCampaign = async() => {
+    const getCampaign = async () => {
       const data = await api.getCampaigns()
       setData(data)
     }
 
     getCampaign()
   }, [])
+
+  const howItWorksSteps = [
+    {
+      icon: Target,
+      title: "Create Your Campaign",
+      description: "Set up your fundraising campaign with compelling photos, your story, and funding goal in minutes",
+      color: "from-azure-500 to-ocean-500",
+    },
+    {
+      icon: Users,
+      title: "Share & Promote",
+      description: "Share your campaign across social networks, WhatsApp, and with your community to maximize reach",
+      color: "from-ocean-500 to-teal-500",
+    },
+    {
+      icon: TrendingUp,
+      title: "Receive Donations",
+      description: "Collect donations seamlessly through mobile money, bank transfers, and international payments",
+      color: "from-teal-500 to-azure-500",
+    },
+    {
+      icon: Shield,
+      title: "Withdraw Funds",
+      description: "Access your funds securely after KYC verification with transparent tracking throughout",
+      color: "from-azure-600 to-ocean-600",
+    },
+  ]
+
+  const stats = [
+    { value: "500+", label: "Successful Campaigns", icon: Award },
+    { value: "Le 2.5B+", label: "Raised for Communities", icon: TrendingUp },
+    { value: "50K+", label: "Happy Donors", icon: Users },
+    { value: "98%", label: "Success Rate", icon: Star },
+  ]
+
+  const features = [
+    {
+      icon: Smartphone,
+      title: "Mobile Money Integration",
+      description: "Seamless integration with Orange Money, Africell Money, and other local payment methods",
+    },
+    {
+      icon: Globe,
+      title: "Global Reach",
+      description: "Accept donations from Sierra Leoneans worldwide through international payment gateways",
+    },
+    {
+      icon: Shield,
+      title: "Secure & Transparent",
+      description: "Bank-level security with real-time tracking and transparent fund management",
+    },
+    {
+      icon: Zap,
+      title: "Instant Notifications",
+      description: "Real-time updates via SMS, WhatsApp, and email for all campaign activities",
+    },
+  ]
+
+  const testimonials = [
+    {
+      name: "Aminata Kamara",
+      role: "Community Leader",
+      image: "/placeholder.svg?height=60&width=60",
+      quote:
+        "FundWaveSL helped us raise Le 5M for our community well. The platform is so easy to use and the support team is amazing!",
+      campaign: "Clean Water Project",
+    },
+    {
+      name: "Dr. Mohamed Bangura",
+      role: "Healthcare Professional",
+      image: "/placeholder.svg?height=60&width=60",
+      quote:
+        "We successfully funded medical equipment for our clinic. The transparent tracking gave donors confidence in our project.",
+      campaign: "Medical Equipment Fund",
+    },
+    {
+      name: "Fatima Sesay",
+      role: "Education Advocate",
+      image: "/placeholder.svg?height=60&width=60",
+      quote:
+        "Thanks to FundWaveSL, we built a computer lab for our school. The mobile money integration made it accessible to everyone.",
+      campaign: "Digital Learning Initiative",
+    },
+  ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -170,7 +170,7 @@ export default function HomePage() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
+                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent"
                 >
                   <Link href="/campaigns">Explore Campaigns</Link>
                 </Button>
@@ -268,7 +268,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {data.map((campaign, index) => (
               <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <CampaignCard campaign={campaign} />
+                <CampaignCard campaign={campaign} featured={index < 2} />
               </div>
             ))}
           </div>
@@ -278,7 +278,7 @@ export default function HomePage() {
               asChild
               variant="outline"
               size="lg"
-              className="group border-ocean-200 text-ocean-700 hover:bg-ocean-50"
+              className="group border-ocean-200 text-ocean-700 hover:bg-ocean-50 bg-transparent"
             >
               <Link href="/campaigns">
                 View All Campaigns
@@ -469,7 +469,7 @@ export default function HomePage() {
               asChild
               variant="outline"
               size="lg"
-              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
+              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent"
             >
               <Link href="/campaigns">Browse Campaigns</Link>
             </Button>
@@ -502,6 +502,8 @@ export default function HomePage() {
         currentUserName="Guest User"
         currentUserAvatar="/placeholder.svg?height=40&width=40"
       />
+
+      <Footer />
     </div>
   )
 }
