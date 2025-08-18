@@ -1,23 +1,15 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Users, MapPin, Star, Clock } from "lucide-react"
+import { MapPin, Target, Clock, Heart, Share2, TrendingUp } from "lucide-react"
+import { Card, CardContent, CardFooter } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { Card, CardContent } from "./ui/card"
+import { Progress } from "./ui/progress"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { Campaign } from "@/types/api"
 
-interface Campaign {
-  id: string
-  title: string
-  description: string
-  image: string
-  raised: number
-  target: number
-  donors: number
-  category: string
-  creator: string
-  location?: string
-  daysLeft?: number
-}
 
 interface CampaignCardProps {
   campaign: Campaign
@@ -26,186 +18,289 @@ interface CampaignCardProps {
 }
 
 export default function CampaignCard({ campaign, featured = false, viewMode = "grid" }: CampaignCardProps) {
-  const progress = (campaign.raised / campaign.target) * 100
+  const [isLiked, setIsLiked] = useState(false)
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-SL", {
+  const progress = (campaign.amountReceived / campaign.fundingGoal) * 100
+  const getDaysLeft = (endDate: Date) => {
+    const now = new Date()
+    const end = new Date(endDate)
+    const diffTime = end.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return Math.max(0, diffDays)
+  }
+
+  const daysLeft = getDaysLeft(campaign.campaignEndDate)
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "SLL",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount)
   }
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      Community: "bg-blue-100 text-blue-800",
-      Education: "bg-green-100 text-green-800",
-      Healthcare: "bg-red-100 text-red-800",
-      Emergency: "bg-orange-100 text-orange-800",
-      Agriculture: "bg-yellow-100 text-yellow-800",
-      Technology: "bg-purple-100 text-purple-800",
-      "Arts & Culture": "bg-pink-100 text-pink-800",
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-700 border-green-200"
+      case "pending":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200"
+      case "completed":
+        return "bg-blue-100 text-blue-700 border-blue-200"
+      case "rejected":
+        return "bg-red-100 text-red-700 border-red-200"
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200"
     }
-    return colors[category as keyof typeof colors] || "bg-slate-100 text-slate-800"
+  }
+
+  const getCampaignTypeColor = (type: string) => {
+    switch (type) {
+      case "business":
+        return "bg-purple-100 text-purple-700"
+      case "project":
+        return "bg-blue-100 text-blue-700"
+      case "personal":
+        return "bg-pink-100 text-pink-700"
+      case "community":
+        return "bg-green-100 text-green-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
   }
 
   if (viewMode === "list") {
     return (
-      <Card className="card-hover overflow-hidden">
-        <CardContent className="p-0">
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 relative">
-              <Image
+      <Link href={`/campaign/${campaign.id}`} className="block">
+        <Card
+          className={`group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm cursor-pointer hover:scale-[1.02] ${
+            featured ? "ring-2 ring-blue-200 shadow-lg" : ""
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row">
+            <div className="relative sm:w-80 h-48 sm:h-auto overflow-hidden rounded-l-lg">
+              <img
                 src={campaign.image || "/placeholder.svg"}
                 alt={campaign.title}
-                width={400}
-                height={250}
-                className="w-full h-48 md:h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute top-3 left-3">
-                <Badge className={`${getCategoryColor(campaign.category)} font-medium`}>{campaign.category}</Badge>
-              </div>
               {featured && (
-                <div className="absolute top-3 right-3">
-                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    Featured
-                  </Badge>
-                </div>
+                <Badge className="absolute top-3 left-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-lg">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  Featured
+                </Badge>
               )}
+              <Badge className={`absolute top-3 right-3 shadow-sm ${getStatusColor(campaign.status)}`}>
+                {campaign.status}
+              </Badge>
             </div>
 
-            <div className="md:w-2/3 p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <Link href={`/campaigns/${campaign.id}`}>
-                    <h3 className="text-xl font-semibold text-slate-900 mb-2 hover:text-ocean-600 transition-colors line-clamp-2">
-                      {campaign.title}
-                    </h3>
-                  </Link>
-                  <p className="text-slate-600 mb-4 line-clamp-2">{campaign.description}</p>
-                </div>
+            <CardContent className="flex-1 p-4 sm:p-6">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant="secondary" className="text-xs">
+                  {campaign.category}
+                </Badge>
+                <Badge className={`text-xs ${getCampaignTypeColor(campaign.campaignType)}`}>
+                  {campaign.campaignType}
+                </Badge>
               </div>
 
-              <div className="mb-4">
-                <div className="flex justify-between text-sm text-slate-600 mb-2">
-                  <span>Raised: {formatCurrency(campaign.raised)}</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
-                </div>
-                <div className="text-sm text-slate-500 mt-1">Goal: {formatCurrency(campaign.target)}</div>
-              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                {campaign.title}
+              </h3>
 
-              <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    <span>{campaign.donors} donors</span>
+              <p className="text-slate-600 mb-4 line-clamp-2 flex-1">{campaign.shortDescription}</p>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Progress</span>
+                  <span className="font-semibold text-slate-900">{progress.toFixed(1)}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-slate-600">Raised</p>
+                    <p className="font-semibold text-slate-900">{formatAmount(campaign.amountReceived)}</p>
                   </div>
-                  {campaign.location && (
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span>{campaign.location}</span>
-                    </div>
-                  )}
-                  {campaign.daysLeft && (
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      <span>{campaign.daysLeft} days left</span>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-slate-600">Goal</p>
+                    <p className="font-semibold text-slate-900">{formatAmount(campaign.fundingGoal)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage
+                        src={`/placeholder-icon.png?height=24&width=24&text=${campaign.creatorName.charAt(0)}`}
+                      />
+                      <AvatarFallback className="text-xs">{campaign.creatorName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-slate-600">{campaign.creatorName}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-slate-500">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">{daysLeft} days left</span>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">by {campaign.creator}</span>
-                <Button asChild size="sm" className="btn-primary">
-                  <Link href={`/campaigns/${campaign.id}`}>View Campaign</Link>
-                </Button>
-              </div>
-            </div>
+            </CardContent>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </Link>
     )
   }
 
   return (
-    <Card className={`card-hover overflow-hidden ${featured ? "ring-2 ring-ocean-200 shadow-glow" : ""}`}>
-      <CardContent className="p-0">
-        <Link href={`/campaigns/${campaign.id}`}>
-          <div className="relative h-48 md:h-56 overflow-hidden">
-            <Image
-              src={campaign.image || "/placeholder.svg"}
-              alt={campaign.title}
-              fill
-              className="object-cover hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute top-3 left-3">
-              <Badge className={`${getCategoryColor(campaign.category)} font-medium`}>{campaign.category}</Badge>
-            </div>
-            {featured && (
-              <div className="absolute top-3 right-3">
-                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                  <Star className="w-3 h-3 mr-1" />
+    <Link href={`/campaigns/${campaign.id}`} className="block">
+      <Card
+        className={`group hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden cursor-pointer hover:scale-[1.02] hover:-translate-y-1 ${
+          featured ? "ring-2 ring-blue-200 shadow-lg" : ""
+        }`}
+      >
+        <div className="relative overflow-hidden">
+          <img
+            src={campaign.image || "/placeholder.svg"}
+            alt={campaign.title}
+            className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+
+          {/* Overlay badges */}
+          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+            <div className="flex flex-col gap-2">
+              {featured && (
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 w-fit shadow-lg">
+                  <TrendingUp className="w-3 h-3 mr-1" />
                   Featured
                 </Badge>
-              </div>
-            )}
-            {campaign.daysLeft && campaign.daysLeft <= 7 && (
-              <div className="absolute bottom-3 right-3">
-                <Badge className="bg-red-500 text-white animate-pulse">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {campaign.daysLeft} days left
-                </Badge>
-              </div>
-            )}
-          </div>
-        </Link>
-
-        <div className="p-6">
-          <Link href={`/campaigns/${campaign.id}`}>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2 hover:text-ocean-600 transition-colors line-clamp-2">
-              {campaign.title}
-            </h3>
-          </Link>
-
-          <p className="text-slate-600 mb-4 line-clamp-2 leading-relaxed">{campaign.description}</p>
-
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-slate-600 mb-2">
-              <span>Raised: {formatCurrency(campaign.raised)}</span>
-              <span className="font-semibold">{Math.round(progress)}%</span>
+              )}
+              <Badge variant="secondary" className="w-fit shadow-sm bg-white/90 backdrop-blur-sm">
+                {campaign.category}
+              </Badge>
             </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+
+            <div className="flex flex-col gap-2 items-end">
+              <Badge className={`${getStatusColor(campaign.status)} w-fit shadow-sm`}>{campaign.status}</Badge>
+              <Badge className={`${getCampaignTypeColor(campaign.campaignType)} w-fit shadow-sm`}>
+                {campaign.campaignType}
+              </Badge>
             </div>
-            <div className="text-sm text-slate-500 mt-1">Goal: {formatCurrency(campaign.target)}</div>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
-            <div className="flex items-center">
-              <Users className="w-4 h-4 mr-1" />
-              <span>{campaign.donors} donors</span>
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-9 h-9 p-0 bg-white/95 hover:bg-white shadow-lg backdrop-blur-sm border-0"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsLiked(!isLiked)
+                }}
+              >
+                <Heart
+                  className={`w-4 h-4 transition-colors ${
+                    isLiked ? "fill-red-500 text-red-500" : "text-slate-600 hover:text-red-500"
+                  }`}
+                />
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-9 h-9 p-0 bg-white/95 hover:bg-white shadow-lg backdrop-blur-sm border-0"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+              >
+                <Share2 className="w-4 h-4 text-slate-600 hover:text-blue-600 transition-colors" />
+              </Button>
             </div>
-            {campaign.location && (
-              <div className="flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
-                <span className="truncate">{campaign.location}</span>
-              </div>
-            )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-600">by {campaign.creator}</span>
-            <Button asChild size="sm" className="btn-primary">
-              <Link href={`/campaigns/${campaign.id}`}>Donate Now</Link>
-            </Button>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-      </CardContent>
-    </Card>
+
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                {campaign.title}
+              </h3>
+              <p className="text-slate-600 text-sm sm:text-base line-clamp-3">{campaign.shortDescription}</p>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1">
+              {campaign.tags.slice(0, 3).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs hover:bg-blue-50 transition-colors">
+                  {tag}
+                </Badge>
+              ))}
+              {campaign.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs hover:bg-blue-50 transition-colors">
+                  +{campaign.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Progress</span>
+                <span className="font-semibold text-slate-900 bg-blue-50 px-2 py-1 rounded-full text-xs">
+                  {progress.toFixed(1)}%
+                </span>
+              </div>
+              <Progress value={progress} className="h-3 bg-gray-100" />
+            </div>
+
+            {/* Creator and Location */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2">
+                <Avatar className="w-8 h-8 ring-2 ring-gray-100">
+                  <AvatarImage
+                    src={`/placeholder-icon.png?height=32&width=32&text=${campaign.creatorName.charAt(0)}`}
+                  />
+                  <AvatarFallback className="text-sm bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                    {campaign.creatorName.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{campaign.creatorName}</p>
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <MapPin className="w-3 h-3" />
+                    <span>{campaign.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className="flex items-center gap-1 text-slate-500">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-medium">{daysLeft}</span>
+                </div>
+                <span className="text-xs text-slate-500">days left</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="p-4 sm:p-6 pt-0">
+          <Button
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+          >
+            <Target className="w-4 h-4 mr-2" />
+            Support Campaign
+          </Button>
+        </CardFooter>
+      </Card>
+    </Link>
   )
 }
