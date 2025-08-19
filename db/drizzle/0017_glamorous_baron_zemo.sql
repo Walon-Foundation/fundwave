@@ -1,0 +1,1 @@
+ALTER TABLE "campaigns" ADD COLUMN "financial_account_id" text;

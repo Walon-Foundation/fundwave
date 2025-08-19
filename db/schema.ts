@@ -113,6 +113,7 @@ export const campaignTable = pgTable("campaigns", {
   image: text("image").notNull(),
   shortDescription: text("short_description").notNull(),
   problem: text("problem").notNull(),
+  financialAccountId:text("financial_account_id"),
   solution: text("solution").notNull(),
   impact: text("impact").notNull(),
   tags: text("tags").array().notNull(),
@@ -177,6 +178,7 @@ export const paymentTable = pgTable("payments", {
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
+  email:text("email").notNull(),  
   updatedAt: timestamp("updatedAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
