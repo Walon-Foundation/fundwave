@@ -81,10 +81,9 @@ export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>
     }
 
     return NextResponse.json({
+      ok:true,
       message:"all updates",
-      data:{
-        update:allUpdates
-      }
+      data:allUpdates
     }, {status:200})
     
   }catch(err){
