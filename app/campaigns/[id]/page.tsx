@@ -758,7 +758,7 @@ export default function CampaignDetailPage() {
           campaign={{
             id:campaign.id,
             title:campaign.title,
-            financiald:""
+            organizer:campaign.creatorName
           }}
           onClose={() => setShowDonationModal(false)} 
         />

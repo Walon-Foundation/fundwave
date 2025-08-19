@@ -231,6 +231,7 @@ export default function HomePage() {
         </div>
       </section>
 
+
       {/* Stats Section */}
       <section className="py-16 bg-gradient-to-r from-slate-50 to-ocean-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
