@@ -17,6 +17,7 @@ export default function CampaignDetailPage() {
   const [newComment, setNewComment] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
 
   useEffect(() => {
     const fetchCampaignData = async () => {
@@ -115,22 +116,24 @@ export default function CampaignDetailPage() {
     e.preventDefault()
     if (!newComment.trim()) return
 
-    // In a real app, you would call an API to post the comment
-    const newCommentObj = {
-      id: `temp_${Date.now()}`,
-      message: newComment,
-      username: "You", // Replace with actual user data
-      userId: "temp-user",
-      campaignId: campaign.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    setIsSubmittingComment(true)
+    
+    try {
+      const data = await api.createComment({
+        comment: newComment
+      }, id)
+      
+      setCampaignInfo(prev => ({
+        ...prev!,
+        comments: [data, ...prev!.comments]
+      }))
+      setNewComment("")
+    } catch (err) {
+      console.error("Error posting comment:", err)
+      setError("Failed to post comment. Please try again.")
+    } finally {
+      setIsSubmittingComment(false)
     }
-
-    setCampaignInfo(prev => ({
-      ...prev!,
-      comments: [newCommentObj, ...prev!.comments]
-    }))
-    setNewComment("")
   }
 
   return (
@@ -577,6 +580,7 @@ export default function CampaignDetailPage() {
                       placeholder="Share your thoughts or ask a question..."
                       className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
                       rows={4}
+                      disabled={isSubmittingComment}
                     />
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-3">
                       <p className="text-xs sm:text-sm text-slate-500">
@@ -584,10 +588,17 @@ export default function CampaignDetailPage() {
                       </p>
                       <button
                         type="submit"
-                        disabled={!newComment.trim()}
-                        className="btn-primary px-4 sm:px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                        disabled={!newComment.trim() || isSubmittingComment}
+                        className="btn-primary px-4 sm:px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex items-center justify-center min-w-[120px]"
                       >
-                        Post Comment
+                        {isSubmittingComment ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                            Posting...
+                          </>
+                        ) : (
+                          "Post Comment"
+                        )}
                       </button>
                     </div>
                   </form>
@@ -599,13 +610,13 @@ export default function CampaignDetailPage() {
                         <div key={comment.id} className="card">
                           <div className="flex items-start space-x-3">
                             <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
-                              {comment.username.charAt(0)}
+                              {comment?.username?.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment.username}</h4>
+                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment?.username}</h4>
                                 <span className="text-xs sm:text-sm text-slate-500">
-                                  {formatDateTime(comment.createdAt)}
+                                  {formatDateTime(comment?.createdAt)}
                                 </span>
                               </div>
                               <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">

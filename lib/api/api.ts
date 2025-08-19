@@ -8,9 +8,6 @@ export class API {
         this.client = axios.create({
             baseURL:process.env.NEXT_PUBLIC_API_URL,
             withCredentials:true,
-            headers:{
-                "Content-Type":"application/json"
-            }
         })
 
         this.client.interceptors.response.use(
@@ -41,12 +38,12 @@ export class API {
 
     //comments
     async createComment(data:CreateComment, id:string){
-        return this.client.post(`/campaigns/${id}/comments`, data).then(res => res)
+        return this.client.post(`/campaigns/${id}/comments`, data).then(res => res.data.data)
     }
 
     //updates
-    async createUpdate(data:FormData, id:string){
-        return this.client.post(`/campaigns/${id}/updates`, data).then(res => res)
+    async createUpdate(data:any, id:string){
+        return this.client.post(`/campaigns/${id}/updates`, data).then(res => res.data.data)
     }
 
     //payment

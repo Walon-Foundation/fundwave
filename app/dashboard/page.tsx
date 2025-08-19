@@ -17,12 +17,14 @@ import {
   Target,
   Pause,
   Play,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 // import DashboardSetupWizard from "@/components/dashboard-setup-wizard"
 import { Dashboard } from "@/types/api"
 import { api } from "@/lib/api/api"
-
 
 export default function CreatorDashboard() {
   const [data, setData] = useState<Dashboard>()
@@ -32,6 +34,14 @@ export default function CreatorDashboard() {
   const [isFirstTime, setIsFirstTime] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Pagination states for each section
+  const [campaignsPage, setCampaignsPage] = useState(1)
+  const [notificationsPage, setNotificationsPage] = useState(1)
+  const [activityPage, setActivityPage] = useState(1)
+  const [campaignsPerPage] = useState(5)
+  const [notificationsPerPage] = useState(8)
+  const [activityPerPage] = useState(5)
 
   const { user } = useUser()
 
@@ -59,6 +69,29 @@ export default function CreatorDashboard() {
       localStorage.setItem("hasSeenDashboard", "true")
     }
   }, [user])
+
+  // Calculate pagination values
+  const campaignsTotalPages = data ? Math.ceil(data.campaigns.length / campaignsPerPage) : 1
+  const notificationsTotalPages = data ? Math.ceil(data.notifications.length / notificationsPerPage) : 1
+  const activityTotalPages = data ? Math.ceil(data.notifications.length / activityPerPage) : 1
+
+  // Get current items for each section
+  const indexOfLastCampaign = campaignsPage * campaignsPerPage
+  const indexOfFirstCampaign = indexOfLastCampaign - campaignsPerPage
+  const currentCampaigns = data ? data.campaigns.slice(indexOfFirstCampaign, indexOfLastCampaign) : []
+
+  const indexOfLastNotification = notificationsPage * notificationsPerPage
+  const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage
+  const currentNotifications = data ? data.notifications.slice(indexOfFirstNotification, indexOfLastNotification) : []
+
+  const indexOfLastActivity = activityPage * activityPerPage
+  const indexOfFirstActivity = indexOfLastActivity - activityPerPage
+  const currentActivity = data ? data.notifications.slice(indexOfFirstActivity, indexOfLastActivity) : []
+
+  // Change page functions
+  const paginateCampaigns = (pageNumber: number) => setCampaignsPage(pageNumber)
+  const paginateNotifications = (pageNumber: number) => setNotificationsPage(pageNumber)
+  const paginateActivity = (pageNumber: number) => setActivityPage(pageNumber)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -93,6 +126,77 @@ export default function CreatorDashboard() {
     const end = new Date(endDate)
     const diffTime = end.getTime() - today.getTime()
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+
+  // Pagination component
+  const Pagination = ({ currentPage, totalPages, paginate }: { currentPage: number, totalPages: number, paginate: (page: number) => void }) => {
+    const pageNumbers = []
+    
+    // Show up to 5 page numbers with current page in the middle
+    let startPage = Math.max(1, currentPage - 2)
+    let endPage = Math.min(totalPages, startPage + 4)
+    
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4)
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i)
+    }
+
+    return (
+      <div className="flex items-center justify-center mt-6 space-x-2">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`p-2 rounded-lg ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => paginate(1)}
+              className={`px-3 py-1 rounded-lg ${1 === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="px-1 text-slate-400">...</span>}
+          </>
+        )}
+        
+        {pageNumbers.map(number => (
+          <button
+            key={number}
+            onClick={() => paginate(number)}
+            className={`px-3 py-1 rounded-lg ${number === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+          >
+            {number}
+          </button>
+        ))}
+        
+        {endPage < totalPages && (
+          <>
+            {endPage < totalPages - 1 && <span className="px-1 text-slate-400">...</span>}
+            <button
+              onClick={() => paginate(totalPages)}
+              className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+        
+        <button
+          onClick={() => paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`p-2 rounded-lg ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    )
   }
 
   if (loading) {
@@ -238,41 +342,55 @@ export default function CreatorDashboard() {
             {/* Recent Activity */}
             <div className="lg:col-span-2">
               <div className="card mb-6 recent-activity">
-                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-4">Recent Activity</h2>
-                {data.notifications.length > 0 ? (
-                  <div className="space-y-4">
-                    {data.notifications.slice(0, 5).map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0"
-                      >
-                        <div className="flex items-center min-w-0 flex-1">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
-                              notification.type === "donations"
-                                ? "bg-green-100"
-                                : notification.type === "comment"
-                                  ? "bg-blue-100"
-                                  : "bg-slate-100"
-                            }`}
-                          >
-                            {notification.type === "donations" && <DollarSign className="w-4 h-4 text-green-600" />}
-                            {notification.type === "comment" && <MessageCircle className="w-4 h-4 text-blue-600" />}
-                            {notification.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Recent Activity</h2>
+                  <span className="text-sm text-slate-500">
+                    Page {activityPage} of {activityTotalPages}
+                  </span>
+                </div>
+                {currentActivity.length > 0 ? (
+                  <>
+                    <div className="space-y-4">
+                      {currentActivity.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0"
+                        >
+                          <div className="flex items-center min-w-0 flex-1">
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
+                                notification.type === "donations"
+                                  ? "bg-green-100"
+                                  : notification.type === "comment"
+                                    ? "bg-blue-100"
+                                    : "bg-slate-100"
+                              }`}
+                            >
+                              {notification.type === "donations" && <DollarSign className="w-4 h-4 text-green-600" />}
+                              {notification.type === "comment" && <MessageCircle className="w-4 h-4 text-blue-600" />}
+                              {notification.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
+                              <p className="text-xs sm:text-sm text-slate-500">
+                                {new Date(notification.createdAt).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
-                            <p className="text-xs sm:text-sm text-slate-500">
-                              {new Date(notification.createdAt).toLocaleString()}
-                            </p>
-                          </div>
+                          {!notification.read && (
+                            <span className="text-xs sm:text-sm text-slate-500 ml-2 flex-shrink-0">New</span>
+                          )}
                         </div>
-                        {!notification.read && (
-                          <span className="text-xs sm:text-sm text-slate-500 ml-2 flex-shrink-0">New</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                    {activityTotalPages > 1 && (
+                      <Pagination 
+                        currentPage={activityPage} 
+                        totalPages={activityTotalPages} 
+                        paginate={paginateActivity} 
+                      />
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-slate-500">No recent activity</p>
@@ -327,7 +445,12 @@ export default function CreatorDashboard() {
             {data.campaigns.length > 0 ? (
               <div className="card campaigns-table">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-                  <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Your Campaigns</h2>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Your Campaigns</h2>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Showing {Math.min(campaignsPerPage, currentCampaigns.length)} of {data.campaigns.length} campaigns
+                    </p>
+                  </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <select className="px-3 py-2 border border-slate-300 rounded-lg text-sm">
                       <option>All Campaigns</option>
@@ -354,7 +477,7 @@ export default function CreatorDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.campaigns.map((campaign) => {
+                      {currentCampaigns.map((campaign) => {
                         const progress = (campaign.donated / campaign.amountNeeded) * 100
                         const daysLeft = calculateDaysLeft(campaign.endDate)
                         return (
@@ -431,6 +554,14 @@ export default function CreatorDashboard() {
                                 >
                                   <Edit className="w-4 h-4" />
                                 </Link>
+                                {/* Add Update Button */}
+                                <Link
+                                  href={`/campaigns/${campaign.id}/updates`}
+                                  className="text-slate-600 hover:text-slate-800"
+                                  title="Add Update"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </Link>
                                 <button
                                   onClick={() =>
                                     handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
@@ -450,10 +581,17 @@ export default function CreatorDashboard() {
                       })}
                     </tbody>
                   </table>
+                  {campaignsTotalPages > 1 && (
+                    <Pagination 
+                      currentPage={campaignsPage} 
+                      totalPages={campaignsTotalPages} 
+                      paginate={paginateCampaigns} 
+                    />
+                  )}
                 </div>
 
                 <div className="lg:hidden space-y-4">
-                  {data.campaigns.map((campaign) => {
+                  {currentCampaigns.map((campaign) => {
                     const progress = (campaign.donated / campaign.amountNeeded) * 100
                     const daysLeft = calculateDaysLeft(campaign.endDate)
                     return (
@@ -522,6 +660,14 @@ export default function CreatorDashboard() {
                             >
                               <Edit className="w-4 h-4" />
                             </Link>
+                            {/* Add Update Button for mobile view */}
+                            <Link
+                              href={`/campaigns/${campaign.id}/update`}
+                              className="text-slate-600 hover:text-slate-800"
+                              title="Add Update"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </Link>
                             <button
                               onClick={() =>
                                 handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
@@ -539,6 +685,13 @@ export default function CreatorDashboard() {
                       </div>
                     )
                   })}
+                  {campaignsTotalPages > 1 && (
+                    <Pagination 
+                      currentPage={campaignsPage} 
+                      totalPages={campaignsTotalPages} 
+                      paginate={paginateCampaigns} 
+                    />
+                  )}
                 </div>
               </div>
             ) : (
@@ -622,48 +775,62 @@ export default function CreatorDashboard() {
         {activeTab === "notifications" && (
           <div className="card notifications-section">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Notifications</h2>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Notifications</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Showing {Math.min(notificationsPerPage, currentNotifications.length)} of {data.notifications.length} notifications
+                </p>
+              </div>
               <button className="text-sm text-indigo-600 hover:text-indigo-800">Mark all as read</button>
             </div>
 
-            {data.notifications.length > 0 ? (
-              <div className="space-y-4">
-                {data.notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 rounded-lg border ${
-                      notification.read ? "bg-white border-slate-200" : "bg-blue-50 border-blue-200"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start min-w-0 flex-1">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
-                            notification.type === "donations"
-                              ? "bg-green-100"
-                              : notification.type === "comment"
-                                ? "bg-blue-100"
-                                : "bg-slate-100"
-                          }`}
-                        >
-                          {notification.type === "donations" && <DollarSign className="w-4 h-4 text-green-600" />}
-                          {notification.type === "comment" && <MessageCircle className="w-4 h-4 text-blue-600" />}
-                          {notification.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
+            {currentNotifications.length > 0 ? (
+              <>
+                <div className="space-y-4">
+                  {currentNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-4 rounded-lg border ${
+                        notification.read ? "bg-white border-slate-200" : "bg-blue-50 border-blue-200"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start min-w-0 flex-1">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
+                              notification.type === "donations"
+                                ? "bg-green-100"
+                                : notification.type === "comment"
+                                  ? "bg-blue-100"
+                                  : "bg-slate-100"
+                            }`}
+                          >
+                            {notification.type === "donations" && <DollarSign className="w-4 h-4 text-green-600" />}
+                            {notification.type === "comment" && <MessageCircle className="w-4 h-4 text-blue-600" />}
+                            {notification.type === "update" && <Bell className="w-4 h-4 text-slate-600" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
+                            <p className="text-xs sm:text-sm text-slate-500">
+                              {new Date(notification.createdAt).toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
-                          <p className="text-xs sm:text-sm text-slate-500">
-                            {new Date(notification.createdAt).toLocaleString()}
-                          </p>
-                        </div>
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                        )}
                       </div>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
-                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {notificationsTotalPages > 1 && (
+                  <Pagination 
+                    currentPage={notificationsPage} 
+                    totalPages={notificationsTotalPages} 
+                    paginate={paginateNotifications} 
+                  />
+                )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">No Notifications</h3>

@@ -20,7 +20,9 @@ import {
   X,
   Save,
   Camera,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { CombinedUserData } from "@/types/api"
 import { api } from "@/lib/api/api"
@@ -38,6 +40,11 @@ export default function ProfilePage() {
     location: "",
     phone: "",
   })
+  
+  // Pagination states
+  const [campaignsPage, setCampaignsPage] = useState(1)
+  const [donationsPage, setDonationsPage] = useState(1)
+  const itemsPerPage = 3
 
   useEffect(() => {
     async function fetchData() {
@@ -119,6 +126,24 @@ export default function ProfilePage() {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  // Calculate paginated campaigns
+  const paginatedCampaigns = data?.campaigns.slice(
+    (campaignsPage - 1) * itemsPerPage,
+    campaignsPage * itemsPerPage
+  ) || []
+
+  // Calculate paginated donations
+  const paginatedDonations = data?.donations.slice(
+    (donationsPage - 1) * itemsPerPage,
+    donationsPage * itemsPerPage
+  ) || []
+
+  // Calculate total pages for campaigns
+  const totalCampaignPages = data ? Math.ceil(data.campaigns.length / itemsPerPage) : 0
+
+  // Calculate total pages for donations
+  const totalDonationPages = data ? Math.ceil(data.donations.length / itemsPerPage) : 0
 
   if (isLoading) {
     return (
@@ -411,47 +436,76 @@ export default function ProfilePage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {data.campaigns.map((campaign) => (
-                  <div
-                    key={campaign.id}
-                    className="border border-slate-200/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm hover:scale-[1.02]"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-semibold text-slate-900 flex-1 pr-4">{campaign.title}</h3>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(campaign.status)}
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(campaign.status)}`}
-                        >
-                          {campaign.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm text-slate-600 mb-2">
-                        <span>{formatCurrency(campaign.amountRaised)} raised</span>
-                        <span>{Math.round((campaign.amountRaised / campaign.targetAmount) * 100)}%</span>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500 shadow-sm"
-                          style={{ width: `${Math.round((campaign.amountRaised / campaign.targetAmount) * 100)}%` }}
-                        />
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">Goal: {formatCurrency(campaign.targetAmount)}</div>
-                    </div>
-
-                    <Link
-                      href={`/campaigns/${campaign.id}`}
-                      className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+              <>
+                <div className="space-y-4 mb-4">
+                  {paginatedCampaigns.map((campaign) => (
+                    <div
+                      key={campaign.id}
+                      className="border border-slate-200/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm hover:scale-[1.02]"
                     >
-                      View Campaign →
-                    </Link>
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-semibold text-slate-900 flex-1 pr-4">{campaign.title}</h3>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(campaign.status)}
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(campaign.status)}`}
+                          >
+                            {campaign.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="flex justify-between text-sm text-slate-600 mb-2">
+                          <span>{formatCurrency(campaign.amountRaised)} raised</span>
+                          <span>{Math.round((campaign.amountRaised / campaign.targetAmount) * 100)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                            style={{ width: `${Math.round((campaign.amountRaised / campaign.targetAmount) * 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">Goal: {formatCurrency(campaign.targetAmount)}</div>
+                      </div>
+
+                      <Link
+                        href={`/campaigns/${campaign.id}`}
+                        className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+                      >
+                        View Campaign →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Campaigns Pagination */}
+                {totalCampaignPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      onClick={() => setCampaignsPage(prev => Math.max(prev - 1, 1))}
+                      disabled={campaignsPage === 1}
+                      className="flex items-center px-3 py-1.5 text-sm bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Previous
+                    </button>
+                    
+                    <span className="text-sm text-slate-600">
+                      Page {campaignsPage} of {totalCampaignPages}
+                    </span>
+                    
+                    <button
+                      onClick={() => setCampaignsPage(prev => Math.min(prev + 1, totalCampaignPages))}
+                      disabled={campaignsPage === totalCampaignPages}
+                      className="flex items-center px-3 py-1.5 text-sm bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 transition-colors"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
 
@@ -484,32 +538,61 @@ export default function ProfilePage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {data.donations.slice(0, 5).map((donation) => (
-                  <div
-                    key={donation.id}
-                    className="border border-slate-200/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm hover:scale-[1.02]"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-slate-900 flex-1 pr-4">{donation.campaignTitle}</h3>
-                      <div className="text-right">
-                        <div className="font-semibold text-slate-900">{formatCurrency(donation.amount)}</div>
-                        <div className="text-xs text-slate-500">{new Date(donation.date).toLocaleDateString()}</div>
-                      </div>
-                    </div>
-
-                    {donation.message && <p className="text-sm text-slate-600 mb-2 italic">"{donation.message}"</p>}
-
-                    <Link
-                      href={`/campaign/${donation.campaignId}`}
-                      className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+              <>
+                <div className="space-y-4 mb-4">
+                  {paginatedDonations.map((donation) => (
+                    <div
+                      key={donation.id}
+                      className="border border-slate-200/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm hover:scale-[1.02]"
                     >
-                      View Campaign →
-                    </Link>
-                  </div>
-                ))}
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-medium text-slate-900 flex-1 pr-4">{donation.campaignTitle}</h3>
+                        <div className="text-right">
+                          <div className="font-semibold text-slate-900">{formatCurrency(donation.amount)}</div>
+                          <div className="text-xs text-slate-500">{new Date(donation.date).toLocaleDateString()}</div>
+                        </div>
+                      </div>
 
-                {data.donations.length > 5 && (
+                      {donation.message && <p className="text-sm text-slate-600 mb-2 italic">"{donation.message}"</p>}
+
+                      <Link
+                        href={`/campaigns/${donation.campaignId}`}
+                        className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+                      >
+                        View Campaign →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Donations Pagination */}
+                {totalDonationPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      onClick={() => setDonationsPage(prev => Math.max(prev - 1, 1))}
+                      disabled={donationsPage === 1}
+                      className="flex items-center px-3 py-1.5 text-sm bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Previous
+                    </button>
+                    
+                    <span className="text-sm text-slate-600">
+                      Page {donationsPage} of {totalDonationPages}
+                    </span>
+                    
+                    <button
+                      onClick={() => setDonationsPage(prev => Math.min(prev + 1, totalDonationPages))}
+                      disabled={donationsPage === totalDonationPages}
+                      className="flex items-center px-3 py-1.5 text-sm bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 transition-colors"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
+                  </div>
+                )}
+                
+                {data.donations.length > itemsPerPage && (
                   <div className="text-center pt-4">
                     <Link
                       href="/donations"
@@ -519,7 +602,7 @@ export default function ProfilePage() {
                     </Link>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

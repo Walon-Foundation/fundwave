@@ -4,70 +4,79 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus, Edit, Trash2, Calendar, Eye, MessageCircle } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Calendar, Eye, MessageCircle, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useParams } from "next/navigation"
-
-// Mock updates data
-const mockUpdates = [
-  {
-    id: "1",
-    title: "Construction Progress Update",
-    content:
-      "Great news! We've completed 60% of the water pump installation. The community is excited to see the progress.",
-    images: ["/placeholder.svg?height=200&width=300"],
-    date: "2024-01-20",
-    views: 234,
-    comments: 12,
-    published: true,
-  },
-  {
-    id: "2",
-    title: "Permits Approved",
-    content: "All necessary permits have been approved by local authorities. We can now proceed with the next phase.",
-    images: [],
-    date: "2024-01-15",
-    views: 189,
-    comments: 8,
-    published: true,
-  },
-  {
-    id: "3",
-    title: "Draft: Equipment Delivery",
-    content: "The water pump equipment has arrived and is ready for installation...",
-    images: ["/placeholder.svg?height=200&width=300"],
-    date: "2024-01-22",
-    views: 0,
-    comments: 0,
-    published: false,
-  },
-]
+import { Updates } from "@/types/api"
+import { api } from "@/lib/api/api"
 
 export default function CampaignUpdatesPage() {
   const param = useParams<{id:string}>()
-  const [updates, setUpdates] = useState(mockUpdates)
+  const [updates, setUpdates] = useState<Updates[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newUpdate, setNewUpdate] = useState({
     title: "",
-    content: "",
-    images: [] as string[],
+    message: "",
+    image: null as string | null,
   })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleCreateUpdate = () => {
-    if (!newUpdate.title.trim() || !newUpdate.content.trim()) return
+  // // Mock updates data matching your type
+  // const mockUpdates: Updates[] = [
+  //   {
+  //     id: "1",
+  //     title: "Construction Progress Update",
+  //     message: "Great news! We've completed 60% of the water pump installation. The community is excited to see the progress.",
+  //     campaignId: param.id,
+  //     image: "/placeholder.svg?height=200&width=300",
+  //     createdAt: new Date("2024-01-20"),
+  //     updatedAt: new Date("2024-01-20"),
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Permits Approved",
+  //     message: "All necessary permits have been approved by local authorities. We can now proceed with the next phase.",
+  //     campaignId: param.id,
+  //     image: null,
+  //     createdAt: new Date("2024-01-15"),
+  //     updatedAt: new Date("2024-01-15"),
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Equipment Delivery",
+  //     message: "The water pump equipment has arrived and is ready for installation...",
+  //     campaignId: param.id,
+  //     image: "/placeholder.svg?height=200&width=300",
+  //     createdAt: new Date("2024-01-22"),
+  //     updatedAt: new Date("2024-01-22"),
+  //   },
+  // ]
 
-    const update = {
-      id: Date.now().toString(),
-      ...newUpdate,
-      date: new Date().toISOString().split("T")[0],
-      views: 0,
-      comments: 0,
-      published: true,
+  // // Initialize with mock data
+  // useState(() => {
+  //   setUpdates(mockUpdates)
+  // })
+
+  const handleCreateUpdate = async() => {
+    if (!newUpdate.title.trim() || !newUpdate.message.trim()) return
+    
+    setIsLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append("title", newUpdate.title)
+      formData.append("content", newUpdate.message)
+
+      const data = await api.createUpdate(formData, param.id)
+      console.log(data)
+      setUpdates([data, ...updates])
+      setNewUpdate({ title: "", message: "", image: null })
+      setShowCreateForm(false)
+    } catch (error) {
+      console.error("Failed to create update:", error)
+      alert("Failed to create update. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
-
-    setUpdates([update, ...updates])
-    setNewUpdate({ title: "", content: "", images: [] })
-    setShowCreateForm(false)
   }
 
   const handleDeleteUpdate = (updateId: string) => {
@@ -78,13 +87,11 @@ export default function CampaignUpdatesPage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (files) {
-      const newImages = Array.from(files).map(
-        (file, index) => `/placeholder.svg?height=200&width=300&text=Update${index + 1}`,
-      )
+    if (files && files.length > 0) {
+      // For demo purposes, we'll just use a placeholder URL
       setNewUpdate((prev) => ({
         ...prev,
-        images: [...prev.images, ...newImages].slice(0, 3),
+        image: "/placeholder.svg?height=200&width=300&text=New+Update",
       }))
     }
   }
@@ -135,36 +142,48 @@ export default function CampaignUpdatesPage() {
                   rows={6}
                   className="input"
                   placeholder="Share your progress, challenges, or achievements..."
-                  value={newUpdate.content}
-                  onChange={(e) => setNewUpdate({ ...newUpdate, content: e.target.value })}
+                  value={newUpdate.message}
+                  onChange={(e) => setNewUpdate({ ...newUpdate, message: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Images (Optional)</label>
-                <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="input" />
-                {newUpdate.images.length > 0 && (
-                  <div className="grid grid-cols-3 gap-4 mt-4">
-                    {newUpdate.images.map((image, index) => (
-                      <Image
-                        key={index}
-                        src={image || "/placeholder.svg"}
-                        alt={`Update image ${index + 1}`}
-                        width={200}
-                        height={150}
-                        className="rounded-lg object-cover w-full h-24"
-                      />
-                    ))}
+                <label className="block text-sm font-medium text-slate-700 mb-2">Image (Optional)</label>
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="input" />
+                {newUpdate.image && (
+                  <div className="mt-4">
+                    <Image
+                      src={newUpdate.image}
+                      alt="Update image preview"
+                      width={200}
+                      height={150}
+                      className="rounded-lg object-cover w-full h-24"
+                    />
                   </div>
                 )}
               </div>
 
               <div className="flex justify-end space-x-4">
-                <button onClick={() => setShowCreateForm(false)} className="btn-outline">
+                <button 
+                  onClick={() => setShowCreateForm(false)} 
+                  className="btn-outline"
+                  disabled={isLoading}
+                >
                   Cancel
                 </button>
-                <button onClick={handleCreateUpdate} className="btn-primary">
-                  Publish Update
+                <button 
+                  onClick={handleCreateUpdate} 
+                  className="btn-primary flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    "Publish Update"
+                  )}
                 </button>
               </div>
             </div>
@@ -178,24 +197,11 @@ export default function CampaignUpdatesPage() {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
-                    <h3 className="text-xl font-semibold text-slate-900">{update.title}</h3>
-                    {!update.published && (
-                      <span className="ml-3 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Draft</span>
-                    )}
+                    <h3 className="text-xl font-semibold text-slate-900">{update?.title}</h3>
                   </div>
                   <div className="flex items-center text-sm text-slate-600 mb-4">
                     <Calendar className="w-4 h-4 mr-1" />
-                    <span>{new Date(update.date).toLocaleDateString()}</span>
-                    {update.published && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <Eye className="w-4 h-4 mr-1" />
-                        <span>{update.views} views</span>
-                        <span className="mx-2">•</span>
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        <span>{update.comments} comments</span>
-                      </>
-                    )}
+                    <span>{update?.createdAt?.toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -203,7 +209,7 @@ export default function CampaignUpdatesPage() {
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteUpdate(update.id)}
+                    onClick={() => handleDeleteUpdate(update?.id)}
                     className="text-red-600 hover:text-red-800"
                     title="Delete Update"
                   >
@@ -213,21 +219,18 @@ export default function CampaignUpdatesPage() {
               </div>
 
               <div className="prose max-w-none mb-4">
-                <p className="text-slate-700">{update.content}</p>
+                <p className="text-slate-700">{update?.message}</p>
               </div>
 
-              {update.images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {update.images.map((image, index) => (
-                    <Image
-                      key={index}
-                      src={image || "/placeholder.svg"}
-                      alt={`Update image ${index + 1}`}
-                      width={300}
-                      height={200}
-                      className="rounded-lg object-cover w-full h-32"
-                    />
-                  ))}
+              {update.image && (
+                <div className="mt-4">
+                  <Image
+                    src={update.image}
+                    alt="Update image"
+                    width={300}
+                    height={200}
+                    className="rounded-lg object-cover w-full h-48"
+                  />
                 </div>
               )}
             </div>
