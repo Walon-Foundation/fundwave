@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Plus, Edit, Trash2, Calendar, Eye, MessageCircle, Loader2 } from "lucide-react"
 import Image from "next/image"
@@ -20,42 +20,28 @@ export default function CampaignUpdatesPage() {
     image: null as string | null,
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
 
-  // // Mock updates data matching your type
-  // const mockUpdates: Updates[] = [
-  //   {
-  //     id: "1",
-  //     title: "Construction Progress Update",
-  //     message: "Great news! We've completed 60% of the water pump installation. The community is excited to see the progress.",
-  //     campaignId: param.id,
-  //     image: "/placeholder.svg?height=200&width=300",
-  //     createdAt: new Date("2024-01-20"),
-  //     updatedAt: new Date("2024-01-20"),
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Permits Approved",
-  //     message: "All necessary permits have been approved by local authorities. We can now proceed with the next phase.",
-  //     campaignId: param.id,
-  //     image: null,
-  //     createdAt: new Date("2024-01-15"),
-  //     updatedAt: new Date("2024-01-15"),
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Equipment Delivery",
-  //     message: "The water pump equipment has arrived and is ready for installation...",
-  //     campaignId: param.id,
-  //     image: "/placeholder.svg?height=200&width=300",
-  //     createdAt: new Date("2024-01-22"),
-  //     updatedAt: new Date("2024-01-22"),
-  //   },
-  // ]
+  useEffect(() => {
+    async function getData(){
+      try {
+        setIsFetching(true)
+        const response = await api.getUpdate(param.id)
+        console.log("API response:", response)
+        
+        // Adjust this based on your actual API response structure
+        // If your API returns { data: { update: Updates[] } }
+        setUpdates(response as Updates[])
+      } catch (error) {
+        console.error("Failed to fetch updates:", error)
+        alert("Failed to load updates. Please try again.")
+      } finally {
+        setIsFetching(false)
+      }
+    }
 
-  // // Initialize with mock data
-  // useState(() => {
-  //   setUpdates(mockUpdates)
-  // })
+    getData()
+  }, [param.id])
 
   const handleCreateUpdate = async() => {
     if (!newUpdate.title.trim() || !newUpdate.message.trim()) return
@@ -66,9 +52,19 @@ export default function CampaignUpdatesPage() {
       formData.append("title", newUpdate.title)
       formData.append("content", newUpdate.message)
 
-      const data = await api.createUpdate(formData, param.id)
-      console.log(data)
-      setUpdates([data, ...updates])
+      const response = await api.createUpdate(formData, param.id)
+      console.log("Create response:", response)
+      
+      // Adjust this based on your API response structure
+      // If your API returns { data: newUpdate }
+      if (response.data) {
+        setUpdates([response.data, ...updates])
+      } 
+      // If your API returns the new update directly
+      else {
+        setUpdates([response, ...updates])
+      }
+      
       setNewUpdate({ title: "", message: "", image: null })
       setShowCreateForm(false)
     } catch (error) {
@@ -94,6 +90,15 @@ export default function CampaignUpdatesPage() {
         image: "/placeholder.svg?height=200&width=300&text=New+Update",
       }))
     }
+  }
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <span className="ml-2 text-slate-700">Loading updates...</span>
+      </div>
+    )
   }
 
   return (
@@ -197,11 +202,11 @@ export default function CampaignUpdatesPage() {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
-                    <h3 className="text-xl font-semibold text-slate-900">{update?.title}</h3>
+                    <h3 className="text-xl font-semibold text-slate-900">{update.title}</h3>
                   </div>
                   <div className="flex items-center text-sm text-slate-600 mb-4">
                     <Calendar className="w-4 h-4 mr-1" />
-                    <span>{update?.createdAt?.toLocaleDateString()}</span>
+                    <span>{new Date(update.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -209,7 +214,7 @@ export default function CampaignUpdatesPage() {
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteUpdate(update?.id)}
+                    onClick={() => handleDeleteUpdate(update.id)}
                     className="text-red-600 hover:text-red-800"
                     title="Delete Update"
                   >
@@ -219,7 +224,7 @@ export default function CampaignUpdatesPage() {
               </div>
 
               <div className="prose max-w-none mb-4">
-                <p className="text-slate-700">{update?.message}</p>
+                <p className="text-slate-700">{update.message}</p>
               </div>
 
               {update.image && (

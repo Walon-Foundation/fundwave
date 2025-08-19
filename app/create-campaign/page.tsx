@@ -10,6 +10,7 @@ import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
 import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
+import { api } from "@/lib/api/api"
 
 const categories = [
   "Community",
@@ -213,11 +214,9 @@ export default function CreateCampaignPage() {
     console.log(formData)
 
     try {
-      const res = await axiosInstance.post("/campaigns", submitData)
-      if (res.status === 201) {
-        alert("Campaign created successfully!")
-        router.push("/dashboard")
-      }
+      const res = await api.createCampaign(submitData)
+      alert("Campaign created successfully")
+      router.push('/dashboard')
     } catch (error) {
       console.error("Error creating campaign:", error)
       alert("Failed to create campaign. Please try again.")

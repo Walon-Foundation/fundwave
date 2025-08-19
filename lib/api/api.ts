@@ -1,4 +1,4 @@
-import { ApiError, Campaign, CampaignDetails, CombinedUserData, CreateComment, CreatePayment,  Dashboard,} from "@/types/api"
+import { ApiError, Campaign, CampaignDetails, CombinedUserData, CreateComment, CreatePayment,  Dashboard, Updates,} from "@/types/api"
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 
 export class API {
@@ -29,7 +29,7 @@ export class API {
     }
 
     async createCampaign(data:FormData){
-        return this.client.post("/campaigns", data).then(res => res)
+        return this.client.post("/campaigns", data).then(res => res.data)
     }
 
     async getCampaignDetails(id:string):Promise<CampaignDetails>{
@@ -44,6 +44,11 @@ export class API {
     //updates
     async createUpdate(data:any, id:string){
         return this.client.post(`/campaigns/${id}/updates`, data).then(res => res.data.data)
+    }
+
+    //getting all updates for a given campaign
+    async getUpdate(id:string):Promise<Updates[] | undefined>{
+        return this.client.get(`/campaigns/${id}/updates`).then(res => res.data.data as Updates[])
     }
 
     //payment
