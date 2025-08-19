@@ -3,10 +3,10 @@ import { nanoid } from "nanoid";
 import { GenerateCode,  GenerateAccount } from "../types/monimeTypes";
 
 const spaceId = process.env.MONIME_SPACE_ID || "enter monime_space_id"
-const token = process.env.TOKEN || "enter access token from monime";
+const token = process.env.MONIME_ACCESS_TOKEN || "enter access token from monime";
 
 
-export default async function createPaymentCode(paymentName:string, name:string, amount:string, phoneNumber:string, financialAccountId:string):Promise<GenerateCode | undefined> {
+export default async function createPaymentCode(paymentName:string, name:string, amount:number, phoneNumber:string, financialAccountId:string):Promise<GenerateCode | undefined> {
   const URL = "https://api.monime.io/v1/payment-codes";
 
   const bodyData = {
@@ -15,20 +15,20 @@ export default async function createPaymentCode(paymentName:string, name:string,
     enable:true,
     amount: {
       currency: "SLE",
-      value: Number(amount) * 100
+      value:(amount) * 100
     },
     duration: "1h30m",
     customer: {
       name: `${name}`,
     },
     reference:"",
-    authorizePhoneNumber:phoneNumber,
-    authorizedProviders: ["m17", "m18"],
+    authorizedPhoneNumber:phoneNumber,
+    // authorizedProviders: ["m17", "m18"],
     recurrentPaymentTarget:{
-      expectedPaymentCount: Number(amount),
+      expectedPaymentCount: 10,
       expectedPaymentTotal:{
         currency:"SLE",
-        value:Number(amount)
+        value:(amount * 2) * 100
       }
     },
     financialAccountId,
@@ -45,9 +45,17 @@ export default async function createPaymentCode(paymentName:string, name:string,
         }
     })
     return response.data as GenerateCode
-  } catch (error) {
-    console.error("Error creating payment code:", error);
-  }
+  } catch (err) {
+  if (axios.isAxiosError(err)) {
+    console.error("❌ Axios request failed");
+    console.error("real error: ", err.response?.data)
+    console.error("Status:", err.response?.status);
+    console.error("Message:", err.response?.statusText);
+    console.error("Data:", err.response?.data); // <-- API error details
+	console.error("Error: ", err.response?.data.error.details)
+  } else {
+    console.error("❌ Unexpected error:", err);
+  }}
 }
 
 
