@@ -54,9 +54,10 @@ export interface CreateUpdate {
 
 export interface CreatePayment {
     phone:string
-    amount:string
-    name:string
+    amount:number
+    name?:string
     email:string
+    isAnonymous:boolean
 }
 
 
@@ -108,6 +109,7 @@ export interface CampaignDetails {
         image: string;
         shortDescription: string;
         problemStatement:string;
+        financialAccountId:string;
         solution:string;
         impact:string;
         campaignType:"business"| "project" |"personal"| "community";

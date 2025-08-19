@@ -51,7 +51,7 @@ export class API {
 
     //payment
     async createPayment(data:CreatePayment, id:string){
-        return this.client.post(`/campaigns/${id}/payments`)
+        return this.client.post(`/campaigns/${id}/payments`, data).then(res => res.data.data)
     }
 
     //dashboard
