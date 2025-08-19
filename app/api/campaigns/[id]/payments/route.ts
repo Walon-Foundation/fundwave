@@ -1,18 +1,22 @@
 import { NextResponse, NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { db } from "../../../../../db/drizzle";
-import { userTable, paymentTable, campaignTable } from "../../../../../db/schema";
-import createPaymentCode from "../../../../../lib/monime";
-import { createCode } from "../../../../../validations/payment";
+import { db } from "@/db/drizzle";
+import { userTable, paymentTable, campaignTable } from "@/db/schema";
+import createPaymentCode from "@/lib/monime";
+import { createCode } from "@/validations/payment";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest, {params}:{params:Promise<{id:string}>}) {
     try {
         const body = await req.json();
 
+        const { userId:clerkId } = await auth()
+
         // Validate required fields
         const {error, success, data} = createCode.safeParse(body)
         if(!success){
+            console.log(error)
             return NextResponse.json({
                 message:"invalid input data",
                 error:error.format(),
@@ -21,17 +25,18 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
 
         //getting the campaign name
         const id = (await params).id
-        const campaign = (await db.select({title:campaignTable.title}).from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
+        const campaign = (await db.select({title:campaignTable.title, financialAccountId:campaignTable.financialAccountId}).from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
 
         //getting the user id if the user exist in the database
-        const user = (await db.select().from(userTable).where(and(eq(userTable.name, data.name!), eq(userTable.email, data.email!))).limit(1).execute())[0]
+        const user = (await db.select().from(userTable).where(and(eq(userTable.clerkId, clerkId as string))).limit(1).execute())[0]
 
         // Generate payment code
         const paymentCode = await createPaymentCode(
             campaign.title,
             data.name || "",
             data.amount,
-            data.phone
+            data.phone,
+            campaign.financialAccountId as string
         );
 
         if (!paymentCode || !paymentCode.success) {
@@ -40,21 +45,33 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
             }, { status: 500 });
         }
 
-        // Save payment to database
-        await db.insert(paymentTable).values({
-            id: nanoid(16),
-            userId: user.id, 
-            amount: Number(data.amount),
-            campaignId: id,
-            username:data.name || "Anonymous",
-            monimeId: paymentCode.result.id,
-            isCompleted: false,
-        }).execute();
+        if(!user){
+            await db.insert(paymentTable).values({
+                id: nanoid(16),
+                amount: Number(data.amount),
+                campaignId: id,
+                username:data.name || "Anonymous",
+                monimeId: paymentCode.result.id,
+                isCompleted: false,
+                email:data.email
+            }).execute();
+        }else {
+            await db.insert(paymentTable).values({
+                id: nanoid(16),
+                userId:user.id,
+                amount: Number(data.amount),
+                campaignId: id,
+                username:data.name || "Anonymous",
+                monimeId: paymentCode.result.id,
+                isCompleted: false,
+                email:data.email
+            }).execute();
+        }    
 
 
         return NextResponse.json({
             success: true,
-            paymentCode: paymentCode.result.ussdCode,
+            data: paymentCode.result.ussdCode,
         }, { status:201 });
 
     } catch (err) {

@@ -7,6 +7,7 @@ import { campaignTable, teamMemberTable, userTable } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
+import { createAccount } from "@/lib/monime";
 
 
 export async function POST(req:NextRequest){
@@ -94,6 +95,14 @@ export async function POST(req:NextRequest){
             }, { status: 500})
         }
 
+        const response = await createAccount(data.title)
+        if(!response?.success){
+            return NextResponse.json({
+                ok:false,
+                message:"failed to created campaign account"
+            },{ status:500 })
+        }
+
         const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
     
         const [newCampaign] = await db.insert(campaignTable).values({
@@ -108,6 +117,7 @@ export async function POST(req:NextRequest){
             impact:data.impact,
             fundingGoal:data.fundingGoal,
             image:url,
+            financialAccountId:response.result.id,
             category:data.category,
             creatorId: userId,
             campaignType:data.campaignType,
