@@ -33,21 +33,21 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
     const id = (await params).id
 
-    await Promise.all([
-      db.insert(commentTable).values({
-        id:nanoid(16),
-        campaignId:id,
-        message:data.comment,
-        username:userExist[0].name,
-        userId:userExist[0].id
-      }),
+    const newComment = (await db.insert(commentTable).values({
+      id:nanoid(16),
+      campaignId:id,
+      message:data.comment,
+      username:userExist[0].name,
+      userId:userExist[0].id
+    }).returning().execute())[0]
+
 
       //sending the notification about the new comment created
-      sendNotification("New comment", "comment", userExist[0].id, id)
-    ])
+    await sendNotification("New comment", "comment", userExist[0].id, id)
 
     return NextResponse.json({
       message:"comment created successfully",
+      data: newComment
     }, { status:201 })
 
   }catch(err){

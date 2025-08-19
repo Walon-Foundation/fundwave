@@ -46,15 +46,17 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
       }, { status:400 })
     }
 
-    await db.insert(updateTable).values({
+    const newUpdate = (await db.insert(updateTable).values({
       id:nanoid(16),
       title:data.title,
       message:data.content,
       campaignId:id,
-    })
+    }).returning().execute())[0]
 
     return NextResponse.json({
+      ok:true,
       message:"update created successfully",
+      data:newUpdate
     }, { status:201 })
 
   }catch(err){
