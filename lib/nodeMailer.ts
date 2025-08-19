@@ -75,14 +75,14 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
     </div>
   `,
 
-  "payment-complete": ({ name, amount, campaign }) => `
-    <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
-      <h2 style="color: #28a745;">Payment Successful 💳</h2>
-      <p>Hi ${name},</p>
-      <p>Thank you for donating <strong>$${amount}</strong> to <strong>${campaign}</strong>.</p>
-      <p>Your contribution makes a difference!</p>
-    </div>
-  `,
+ "payment-complete": ({ name, amount, campaign }) => `
+  <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
+    <h2 style="color: #28a745;">Payment Successful 💳</h2>
+    <p>Hi ${name},</p>
+    <p>Thank you for donating <strong>$${amount}</strong> to <strong>${campaign}</strong>.</p>
+    <p>Your contribution makes a difference!</p>
+  </div>
+`,
 
   "payout-sent": ({ name, amount }) => `
     <div style="font-family: Arial; color: #333; max-width: 600px; margin: auto;">
