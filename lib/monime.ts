@@ -46,16 +46,18 @@ export default async function createPaymentCode(paymentName:string, name:string,
     })
     return response.data as GenerateCode
   } catch (err) {
-  if (axios.isAxiosError(err)) {
-    console.error("❌ Axios request failed");
-    console.error("real error: ", err.response?.data)
-    console.error("Status:", err.response?.status);
-    console.error("Message:", err.response?.statusText);
-    console.error("Data:", err.response?.data); // <-- API error details
-	console.error("Error: ", err.response?.data.error.details)
-  } else {
-    console.error("❌ Unexpected error:", err);
-  }}
+    console.log(err)
+  }
+  // if (axios.isAxiosError(err)) {
+  //   console.error("❌ Axios request failed");
+  //   console.error("real error: ", err.response?.data)
+  //   console.error("Status:", err.response?.status);
+  //   console.error("Message:", err.response?.statusText);
+  //   console.error("Data:", err.response?.data); // <-- API error details
+	// console.error("Error: ", err.response?.data.error.details)
+  // } else {
+  //   console.error("❌ Unexpected error:", err);
+  // }}
 }
 
 
