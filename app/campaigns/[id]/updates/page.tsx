@@ -17,7 +17,8 @@ export default function CampaignUpdatesPage() {
   const [newUpdate, setNewUpdate] = useState({
     title: "",
     message: "",
-    image: null as string | null,
+    image: null as File | null,
+    imagePreview: null as string | null,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
@@ -27,10 +28,6 @@ export default function CampaignUpdatesPage() {
       try {
         setIsFetching(true)
         const response = await api.getUpdate(param.id)
-        console.log("API response:", response)
-        
-        // Adjust this based on your actual API response structure
-        // If your API returns { data: { update: Updates[] } }
         setUpdates(response as Updates[])
       } catch (error) {
         console.error("Failed to fetch updates:", error)
@@ -51,21 +48,20 @@ export default function CampaignUpdatesPage() {
       const formData = new FormData()
       formData.append("title", newUpdate.title)
       formData.append("content", newUpdate.message)
+      
+      // if (newUpdate.image) {
+      //   formData.append("image", newUpdate.image)
+      // }
 
       const response = await api.createUpdate(formData, param.id)
-      console.log("Create response:", response)
-      
-      // Adjust this based on your API response structure
-      // If your API returns { data: newUpdate }
       if (response.data) {
         setUpdates([response.data, ...updates])
       } 
-      // If your API returns the new update directly
       else {
         setUpdates([response, ...updates])
       }
       
-      setNewUpdate({ title: "", message: "", image: null })
+      setNewUpdate({ title: "", message: "", image: null, imagePreview: null })
       setShowCreateForm(false)
     } catch (error) {
       console.error("Failed to create update:", error)
@@ -75,19 +71,26 @@ export default function CampaignUpdatesPage() {
     }
   }
 
-  const handleDeleteUpdate = (updateId: string) => {
-    if (confirm("Are you sure you want to delete this update?")) {
+  const handleDeleteUpdate = async(updateId: string) => {
+    if (!confirm("Are you sure you want to delete this update?"))return
+
+    try{
+      await api.deleteUpdate(param.id, updateId)
       setUpdates(updates.filter((u) => u.id !== updateId))
+      alert("update deleted")
+    }catch(err){
+      console.log(err)
     }
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) {
-      // For demo purposes, we'll just use a placeholder URL
+      const file = files[0]
       setNewUpdate((prev) => ({
         ...prev,
-        image: "/placeholder.svg?height=200&width=300&text=New+Update",
+        image: file,
+        imagePreview: URL.createObjectURL(file)
       }))
     }
   }
@@ -154,11 +157,16 @@ export default function CampaignUpdatesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Image (Optional)</label>
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="input" />
-                {newUpdate.image && (
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageUpload} 
+                  className="input" 
+                />
+                {newUpdate.imagePreview && (
                   <div className="mt-4">
                     <Image
-                      src={newUpdate.image}
+                      src={newUpdate.imagePreview}
                       alt="Update image preview"
                       width={200}
                       height={150}

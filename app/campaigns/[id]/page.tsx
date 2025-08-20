@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag } from "lucide-react"
+import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2 } from "lucide-react"
 import DonationModal from "../../../components/donation-modal"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
-import type { CampaignDetails } from "@/types/api"
+import type { CampaignDetails, CombinedUserData } from "@/types/api"
 
 export default function CampaignDetailPage() {
   const params = useParams()
@@ -18,12 +18,19 @@ export default function CampaignDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  
+  // Temporary variable to simulate current user - replace with actual auth later
+  const [currentUser, setCurrentUser] = useState<CombinedUserData>()
 
   useEffect(() => {
     const fetchCampaignData = async () => {
       try {
         setIsLoading(true)
-        const data = await api.getCampaignDetails(id)
+        const [data, user] = await Promise.all([
+          api.getCampaignDetails(id),
+          api.getProfile()
+        ])
+        setCurrentUser(user)
         setCampaignInfo(data)
       } catch (err) {
         setError("Failed to load campaign details")
@@ -133,6 +140,22 @@ export default function CampaignDetailPage() {
       setError("Failed to post comment. Please try again.")
     } finally {
       setIsSubmittingComment(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this comment?")) return
+    
+    try {
+      const data = await api.deleteComment(id, commentId)
+      setCampaignInfo(prev => ({
+        ...prev!,
+        comments: prev!.comments.filter(comment => comment.id !== commentId)
+      }))
+      alert("comment deleted")
+    } catch (err) {
+      console.error("Error deleting comment:", err)
+      setError("Failed to delete comment. Please try again.")
     }
   }
 
@@ -607,14 +630,34 @@ export default function CampaignDetailPage() {
                   <div className="space-y-4">
                     {comments.length > 0 ? (
                       comments.map((comment) => (
-                        <div key={comment.id} className="card">
-                          <div className="flex items-start space-x-3">
+                        <div key={comment.id} className="card group relative">
+                          {/* Delete button - only show if current user is the comment creator */}
+                          {comment?.userId === currentUser?.profile?.id && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="absolute top-3 right-3 opacity-50 group-hover:opacity-100 transition-opacity p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md"
+                              title="Delete comment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          
+                          <div className="flex items-start space-x-3 pr-8">
                             <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
                               {comment?.username?.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                                <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{comment?.username}</h4>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-slate-900 text-sm sm:text-base">
+                                    {comment?.username}
+                                  </h4>
+                                  {comment.userId === currentUser?.profile?.id && (
+                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                      You
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="text-xs sm:text-sm text-slate-500">
                                   {formatDateTime(comment?.createdAt)}
                                 </span>
