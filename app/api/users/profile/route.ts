@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle";
 import { campaignTable, paymentTable, userTable } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
-import { countDistinct, eq, sum, and } from "drizzle-orm";
+import { countDistinct, eq, sum } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 
@@ -171,3 +171,34 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+
+export async function DELETE(req:NextRequest){
+  try{
+    const { userId:clerkId } = await auth()
+    const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId!)).limit(1).execute())[0]
+
+    if(!clerkId || !user){
+      return NextResponse.json({
+        ok:false,
+        message:"user is not authenticated",
+      }, { status:401 })
+    }
+
+    //deleting the user from the database
+    await db.delete(userTable).where(eq(userTable.clerkId, clerkId!)).execute()
+
+    return NextResponse.json({
+      ok:true,
+      message:"user deleted",
+    }, { status:204 })
+
+  }catch(err){
+    process.env.NODE_ENV === "development" ? console.log(err) : ""
+    return NextResponse.json({
+      ok:false,
+      message:"internal server error",
+    }, { status:500 })
+  }
+}
+

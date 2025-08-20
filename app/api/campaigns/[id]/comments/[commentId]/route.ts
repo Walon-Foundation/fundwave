@@ -33,8 +33,9 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentI
 
         //sending a 204 response
         return NextResponse.json({
+            ok:true,
             message:"comment deleted successfully",
-        }, { status:204 })
+        }, { status:200 })
     }catch(err){
         process.env.NODE_ENV === "development" ? console.log(err):""
         return NextResponse.json({
