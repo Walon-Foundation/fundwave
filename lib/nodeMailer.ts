@@ -92,6 +92,37 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
       <p>Thanks for trusting FundWave!</p>
     </div>
   `,
+  
+  "account-deleted": ({ name, email }) => `
+  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h2 style="color: #cc0000; margin-bottom: 10px;">Account Successfully Deleted 🗑️</h2>
+      <div style="background-color: #ffebee; padding: 15px; border-radius: 6px; border-left: 4px solid #cc0000;">
+        <p style="margin: 0; color: #b71c1c;">We're sorry to see you go</p>
+      </div>
+    </div>
+    
+    <p>Hello ${name},</p>
+    
+    <p>Your FundWave account (<strong>${email}</strong>) has been successfully deleted as requested.</p>
+    
+    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
+      <h3 style="color: #555; margin-top: 0;">What this means:</h3>
+      <ul style="margin-bottom: 0;">
+        <li>All your personal information has been permanently removed from our systems</li>
+        <li>Any active campaigns you created have been deactivated</li>
+        <li>You will no longer receive communications from FundWave</li>
+      </ul>
+    </div>
+    
+    <p style="color: #666;">If this was a mistake or you changed your mind, you can create a new account anytime using a different email address.</p>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+      <p style="font-size: 14px; color: #999; margin-bottom: 5px;">Thank you for having been part of the FundWave community.</p>
+      <p style="font-size: 14px; color: #999; margin: 0;">The FundWave Team</p>
+    </div>
+  </div>
+`,
 };
 
 
