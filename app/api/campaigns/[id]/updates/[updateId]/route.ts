@@ -44,7 +44,7 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{updateId
         return NextResponse.json({
             ok:true,
             message:"update deleted successfully",
-        }, { status:201 })
+        }, { status:200 })
     }catch(err){
         process.env.NODE_ENV === "development" ? console.log(err):""
         return NextResponse.json({
