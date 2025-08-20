@@ -71,22 +71,22 @@ export default function CreatorDashboard() {
   }, [user])
 
   // Calculate pagination values
-  const campaignsTotalPages = data ? Math.ceil(data.campaigns.length / campaignsPerPage) : 1
-  const notificationsTotalPages = data ? Math.ceil(data.notifications.length / notificationsPerPage) : 1
-  const activityTotalPages = data ? Math.ceil(data.notifications.length / activityPerPage) : 1
+  const campaignsTotalPages = data ? Math.ceil(data?.campaigns?.length / campaignsPerPage) : 1
+  const notificationsTotalPages = data ? Math.ceil(data?.notifications?.length / notificationsPerPage) : 1
+  const activityTotalPages = data ? Math.ceil(data?.notifications?.length / activityPerPage) : 1
 
   // Get current items for each section
   const indexOfLastCampaign = campaignsPage * campaignsPerPage
   const indexOfFirstCampaign = indexOfLastCampaign - campaignsPerPage
-  const currentCampaigns = data ? data.campaigns.slice(indexOfFirstCampaign, indexOfLastCampaign) : []
+  const currentCampaigns = data ? data?.campaigns?.slice(indexOfFirstCampaign, indexOfLastCampaign) : []
 
   const indexOfLastNotification = notificationsPage * notificationsPerPage
   const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage
-  const currentNotifications = data ? data.notifications.slice(indexOfFirstNotification, indexOfLastNotification) : []
+  const currentNotifications = data ? data?.notifications?.slice(indexOfFirstNotification, indexOfLastNotification) : []
 
   const indexOfLastActivity = activityPage * activityPerPage
   const indexOfFirstActivity = indexOfLastActivity - activityPerPage
-  const currentActivity = data ? data.notifications.slice(indexOfFirstActivity, indexOfLastActivity) : []
+  const currentActivity = data ? data?.notifications?.slice(indexOfFirstActivity, indexOfLastActivity) : []
 
   // Change page functions
   const paginateCampaigns = (pageNumber: number) => setCampaignsPage(pageNumber)
@@ -225,9 +225,9 @@ export default function CreatorDashboard() {
     )
   }
 
-  const selectedCampaignData = data.campaigns.find((c) => c.id === selectedCampaign)
-  const activeCampaigns = data.campaigns.filter(c => c.status === "active").length
-  const totalCampaigns = data.campaigns.length
+  const selectedCampaignData = data.campaigns?.find((c) => c.id === selectedCampaign)
+  const activeCampaigns = data.campaigns?.filter(c => c.status === "active")?.length
+  const totalCampaigns = data.campaigns?.length
 
   return (
     <div className="min-h-screen py-4 sm:py-8">
@@ -241,9 +241,9 @@ export default function CreatorDashboard() {
           <div className="flex items-center gap-4">
             <div className="relative">
               <Bell className="w-6 h-6 text-slate-600 cursor-pointer" />
-              {data.notifications.filter((n) => !n.read).length > 0 && (
+              {data?.notifications?.filter((n) => !n.read).length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {data.notifications.filter((n) => !n.read).length}
+                  {data?.notifications?.filter((n) => !n.read)?.length}
                 </span>
               )}
             </div>
@@ -262,7 +262,7 @@ export default function CreatorDashboard() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-slate-600">Total Raised</p>
                 <p className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
-                  {typeof data.totalRaised === 'number' ? formatCurrency(data.totalRaised) : data.totalRaised}
+                  {typeof data.totalRaised === 'number' ? formatCurrency(data.totalRaised) : data.totalRaised || 0}
                 </p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -276,7 +276,7 @@ export default function CreatorDashboard() {
             <div className="flex items-center justify-between mb-2">
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-slate-600">Total Donors</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.totalDonors}</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.totalDonors || 0}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
@@ -289,13 +289,13 @@ export default function CreatorDashboard() {
             <div className="flex items-center justify-between mb-2">
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-slate-600">Active Campaigns</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900">{activeCampaigns}</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900">{activeCampaigns || 0}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
             </div>
-            <div className="text-xs sm:text-sm text-slate-600">{totalCampaigns} total campaigns</div>
+            <div className="text-xs sm:text-sm text-slate-600">{totalCampaigns || 0} total campaigns</div>
           </div>
 
           <div className="card">
@@ -326,9 +326,9 @@ export default function CreatorDashboard() {
                 }`}
               >
                 {tab}
-                {tab === "notifications" && data.notifications.filter((n) => !n.read).length > 0 && (
+                {tab === "notifications" && data?.notifications?.filter((n) => !n.read).length > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                    {data.notifications.filter((n) => !n.read).length}
+                    {data?.notifications?.filter((n) => !n.read).length}
                   </span>
                 )}
               </button>
@@ -348,10 +348,10 @@ export default function CreatorDashboard() {
                     Page {activityPage} of {activityTotalPages}
                   </span>
                 </div>
-                {currentActivity.length > 0 ? (
+                {currentActivity?.length > 0 ? (
                   <>
                     <div className="space-y-4">
-                      {currentActivity.map((notification) => (
+                      {currentActivity?.map((notification) => (
                         <div
                           key={notification.id}
                           className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0"
@@ -373,7 +373,7 @@ export default function CreatorDashboard() {
                             <div className="min-w-0 flex-1">
                               <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
                               <p className="text-xs sm:text-sm text-slate-500">
-                                {new Date(notification.createdAt).toLocaleString()}
+                                {new Date(notification.createdAt)?.toLocaleString()}
                               </p>
                             </div>
                           </div>
@@ -442,13 +442,13 @@ export default function CreatorDashboard() {
 
         {activeTab === "campaigns" && (
           <div>
-            {data.campaigns.length > 0 ? (
+            {data?.campaigns?.length > 0 ? (
               <div className="card campaigns-table">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Your Campaigns</h2>
                     <p className="text-sm text-slate-500 mt-1">
-                      Showing {Math.min(campaignsPerPage, currentCampaigns.length)} of {data.campaigns.length} campaigns
+                      Showing {Math.min(campaignsPerPage, currentCampaigns?.length)} of {data.campaigns?.length} campaigns
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -477,7 +477,7 @@ export default function CreatorDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentCampaigns.map((campaign) => {
+                      {currentCampaigns?.map((campaign) => {
                         const progress = (campaign.donated / campaign.amountNeeded) * 100
                         const daysLeft = calculateDaysLeft(campaign.endDate)
                         return (
@@ -591,7 +591,7 @@ export default function CreatorDashboard() {
                 </div>
 
                 <div className="lg:hidden space-y-4">
-                  {currentCampaigns.map((campaign) => {
+                  {currentCampaigns?.map((campaign) => {
                     const progress = (campaign.donated / campaign.amountNeeded) * 100
                     const daysLeft = calculateDaysLeft(campaign.endDate)
                     return (
@@ -709,7 +709,7 @@ export default function CreatorDashboard() {
 
         {activeTab === "analytics" && (
           <div className="analytics-section">
-            {data.campaigns.length > 0 ? (
+            {data?.campaigns?.length > 0 ? (
               <>
                 {/* Campaign Selector */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
@@ -719,7 +719,7 @@ export default function CreatorDashboard() {
                       onChange={(e) => setSelectedCampaign(e.target.value)}
                       className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      {data.campaigns.map((campaign) => (
+                      {data?.campaigns?.map((campaign) => (
                         <option key={campaign.id} value={campaign.id}>
                           {campaign.name}
                         </option>
@@ -778,16 +778,16 @@ export default function CreatorDashboard() {
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Notifications</h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing {Math.min(notificationsPerPage, currentNotifications.length)} of {data.notifications.length} notifications
+                  Showing {Math.min(notificationsPerPage, currentNotifications?.length)} of {data?.notifications?.length} notifications
                 </p>
               </div>
               <button className="text-sm text-indigo-600 hover:text-indigo-800">Mark all as read</button>
             </div>
 
-            {currentNotifications.length > 0 ? (
+            {currentNotifications?.length > 0 ? (
               <>
                 <div className="space-y-4">
-                  {currentNotifications.map((notification) => (
+                  {currentNotifications?.map((notification) => (
                     <div
                       key={notification.id}
                       className={`p-4 rounded-lg border ${
@@ -812,7 +812,7 @@ export default function CreatorDashboard() {
                           <div className="min-w-0 flex-1">
                             <p className="text-slate-900 text-sm sm:text-base">{notification.title}</p>
                             <p className="text-xs sm:text-sm text-slate-500">
-                              {new Date(notification.createdAt).toLocaleString()}
+                              {new Date(notification.createdAt)?.toLocaleString()}
                             </p>
                           </div>
                         </div>

@@ -267,7 +267,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {data.slice(0,3).map((campaign, index) => (
+            {data?.slice(0,3).map((campaign, index) => (
               <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <CampaignCard campaign={campaign} featured={index < 2} />
               </div>
