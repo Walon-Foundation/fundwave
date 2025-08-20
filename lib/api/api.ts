@@ -15,7 +15,7 @@ export class API {
             (error:AxiosError) => {
                 const err:ApiError = {
                     status: error.status! || 500,
-                    message:(error.response?.data as any).message || error.message || "unknown apu error",
+                    message:(error.response?.data as any).message || error.message || "unknown api error",
                     details:(error.response?.data as any).detials
                 }
                 return Promise.reject(err)
@@ -41,6 +41,11 @@ export class API {
         return this.client.post(`/campaigns/${id}/comments`, data).then(res => res.data.data)
     }
 
+    //delete coment 
+    async deleteComment(id:string, commentId:string){
+        return this.client.delete(`/campaigns/${id}/comments/${commentId}`).then(res => res.data)
+    }
+
     //updates
     async createUpdate(data:any, id:string){
         return this.client.post(`/campaigns/${id}/updates`, data).then(res => res.data.data)
@@ -49,6 +54,11 @@ export class API {
     //getting all updates for a given campaign
     async getUpdate(id:string):Promise<Updates[] | undefined>{
         return this.client.get(`/campaigns/${id}/updates`).then(res => res.data.data as Updates[])
+    }
+
+    //delete update
+    async deleteUpdate(id:string, upatedId:string){
+        return this.client.delete(`/campaigns/${id}/updates/${upatedId}`).then(res => res.status)
     }
 
     //payment
@@ -64,6 +74,11 @@ export class API {
     //user profile
     async getProfile():Promise<CombinedUserData>{
         return this.client.get('users/profile').then(res => res.data.data as CombinedUserData )
+    }
+
+    //delete user profile
+    async deleteProfile(){
+        return this.client.delete("/users/profile").then(res => res.status)
     }
 
     //kyc
