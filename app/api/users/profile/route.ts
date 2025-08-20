@@ -1,9 +1,10 @@
 import { db } from "@/db/drizzle";
 import { campaignTable, paymentTable, userTable } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { countDistinct, eq, sum } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
+import { sendEmail } from "@/lib/nodeMailer";
 
 export async function GET(req: NextRequest) {
   try {
@@ -185,8 +186,12 @@ export async function DELETE(req:NextRequest){
       }, { status:401 })
     }
 
+   await Promise.all([
     //deleting the user from the database
-    await db.delete(userTable).where(eq(userTable.clerkId, clerkId!)).execute()
+    db.delete(userTable).where(eq(userTable.clerkId, clerkId!)).execute(),
+    (await clerkClient()).users.deleteUser(clerkId),
+    sendEmail("account-deleted",user.email, "Your Fundwave account has being deleted", { name:user.name, email:user.email})
+   ])
 
     return NextResponse.json({
       ok:true,
