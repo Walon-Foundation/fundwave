@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { CombinedUserData } from "@/types/api"
 import { api } from "@/lib/api/api"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
   const [data, setData] = useState<CombinedUserData | null>(null)
@@ -33,6 +34,9 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  
+  const router = useRouter()
   const [editForm, setEditForm] = useState({
     firstName: "",
     lastName: "",
@@ -84,9 +88,17 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
-  const handleDeleteAccount = () => {
-    console.log("Account deletion requested")
-    setShowDeleteConfirm(false)
+  const handleDeleteAccount = async() => {
+    if (!showDeleteConfirm)return
+    
+    setIsDeleting(true)
+    try{
+      await api.deleteProfile()
+      router.push("/profile/account-deleted")
+    }catch(err){
+      console.log(err)
+      setIsDeleting(false)
+    }
   }
 
   const formatCurrency = (amount: number) => {
@@ -627,9 +639,17 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
                     onClick={handleDeleteAccount}
-                    className="px-3 sm:px-4 py-2 sm:py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-xs sm:text-sm min-h-[40px] sm:min-h-[44px]"
+                    disabled={isDeleting}
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-xs sm:text-sm min-h-[40px] sm:min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    Yes, Delete My Account
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Yes, Delete My Account"
+                    )}
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
