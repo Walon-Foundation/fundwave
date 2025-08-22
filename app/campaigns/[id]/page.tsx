@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2 } from "lucide-react"
+import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X } from "lucide-react"
 import DonationModal from "../../../components/donation-modal"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
@@ -18,6 +18,8 @@ export default function CampaignDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editCommentText, setEditCommentText] = useState("")
   
   // Temporary variable to simulate current user - replace with actual auth later
   const [currentUser, setCurrentUser] = useState<CombinedUserData>()
@@ -156,6 +158,37 @@ export default function CampaignDetailPage() {
     } catch (err) {
       console.error("Error deleting comment:", err)
       setError("Failed to delete comment. Please try again.")
+    }
+  }
+
+  const handleStartEditComment = (commentId: string, currentText: string) => {
+    setEditingCommentId(commentId)
+    setEditCommentText(currentText)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null)
+    setEditCommentText("")
+  }
+
+  const handleSaveEdit = async (commentId: string) => {
+    if (!editCommentText.trim()) return
+    
+    try {
+      const updatedComment = await api.updateComment({comment:editCommentText}, id, commentId)
+      setCampaignInfo(prev => ({
+        ...prev!,
+        comments: prev!.comments.map(comment => 
+          comment.id === commentId ? updatedComment : comment
+        )
+      }))
+      
+      setEditingCommentId(null)
+      setEditCommentText("")
+      alert("Comment updated successfully")
+    } catch (err) {
+      console.error("Error updating comment:", err)
+      setError("Failed to update comment. Please try again.")
     }
   }
 
@@ -559,13 +592,13 @@ export default function CampaignDetailPage() {
 
               {activeTab === "updates" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {updates.length > 0 ? (
-                    updates.map((update) => (
+                  {updates?.length > 0 ? (
+                    updates?.map((update) => (
                       <div key={update.id} className="card">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                           <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
                           <span className="text-sm text-slate-500">
-                            {formatDateTime(update.createdAt)}
+                            {formatDateTime(update?.createdAt)}
                           </span>
                         </div>
                         <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
@@ -593,79 +626,111 @@ export default function CampaignDetailPage() {
               )}
 
               {activeTab === "comments" && (
-                <div>
+                <div className="space-y-6">
                   {/* Comment Form */}
-                  <form onSubmit={handleCommentSubmit} className="card mb-6">
+                  <form onSubmit={handleCommentSubmit} className="card">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Leave a Comment</h3>
                     <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Share your thoughts or ask a question..."
-                      className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
-                      rows={4}
-                      disabled={isSubmittingComment}
+                      className="input min-h-[100px] mb-4"
+                      required
                     />
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-3">
-                      <p className="text-xs sm:text-sm text-slate-500">
-                        Be respectful and constructive in your comments.
-                      </p>
-                      <button
-                        type="submit"
-                        disabled={!newComment.trim() || isSubmittingComment}
-                        className="btn-primary px-4 sm:px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex items-center justify-center min-w-[120px]"
-                      >
-                        {isSubmittingComment ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                            Posting...
-                          </>
-                        ) : (
-                          "Post Comment"
-                        )}
-                      </button>
-                    </div>
+                    <button type="submit" className="btn-primary">
+                      Post Comment
+                    </button>
                   </form>
 
                   {/* Comments List */}
                   <div className="space-y-4">
-                    {comments.length > 0 ? (
-                      comments.map((comment) => (
+                    {comments?.length > 0 ? (
+                      comments?.map((comment) => (
                         <div key={comment.id} className="card group relative">
-                          {/* Delete button - only show if current user is the comment creator */}
-                          {comment?.userId === currentUser?.profile?.id && (
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              className="absolute top-3 right-3 opacity-50 group-hover:opacity-100 transition-opacity p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md"
-                              title="Delete comment"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          
-                          <div className="flex items-start space-x-3 pr-8">
+                          <div className="flex items-start space-x-3">
                             <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
                               {comment?.username?.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-semibold text-slate-900 text-sm sm:text-base">
-                                    {comment?.username}
-                                  </h4>
-                                  {comment.userId === currentUser?.profile?.id && (
-                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                      You
-                                    </span>
-                                  )}
+                              {/* Header with name, timestamp, and actions */}
+                              <div className="flex items-start justify-between mb-2 gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base truncate">
+                                      {comment?.username}
+                                    </h4>
+                                    {comment.userId === currentUser?.profile?.id && (
+                                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex-shrink-0">
+                                        You
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs sm:text-sm text-slate-500 block">
+                                    {formatDateTime(comment?.createdAt)}
+                                    {comment?.updatedAt !== comment?.createdAt && " (edited)"}
+                                  </span>
                                 </div>
-                                <span className="text-xs sm:text-sm text-slate-500">
-                                  {formatDateTime(comment?.createdAt)}
-                                </span>
+
+                                {/* Action buttons - only show if current user is the comment creator */}
+                                {comment?.userId === currentUser?.profile?.id && (
+                                  <div className="flex gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                    {editingCommentId === comment.id ? (
+                                      <>
+                                        <button
+                                          onClick={() => handleSaveEdit(comment.id)}
+                                          className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                                          title="Save changes"
+                                        >
+                                          <Save className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          onClick={handleCancelEdit}
+                                          className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
+                                          title="Cancel edit"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => handleStartEditComment(comment.id, comment.message)}
+                                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                          title="Edit comment"
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteComment(comment.id)}
+                                          className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                          title="Delete comment"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                              <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
-                                {comment.message}
-                              </p>
-                              <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center">
+
+                              {/* Comment content */}
+                              {editingCommentId === comment.id ? (
+                                <div className="mb-3">
+                                  <textarea
+                                    value={editCommentText}
+                                    onChange={(e) => setEditCommentText(e.target.value)}
+                                    className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
+                                    rows={3}
+                                  />
+                                </div>
+                              ) : (
+                                <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
+                                  {comment.message}
+                                </p>
+                              )}
+
+                              {/* Like button */}
+                              <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
                                 <ThumbsUp className="w-3 h-3 mr-1" />
                                 Like
                               </button>

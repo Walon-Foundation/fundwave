@@ -28,6 +28,11 @@ export class API {
         return this.client.get('/campaigns').then(res => res.data.data as Campaign[])
     }
 
+    //update a campiagn
+    async updateCampaign(){
+
+    }
+
     async createCampaign(data:FormData){
         return this.client.post("/campaigns", data).then(res => res.data)
     }
@@ -39,6 +44,11 @@ export class API {
     //comments
     async createComment(data:CreateComment, id:string){
         return this.client.post(`/campaigns/${id}/comments`, data).then(res => res.data.data)
+    }
+
+    //edit commit
+    async updateComment(data:CreateComment, id:string, commentId:string){
+        return this.client.patch(`/campaigns/${id}/comments/${commentId}`, data).then(res => res.data.data)
     }
 
     //delete coment 
@@ -54,6 +64,11 @@ export class API {
     //getting all updates for a given campaign
     async getUpdate(id:string):Promise<Updates[] | undefined>{
         return this.client.get(`/campaigns/${id}/updates`).then(res => res.data.data as Updates[])
+    }
+
+    //edit an update
+    async updateUpdate(data:any, id:string, updateId:string){
+        return this.client.patch(`/campaigns/${id}/updates/${updateId}`, data).then(res => res.data.data)
     }
 
     //delete update

@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus, Edit, Trash2, Calendar, Eye, MessageCircle, Loader2 } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Calendar,  MessageCircle, Loader2, X, Save } from "lucide-react"
 import Image from "next/image"
 import { useParams } from "next/navigation"
 import { Updates } from "@/types/api"
@@ -22,6 +21,14 @@ export default function CampaignUpdatesPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
+  const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null)
+  const [editUpdate, setEditUpdate] = useState({
+    title: "",
+    message: "",
+    image: null as File | null,
+    imagePreview: null as string | null,
+    existingImage: null as string | null,
+  })
 
   useEffect(() => {
     async function getData(){
@@ -49,9 +56,9 @@ export default function CampaignUpdatesPage() {
       formData.append("title", newUpdate.title)
       formData.append("content", newUpdate.message)
       
-      // if (newUpdate.image) {
-      //   formData.append("image", newUpdate.image)
-      // }
+      if (newUpdate.image) {
+        formData.append("image", newUpdate.image)
+      }
 
       const response = await api.createUpdate(formData, param.id)
       if (response.data) {
@@ -93,6 +100,86 @@ export default function CampaignUpdatesPage() {
         imagePreview: URL.createObjectURL(file)
       }))
     }
+  }
+
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      setEditUpdate((prev) => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file)
+      }))
+    }
+  }
+
+  const handleStartEdit = (update: Updates) => {
+    setEditingUpdateId(update.id)
+    setEditUpdate({
+      title: update.title,
+      message: update.message,
+      image: null,
+      imagePreview: null,
+      existingImage: update.image || null
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditingUpdateId(null)
+    setEditUpdate({
+      title: "",
+      message: "",
+      image: null,
+      imagePreview: null,
+      existingImage: null
+    })
+  }
+
+  const handleSaveEdit = async(updateId: string) => {
+    if (!editUpdate.title.trim() || !editUpdate.message.trim()) return
+    
+    setIsLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append("title", editUpdate.title)
+      formData.append("content", editUpdate.message)
+      
+      // if (editUpdate.image) {
+      //   formData.append("image", editUpdate.image)
+      // }
+
+      const response = await api.updateUpdate(formData, param.id, updateId)
+      
+      // Update the local state with the edited update
+      setUpdates(updates.map(update => 
+        update.id === updateId ? response : update
+      ))
+      
+      setEditingUpdateId(null)
+      setEditUpdate({
+        title: "",
+        message: "",
+        image: null,
+        imagePreview: null,
+        existingImage: null
+      })
+      alert("Update edited successfully")
+    } catch (error) {
+      console.error("Failed to edit update:", error)
+      alert("Failed to edit update. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const removeImageFromEdit = () => {
+    setEditUpdate(prev => ({
+      ...prev,
+      image: null,
+      imagePreview: null,
+      existingImage: null
+    }))
   }
 
   if (isFetching) {
@@ -164,13 +251,13 @@ export default function CampaignUpdatesPage() {
                   className="input" 
                 />
                 {newUpdate.imagePreview && (
-                  <div className="mt-4">
+                  <div className="mt-4 relative">
                     <Image
                       src={newUpdate.imagePreview}
                       alt="Update image preview"
                       width={200}
                       height={150}
-                      className="rounded-lg object-cover w-full h-24"
+                      className="rounded-lg object-cover w-full h-48"
                     />
                   </div>
                 )}
@@ -207,44 +294,132 @@ export default function CampaignUpdatesPage() {
         <div className="space-y-6">
           {updates.map((update) => (
             <div key={update.id} className="card">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-xl font-semibold text-slate-900">{update.title}</h3>
+              {editingUpdateId === update.id ? (
+                // Edit Form
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-semibold text-slate-900">Edit Update</h3>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleSaveEdit(update.id)}
+                        className="text-green-600 hover:text-green-800 p-2"
+                        title="Save Changes"
+                        disabled={isLoading}
+                      >
+                        <Save className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="text-slate-500 hover:text-slate-700 p-2"
+                        title="Cancel Edit"
+                        disabled={isLoading}
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm text-slate-600 mb-4">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    <span>{new Date(update.createdAt).toLocaleDateString()}</span>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Update Title</label>
+                    <input
+                      type="text"
+                      className="input"
+                      placeholder="Enter update title"
+                      value={editUpdate.title}
+                      onChange={(e) => setEditUpdate({ ...editUpdate, title: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Update Content</label>
+                    <textarea
+                      rows={6}
+                      className="input"
+                      placeholder="Share your progress, challenges, or achievements..."
+                      value={editUpdate.message}
+                      onChange={(e) => setEditUpdate({ ...editUpdate, message: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Image (Optional)</label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleEditImageUpload} 
+                      className="input" 
+                    />
+                    
+                    {(editUpdate.imagePreview || editUpdate.existingImage) && (
+                      <div className="mt-4 relative">
+                        <Image
+                          src={editUpdate.imagePreview || editUpdate.existingImage || ""}
+                          alt="Update image"
+                          width={300}
+                          height={200}
+                          className="rounded-lg object-cover w-full h-48"
+                        />
+                        <button
+                          onClick={removeImageFromEdit}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button className="text-indigo-600 hover:text-indigo-800" title="Edit Update">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUpdate(update.id)}
-                    className="text-red-600 hover:text-red-800"
-                    title="Delete Update"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              ) : (
+                // Display Update
+                <>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-xl font-semibold text-slate-900">{update.title}</h3>
+                      </div>
+                      <div className="flex items-center text-sm text-slate-600 mb-4">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        <span>{new Date(update.createdAt).toLocaleDateString()}</span>
+                        {update.updatedAt !== update.createdAt && (
+                          <span className="ml-2 text-xs text-slate-500">(edited)</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={() => handleStartEdit(update)}
+                        className="text-indigo-600 hover:text-indigo-800 p-2"
+                        title="Edit Update"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUpdate(update.id)}
+                        className="text-red-600 hover:text-red-800 p-2"
+                        title="Delete Update"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="prose max-w-none mb-4">
-                <p className="text-slate-700">{update.message}</p>
-              </div>
+                  <div className="prose max-w-none mb-4">
+                    <p className="text-slate-700 whitespace-pre-line">{update.message}</p>
+                  </div>
 
-              {update.image && (
-                <div className="mt-4">
-                  <Image
-                    src={update.image}
-                    alt="Update image"
-                    width={300}
-                    height={200}
-                    className="rounded-lg object-cover w-full h-48"
-                  />
-                </div>
+                  {update.image && (
+                    <div className="mt-4">
+                      <Image
+                        src={update.image}
+                        alt="Update image"
+                        width={300}
+                        height={200}
+                        className="rounded-lg object-cover w-full h-48"
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}
