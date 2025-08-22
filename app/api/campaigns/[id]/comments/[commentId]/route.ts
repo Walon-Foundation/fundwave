@@ -4,6 +4,7 @@ import { commentTable, userTable } from "../../../../../../db/schema";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
+import { createComment } from "@/validations/comment";
 
 
 export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
@@ -40,6 +41,52 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentI
         process.env.NODE_ENV === "development" ? console.log(err):""
         return NextResponse.json({
             error:"internal server error",
+        }, { status:500 })
+    }
+}
+
+
+export async function PATCH(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
+    try{
+        const { userId:clerkId } = await auth()
+        const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId!)).limit(1).execute())[0]
+
+        if(!user || !clerkId){
+            return NextResponse.json({
+                ok:false,
+                message:"user is not authenticated",
+            }, { status:401 })
+        }
+
+        const commentId = (await params).commentId
+
+        const reqBody = await req.json()
+
+        const { success, data, error } = createComment.safeParse(reqBody)
+
+        if(!success){
+            process.env.NODE_ENV === "development" ? console.log(error.message):""
+            return NextResponse.json({
+                ok:false,
+                message:"invalid request body",
+            }, { status:400 })
+        }
+
+        const updateComment = (await db.update(commentTable).set({ message:data.comment, updatedAt:new Date()}).where(eq(commentTable.id, commentId)).returning().execute())[0]
+
+        await sendNotification("Comment updated", "comment", user.id, updateComment.campaignId)
+
+        return NextResponse.json({
+            ok:true,
+            message:"updated comment",
+            data:updateComment
+        }, { status:200 })
+        
+    }catch(err){
+        process.env.NODE_ENV === "development" ? console.log(err):""
+        return NextResponse.json({
+            ok:false,
+            message:"internal server error",
         }, { status:500 })
     }
 }
