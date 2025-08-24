@@ -31,6 +31,6 @@ export async function sendNotification(title: string, type: TypeEnum, userId: st
 
         console.log("Notification created and added")
     } catch (err) {
-        process.env.NODE_ENV === "development" ? console.log(err) : ""
+        if (process.env.NODE_ENV === "development") console.log(err)
     }
 }
