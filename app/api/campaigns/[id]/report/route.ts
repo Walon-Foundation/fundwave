@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       message: "Report submitted successfully. We'll review it within 24 hours.",
     })
   } catch (error) {
-    process.env.NODE_ENV === "development" ? console.log(error) : ""
+        if (process.env.NODE_ENV === "development") console.log(error)
     return NextResponse.json({ error: "internal server error" }, { status: 500 })
   }
 }

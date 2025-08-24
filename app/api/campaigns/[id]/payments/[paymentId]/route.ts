@@ -8,7 +8,7 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{paymentId
             message:"payment deleted successfully",
         }, { status:204 })
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             error:"internal server error",
         }, {status:500})

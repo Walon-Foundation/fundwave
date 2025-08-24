@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     ).at(0);
 
     if (!user) {
-      process.env.NODE_ENV === "development" ? console.log("User not found") : "";
+      if (process.env.NODE_ENV === "development") console.log("user not found")
       return NextResponse.json(
         {
           ok: false,
@@ -174,6 +174,8 @@ export async function GET(req: NextRequest) {
 }
 
 
+//Todo: do the shadown delete so data can be protected 
+
 export async function DELETE(req:NextRequest){
   try{
     const { userId:clerkId } = await auth()
@@ -199,7 +201,7 @@ export async function DELETE(req:NextRequest){
     }, { status:204 })
 
   }catch(err){
-    process.env.NODE_ENV === "development" ? console.log(err) : ""
+    if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json({
       ok:false,
       message:"internal server error",

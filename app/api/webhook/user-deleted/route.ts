@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+//Todo: fix this hook so clerk can use it
+
 export async function GET(req:NextRequest){
     try{
         return NextResponse.json({
@@ -7,7 +9,7 @@ export async function GET(req:NextRequest){
             message:"user deleted"
         }, { status:200 })
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err) :""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             ok:false,
             message:"internal server error",
