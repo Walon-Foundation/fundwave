@@ -253,7 +253,7 @@ export default function RefundPolicyPage() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 mb-4">
-              If you believe you're eligible for a refund or have questions about our refund policy, please don't
+              If you believe you&apos;re eligible for a refund or have questions about our refund policy, please don&apos;t
               hesitate to contact our support team.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">

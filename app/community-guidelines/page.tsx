@@ -213,7 +213,7 @@ export default function CommunityGuidelinesPage() {
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-ocean-500 mr-3" />
-                  <span className="text-sm">Use the "Report" button on campaigns or comments</span>
+                  <span className="text-sm">Use the &quot;Report&quot; button on campaigns or comments</span>
                 </li>
                 <li className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-ocean-500 mr-3" />
@@ -261,7 +261,7 @@ export default function CommunityGuidelinesPage() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 mb-4">
-              If you have questions about our community guidelines or need to report a violation, we're here to help.
+              If you have questions about our community guidelines or need to report a violation, we&apos;re here to help.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary">

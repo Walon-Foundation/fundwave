@@ -4,8 +4,9 @@ import type React from "react"
 
 import { useState } from "react"
 import { Upload, ChevronLeft, ChevronRight, User, FileText, CheckCircle2, Shield, AlertCircle } from "lucide-react"
-import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
+import { api } from "@/lib/api/api"
+import Image from "next/image"
 
 export default function KYCPage() {
   const [step, setStep] = useState(1)
@@ -89,7 +90,7 @@ export default function KYCPage() {
     }
 
     try {
-      const res = await axiosInstance.patch("/users/kyc", submitData)
+      const res = await api.createKYC(submitData)
       if (res.status === 200) {
         router.push("/dashboard")
         alert("KYC completed successfully")
@@ -160,7 +161,7 @@ export default function KYCPage() {
                   <div className="relative">
                     {previewImages.profilePicture ? (
                       <>
-                        <img
+                        <Image
                           src={previewImages.profilePicture || "/placeholder.svg"}
                           alt="Profile preview"
                           className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
@@ -362,8 +363,8 @@ export default function KYCPage() {
                       <option value="">Select Document Type</option>
                       <option value="national-id">National ID Card</option>
                       <option value="passport">Passport</option>
-                      <option value="drivers-license">Driver's License</option>
-                      <option value="voters-card">Voter's Card</option>
+                      <option value="drivers-license">Driver&apos;s License</option>
+                      <option value="voters-card">Voter&apos;s Card</option>
                     </select>
                   </div>
 
@@ -386,7 +387,7 @@ export default function KYCPage() {
                   <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 sm:p-8 bg-slate-50 hover:bg-slate-100 transition-colors">
                     {previewImages.documentPhoto ? (
                       <div className="relative">
-                        <img
+                        <Image
                           src={previewImages.documentPhoto || "/placeholder.svg"}
                           alt="Document preview"
                           className="w-full max-w-md mx-auto h-48 sm:h-64 object-contain rounded-lg shadow-md"
@@ -509,7 +510,7 @@ export default function KYCPage() {
                     <div className="flex flex-col sm:flex-row gap-4">
                       {previewImages.profilePicture && (
                         <div className="text-center">
-                          <img
+                          <Image
                             src={previewImages.profilePicture || "/placeholder.svg"}
                             alt="Profile preview"
                             className="w-20 h-20 rounded-full object-cover mx-auto border-2 border-slate-200"
@@ -519,7 +520,7 @@ export default function KYCPage() {
                       )}
                       {previewImages.documentPhoto && (
                         <div className="text-center">
-                          <img
+                          <Image
                             src={previewImages.documentPhoto || "/placeholder.svg"}
                             alt="Document preview"
                             className="w-20 h-20 object-cover rounded mx-auto border-2 border-slate-200"

@@ -84,6 +84,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       // Fallback for older browsers
+      console.log(err)
       const textArea = document.createElement("textarea")
       textArea.value = ussdCode
       document.body.appendChild(textArea)
@@ -407,7 +408,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   <li>2. Open your phone dialer</li>
                   <li>3. Dial the USSD code</li>
                   <li>4. Follow the prompts to complete payment</li>
-                  <li>5. You'll receive a confirmation SMS</li>
+                  <li>5. You&apos;ll receive a confirmation SMS</li>
                 </ol>
               </div>
 
@@ -435,7 +436,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   onClick={handleDonate}
                   className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  I've Completed Payment
+                  I&apos;ve Completed Payment
                 </button>
               </div>
             </div>

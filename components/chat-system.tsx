@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Send, X, MessageCircle, Phone, Video, Paperclip, Smile } from "lucide-react"
+import Image from "next/image"
 
 interface Message {
   id: string
@@ -130,7 +131,7 @@ export default function ChatSystem({ campaignId, currentUserId, currentUserName,
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-indigo-600 text-white rounded-t-lg">
         <div className="flex items-center space-x-3">
-          <img src="/placeholder.svg?height=32&width=32" alt="Campaign Creator" className="w-8 h-8 rounded-full" />
+          <Image src="/placeholder.svg?height=32&width=32" alt="Campaign Creator" className="w-8 h-8 rounded-full" />
           <div>
             <h3 className="font-semibold">Aminata Kamara</h3>
             <p className="text-xs opacity-90">Campaign Creator</p>
@@ -158,7 +159,7 @@ export default function ChatSystem({ campaignId, currentUserId, currentUserName,
           >
             <div className={`flex items-end space-x-2 max-w-[80%]`}>
               {message.senderId !== currentUserId && (
-                <img
+                <Image
                   src={message.senderAvatar || "/placeholder.svg"}
                   alt={message.senderName}
                   className="w-6 h-6 rounded-full"
@@ -175,7 +176,7 @@ export default function ChatSystem({ campaignId, currentUserId, currentUserName,
                 <p className="text-xs text-slate-500 mt-1">{formatTime(message.timestamp)}</p>
               </div>
               {message.senderId === currentUserId && (
-                <img
+                <Image
                   src={message.senderAvatar || "/placeholder.svg"}
                   alt={message.senderName}
                   className="w-6 h-6 rounded-full"
@@ -188,7 +189,7 @@ export default function ChatSystem({ campaignId, currentUserId, currentUserName,
         {isTyping && (
           <div className="flex justify-start">
             <div className="flex items-end space-x-2">
-              <img src="/placeholder.svg?height=24&width=24" alt="Creator" className="w-6 h-6 rounded-full" />
+              <Image src="/placeholder.svg?height=24&width=24" alt="Creator" className="w-6 h-6 rounded-full" />
               <div className="bg-slate-100 px-4 py-2 rounded-lg">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>

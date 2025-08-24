@@ -149,7 +149,7 @@ export default function CampaignDetailPage() {
     if (!confirm("Are you sure you want to delete this comment?")) return
     
     try {
-      const data = await api.deleteComment(id, commentId)
+      await api.deleteComment(id, commentId)
       setCampaignInfo(prev => ({
         ...prev!,
         comments: prev!.comments.filter(comment => comment.id !== commentId)

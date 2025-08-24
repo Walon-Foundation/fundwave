@@ -8,7 +8,6 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
-import { axiosInstance } from "../../lib/axiosInstance"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/api/api"
 
@@ -214,7 +213,7 @@ export default function CreateCampaignPage() {
     console.log(formData)
 
     try {
-      const res = await api.createCampaign(submitData)
+      await api.createCampaign(submitData)
       alert("Campaign created successfully")
       router.push('/dashboard')
     } catch (error) {
@@ -296,7 +295,7 @@ export default function CreateCampaignPage() {
                   <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     Basic Information
                   </CardTitle>
-                  <p className="text-slate-600">Let's start with the essential details of your campaign</p>
+                  <p className="text-slate-600">Let&apos;s start with the essential details of your campaign</p>
                 </CardHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

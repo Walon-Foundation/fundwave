@@ -15,7 +15,7 @@ interface Notification {
   type: string
   read: boolean
   createdAt: string
-  data?: any
+  data?: Record<any, any>
 }
 
 const mockNotifications: Notification[] = [

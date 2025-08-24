@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { TrendingUp, Users, Heart, Star, ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 interface RecommendedCampaign {
   id: string
@@ -174,7 +175,7 @@ export default function AIRecommendations({
           >
             {/* Campaign Image */}
             <div className="relative">
-              <img
+              <Image
                 src={campaign.image || "/placeholder.svg"}
                 alt={campaign.title}
                 className="w-full h-48 object-cover"

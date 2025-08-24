@@ -9,6 +9,7 @@ import { Button } from "./ui/button"
 import { Progress } from "./ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Campaign } from "@/types/api"
+import Image from "next/image"
 
 
 interface CampaignCardProps {
@@ -79,7 +80,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
         >
           <div className="flex flex-col sm:flex-row">
             <div className="relative sm:w-80 h-48 sm:h-auto overflow-hidden rounded-l-lg">
-              <img
+              <Image
                 src={campaign.image || "/placeholder.svg"}
                 alt={campaign.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -161,7 +162,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
         }`}
       >
         <div className="relative overflow-hidden">
-          <img
+          <Image
             src={campaign.image || "/placeholder.svg"}
             alt={campaign.title}
             className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-300"

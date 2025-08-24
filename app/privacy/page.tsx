@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-slate-900 mb-4">1. Introduction</h2>
               <p className="text-slate-700 mb-4">
-                FundWaveSL ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains
+                FundWaveSL (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains
                 how we collect, use, disclose, and safeguard your information when you use our crowdfunding platform
                 designed for Sierra Leone.
               </p>
@@ -148,7 +148,7 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-slate-900 mb-4">8. Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 mb-4">8. Children&apos;s Privacy</h2>
               <p className="text-slate-700 mb-4">
                 Our platform is not intended for children under 18 years of age. We do not knowingly collect personal
                 information from children under 18. If we become aware of such collection, we will take steps to delete
@@ -160,7 +160,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-2xl font-semibold text-slate-900 mb-4">9. Changes to This Privacy Policy</h2>
               <p className="text-slate-700 mb-4">
                 We may update this Privacy Policy from time to time. We will notify you of any material changes by
-                posting the new Privacy Policy on this page and updating the "Last updated" date.
+                posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 

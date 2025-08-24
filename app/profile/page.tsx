@@ -565,7 +565,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {donation.message && <p className="text-sm text-slate-600 mb-2 italic">"{donation.message}"</p>}
+                      {donation.message && <p className="text-sm text-slate-600 mb-2 italic">&quot;{donation.message}&quot;</p>}
 
                       <Link
                         href={`/campaigns/${donation.campaignId}`}
