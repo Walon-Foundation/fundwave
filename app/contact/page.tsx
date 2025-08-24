@@ -44,7 +44,7 @@ export default function ContactPage() {
             </div>
             <h1 className="text-3xl font-bold text-slate-900 mb-4">Message Sent!</h1>
             <p className="text-lg text-slate-600 mb-8">
-              Thank you for contacting us. We'll get back to you within 24 hours.
+              Thank you for contacting us. We&apos;ll get back to you within 24 hours.
             </p>
             <button
               onClick={() => {
@@ -73,7 +73,7 @@ export default function ContactPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 mb-4">Contact Us</h1>
-          <p className="text-xl text-slate-600">Get in touch with our team. We're here to help you succeed.</p>
+          <p className="text-xl text-slate-600">Get in touch with our team. We&apos;re here to help you succeed.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -90,7 +90,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">Email</h3>
                     <p className="text-slate-600">support@fundwavesl.com</p>
-                    <p className="text-sm text-slate-500">We'll respond within 24 hours</p>
+                    <p className="text-sm text-slate-500">We&apos;ll respond within 24 hours</p>
                   </div>
                 </div>
 

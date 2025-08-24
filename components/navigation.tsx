@@ -50,7 +50,7 @@ export default function Navigation() {
   const [loadingNotifications, setLoadingNotifications] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
-  const { isSignedIn: isAuthenticated, user:clerkUser } = useUser()
+  const { isSignedIn: isAuthenticated } = useUser()
   const clerk = useClerk()
 
   useEffect(() => {

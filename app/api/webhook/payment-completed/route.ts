@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
           .execute();
 
         if (userResult.length > 0) {
-          userEmail = userResult[0].email;
-          userName = userResult[0].name;
+          // userEmail = userResult[0].email;
+          // userName = userResult[0].name;
 
           // Update user's contribution amount only if user exists
           queries.push(
@@ -139,14 +139,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    process.env.NODE_ENV === 'development' ? console.log("payment completed") : "";
+    if (process.env.NODE_ENV === "development") console.log("Payment completed")
 
     return NextResponse.json({
       message: "payment confirmed",
     }, { status: 200 });
 
   } catch (err) {
-    process.env.NODE_ENV === "development" ? console.log(err) : "";
+    if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json(
       {
         ok: false,

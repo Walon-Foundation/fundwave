@@ -93,7 +93,7 @@ export default function Footer() {
                 </div>
               </div>
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-4 lg:mb-6">
-                Empowering Sierra Leone communities through innovative crowdfunding solutions. Together, we're building
+                Empowering Sierra Leone communities through innovative crowdfunding solutions. Together, we&apos;re building
                 a brighter future for our nation.
               </p>
 

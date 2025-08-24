@@ -10,9 +10,6 @@ import { Card, CardContent } from "../../components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { api } from "@/lib/api/api"
 import { Campaign } from "@/types/api"
-import { useAuth } from "@clerk/nextjs"
-import axios from "axios"
-import { axiosInstance } from "@/lib/axiosInstance"
 
 const categories = [
   "Community",

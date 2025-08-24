@@ -39,7 +39,7 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string
     }, { status: 204 })
 
   }catch(err){
-    process.env.NODE_ENV === "development" ? console.log(err):""
+    if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json({
       error:"internal server error",
     }, { status:500 })
@@ -172,7 +172,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }, { status: 200 });
 
   } catch (err) {
-    console.error(err);
+    if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json({
       ok: false,
       message: "Internal server error",

@@ -15,6 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       createdAt: new Date().toISOString(),
     })
   } catch (error) {
+    if (process.env.NODE_ENV === "development") console.log(error)
     return NextResponse.json({ error: "Share tracking failed" }, { status: 400 })
   }
 }

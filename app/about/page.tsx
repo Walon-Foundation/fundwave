@@ -9,7 +9,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold text-white mb-6">About FundWaveSL</h1>
           <p className="text-xl text-indigo-100 max-w-3xl mx-auto">
-            Empowering Sierra Leone communities through innovative crowdfunding solutions. We're building bridges
+            Empowering Sierra Leone communities through innovative crowdfunding solutions. We&apos;re building bridges
             between dreams and reality, one campaign at a time.
           </p>
         </div>
@@ -23,12 +23,12 @@ export default function AboutPage() {
               <h2 className="text-4xl font-bold text-slate-900 mb-6">Our Mission</h2>
               <p className="text-lg text-slate-700 mb-6">
                 FundWaveSL was born from a simple belief: every Sierra Leonean should have the opportunity to turn their
-                dreams into reality. We're democratizing access to funding by creating a platform that connects
+                dreams into reality. We&apos;re democratizing access to funding by creating a platform that connects
                 passionate project creators with supportive communities.
               </p>
               <p className="text-lg text-slate-700 mb-8">
-                Whether it's building clean water systems in rural communities, supporting education initiatives, or
-                helping entrepreneurs launch their businesses, we're here to make it happen.
+                Whether it&apos;s building clean water systems in rural communities, supporting education initiatives, or
+                helping entrepreneurs launch their businesses, we&apos;re here to make it happen.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/campaigns" className="btn-primary">
@@ -127,7 +127,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-slate-900 mb-4">Our Story</h2>
-            <p className="text-xl text-slate-600">How FundWaveSL came to be and where we're heading</p>
+            <p className="text-xl text-slate-600">How FundWaveSL came to be and where we&apos;re heading</p>
           </div>
 
           <div className="prose prose-lg prose-slate max-w-none">
@@ -151,14 +151,14 @@ export default function AboutPage() {
             </p>
 
             <p>
-              Today, FundWaveSL is proud to be Sierra Leone's leading crowdfunding platform, having helped hundreds of
+              Today, FundWaveSL is proud to be Sierra Leone&apos;s leading crowdfunding platform, having helped hundreds of
               campaigns raise millions of Leones for projects that matter to our communities. From clean water
-              initiatives in rural areas to tech startups in urban centers, we're facilitating positive change across
+              initiatives in rural areas to tech startups in urban centers, we&apos;re facilitating positive change across
               the country.
             </p>
 
             <p>
-              But we're just getting started. Our vision extends beyond Sierra Leone – we aim to become the premier
+              But we&apos;re just getting started. Our vision extends beyond Sierra Leone – we aim to become the premier
               crowdfunding platform for all of West Africa, always staying true to our roots and the communities that
               made our success possible.
             </p>
@@ -179,11 +179,10 @@ export default function AboutPage() {
               <div className="w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">AK</span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Aminata Kamara</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Mohamed Lamin Walon-Jalloh</h3>
               <p className="text-indigo-600 font-medium mb-3">CEO & Co-Founder</p>
               <p className="text-slate-600 text-sm">
-                Former World Bank consultant with 10+ years in development finance. Passionate about empowering African
-                entrepreneurs.
+                A fullstack engineer and Electrical and Electronic Engineer
               </p>
             </div>
 
@@ -191,10 +190,10 @@ export default function AboutPage() {
               <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">MS</span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Mohamed Sesay</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Alusine Swaray</h3>
               <p className="text-indigo-600 font-medium mb-3">CTO & Co-Founder</p>
               <p className="text-slate-600 text-sm">
-                Software engineer with experience at top tech companies. Expert in fintech and mobile payment systems.
+                An Electrical Engineer with technical idea in a lot of areas&apos;s
               </p>
             </div>
 
@@ -205,7 +204,7 @@ export default function AboutPage() {
               <h3 className="text-xl font-bold text-slate-900 mb-2">Fatima Bangura</h3>
               <p className="text-indigo-600 font-medium mb-3">Head of Operations</p>
               <p className="text-slate-600 text-sm">
-                Operations specialist with deep knowledge of Sierra Leone's business landscape and regulatory
+                Operations specialist with deep knowledge of Sierra Leone&apos;s business landscape and regulatory
                 environment.
               </p>
             </div>
@@ -218,7 +217,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-slate-900 mb-6">Join Our Mission</h2>
           <p className="text-xl text-slate-600 mb-8">
-            Whether you're looking to fund your next big idea or support meaningful projects in Sierra Leone, FundWaveSL
+            Whether you&apos;re looking to fund your next big idea or support meaningful projects in Sierra Leone, FundWaveSL
             is here to help you make an impact.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

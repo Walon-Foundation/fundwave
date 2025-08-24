@@ -309,7 +309,7 @@ export default function DashboardSetupWizard({ isFirstTime, onComplete, onSkip }
           </div>
           <h3 className="text-xl font-semibold text-slate-900">Dashboard Tour Complete!</h3>
           <p className="text-slate-600">
-            You're now ready to create amazing campaigns and make a real impact in Sierra Leone.
+            You&apos;re now ready to create amazing campaigns and make a real impact in Sierra Leone.
           </p>
           <div className="grid grid-cols-2 gap-3 mt-4">
             <div className="p-3 bg-indigo-50 rounded-lg">

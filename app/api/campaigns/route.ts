@@ -124,8 +124,8 @@ export async function POST(req:NextRequest){
             creatorName: userExist[0].name,
         }).returning()
 
-        if(data.teamMembers?.length! > 0){
-            const membersWithCampaignId = data.teamMembers!.map(teamMember =>({
+        if((data?.teamMembers ?? []).length > 0){
+            const membersWithCampaignId = (data.teamMembers ?? []).map(teamMember =>({
                 id:nanoid(16),
                 ...teamMember,
                 campaignId:newCampaign.id,
@@ -141,7 +141,7 @@ export async function POST(req:NextRequest){
             message:"campaign created",
         }, { status:201 })
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             error:"internal server error",
         }, { status:500 })
@@ -162,7 +162,7 @@ export async function GET(req:NextRequest){
             data:allCampaign,
         }, { status:200})
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             error:"internal server error",
         },{ status:500 })

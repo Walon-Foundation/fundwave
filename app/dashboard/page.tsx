@@ -11,10 +11,8 @@ import {
   MessageCircle,
   Edit,
   BarChart3,
-  Share2,
   Download,
   Bell,
-  Target,
   Pause,
   Play,
   FileText,
@@ -32,7 +30,7 @@ export default function CreatorDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [timeRange, setTimeRange] = useState("7d")
   const [isFirstTime, setIsFirstTime] = useState(false)
-  const [showWizard, setShowWizard] = useState(false)
+  // const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // Pagination states for each section
@@ -134,7 +132,7 @@ export default function CreatorDashboard() {
     
     // Show up to 5 page numbers with current page in the middle
     let startPage = Math.max(1, currentPage - 2)
-    let endPage = Math.min(totalPages, startPage + 4)
+    const endPage = Math.min(totalPages, startPage + 4)
     
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4)
@@ -215,7 +213,7 @@ export default function CreatorDashboard() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-900 mb-4">No Data Available</h1>
-          <p className="text-slate-600">We couldn't load your dashboard data</p>
+          <p className="text-slate-600">We couldn&apos;t load your dashboard data</p>
           <Link href="/create-campaign" className="btn-primary mt-4 inline-flex items-center">
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Campaign
@@ -697,7 +695,7 @@ export default function CreatorDashboard() {
             ) : (
               <div className="card text-center py-12">
                 <h3 className="text-xl font-semibold text-slate-900 mb-4">No Campaigns Yet</h3>
-                <p className="text-slate-600 mb-6">You haven't created any campaigns yet</p>
+                <p className="text-slate-600 mb-6">You haven&apos;t created any campaigns yet</p>
                 <Link href="/create-campaign" className="btn-primary inline-flex items-center">
                   <Plus className="w-4 h-4 mr-2" />
                   Create Your First Campaign
@@ -745,7 +743,7 @@ export default function CreatorDashboard() {
                   <div className="card text-center py-12">
                     <h3 className="text-xl font-semibold text-slate-900 mb-2">Analytics Coming Soon</h3>
                     <p className="text-slate-600 mb-6">
-                      We're working on detailed analytics for your campaign: {selectedCampaignData.name}
+                      We&apos;re working on detailed analytics for your campaign: {selectedCampaignData.name}
                     </p>
                     <div className="flex justify-center gap-4">
                       <button className="btn-outline">Learn More</button>
@@ -834,7 +832,7 @@ export default function CreatorDashboard() {
             ) : (
               <div className="text-center py-12">
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">No Notifications</h3>
-                <p className="text-slate-600">You don't have any notifications yet</p>
+                <p className="text-slate-600">You don&apos;t have any notifications yet</p>
               </div>
             )}
           </div>

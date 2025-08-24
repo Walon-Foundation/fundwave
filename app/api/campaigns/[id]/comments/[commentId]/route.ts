@@ -38,7 +38,7 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentI
             message:"comment deleted successfully",
         }, { status:200 })
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             error:"internal server error",
         }, { status:500 })
@@ -65,7 +65,7 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{commentId
         const { success, data, error } = createComment.safeParse(reqBody)
 
         if(!success){
-            process.env.NODE_ENV === "development" ? console.log(error.message):""
+        if (process.env.NODE_ENV === "development") console.log(error)
             return NextResponse.json({
                 ok:false,
                 message:"invalid request body",
@@ -83,7 +83,7 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{commentId
         }, { status:200 })
         
     }catch(err){
-        process.env.NODE_ENV === "development" ? console.log(err):""
+        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             ok:false,
             message:"internal server error",

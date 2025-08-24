@@ -157,14 +157,14 @@ export default function CookiePolicyPage() {
 
             <h3>Cookie Consent</h3>
             <p>
-              When you first visit our website, we'll ask for your consent to use non-essential cookies. You can change
-              your preferences at any time by clicking the "Cookie Settings" link in our footer.
+              When you first visit our website, we&apos;ll ask for your consent to use non-essential cookies. You can change
+              your preferences at any time by clicking the &quot;Cookie Settings&quot; link in our footer.
             </p>
 
             <h3>Third-Party Cookies</h3>
             <p>
               Some cookies are set by third-party services that appear on our pages. We don't control these cookies, and
-              you should check the relevant third party's website for more information.
+              you should check the relevant third party&apos;s website for more information.
             </p>
           </CardContent>
         </Card>
@@ -176,7 +176,7 @@ export default function CookiePolicyPage() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 mb-4">
-              If you have any questions about our use of cookies or this policy, please don't hesitate to contact us.
+              If you have any questions about our use of cookies or this policy, please don&apos;t hesitate to contact us.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary">

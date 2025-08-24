@@ -13,7 +13,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-slate-900 mb-4">1. Acceptance of Terms</h2>
               <p className="text-slate-700 mb-4">
-                By accessing and using FundWaveSL ("the Platform"), you accept and agree to be bound by the terms and
+                By accessing and using FundWaveSL (&quot;the Platform&quot;), you accept and agree to be bound by the terms and
                 provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
@@ -122,7 +122,7 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-semibold text-slate-900 mb-4">7. Intellectual Property</h2>
               <p className="text-slate-700 mb-4">
                 Users retain ownership of content they post on the Platform but grant FundWaveSL a license to use,
-                display, and promote such content in connection with the Platform's services.
+                display, and promote such content in connection with the Platform&apos;s services.
               </p>
             </section>
 

@@ -80,6 +80,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.33.0",
     "@types/node": "^22",
     "@types/nodemailer": "^6.4.17",
@@ -88,6 +89,7 @@
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.2",
     "eslint": "^9.33.0",
+    "eslint-config-next": "^15.5.0",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.3.0",
     "jiti": "^2.5.1",

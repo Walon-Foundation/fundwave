@@ -24,7 +24,7 @@ import { Badge } from "../components/ui/badge"
 import type { Campaign } from "@/types/api"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api/api"
-import Footer from "../components/footer"
+import Image from "next/image"
 
 export default function HomePage() {
   const [data, setData] = useState<Campaign[]>([])
@@ -415,7 +415,7 @@ export default function HomePage() {
                 className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100"
               >
                 <div className="flex items-center mb-6">
-                  <img
+                  <Image
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full mr-4"
@@ -425,7 +425,7 @@ export default function HomePage() {
                     <p className="text-sm text-slate-500">{testimonial.role}</p>
                   </div>
                 </div>
-                <p className="text-slate-600 mb-4 italic">"{testimonial.quote}"</p>
+                <p className="text-slate-600 mb-4 italic">&quot;{testimonial.quote}&quot;</p>
                 <div className="text-sm text-ocean-600 font-medium">Campaign: {testimonial.campaign}</div>
               </div>
             ))}
@@ -503,8 +503,6 @@ export default function HomePage() {
         currentUserName="Guest User"
         currentUserAvatar="/placeholder.svg?height=40&width=40"
       />
-
-      <Footer />
     </div>
   )
 }

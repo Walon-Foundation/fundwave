@@ -140,7 +140,7 @@ export async function PATCH(req:NextRequest){
     }, {status:200})
 
   }catch(err){
-    process.env.NODE_ENV === "development" ? console.log(err):""
+    if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json({
       error:"internal server error",
     }, { status:500 })
