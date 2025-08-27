@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
       const campaignTitle = payment[0].campaignTitle;
 
       const queries = [];
-      let userEmail = null;
-      let userName = null;
+      const userEmail = null;
+      const  userName = null;
 
       // Only try to get user details if userId exists and is not null
       if (paymentRecord.userId) {

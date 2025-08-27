@@ -45,9 +45,9 @@ interface Notification {
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifications, _setNotifications] = useState<Notification[]>([])
   const [user, setUser] = useState<CombinedUserData>()
-  const [loadingNotifications, setLoadingNotifications] = useState(true)
+  const [loadingNotifications, _setLoadingNotifications] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
   const { isSignedIn: isAuthenticated } = useUser()

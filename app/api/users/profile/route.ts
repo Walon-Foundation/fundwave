@@ -2,11 +2,11 @@ import { db } from "@/db/drizzle";
 import { campaignTable, paymentTable, userTable } from "@/db/schema";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { countDistinct, eq, sum } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 import { sendEmail } from "@/lib/nodeMailer";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Authenticate user
     const { userId: clerkId } = await auth();
@@ -162,8 +162,8 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (err) {
-    process.env.NODE_ENV === "development" ? console.log(err) : "";
-    return NextResponse.json(
+  if (process.env.NODE_ENV === "development") console.log(err)    
+  return NextResponse.json(
       {
         ok: false,
         message: "Internal server error",
@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
 
 //Todo: do the shadown delete so data can be protected 
 
-export async function DELETE(req:NextRequest){
+export async function DELETE(){
   try{
     const { userId:clerkId } = await auth()
     const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId!)).limit(1).execute())[0]

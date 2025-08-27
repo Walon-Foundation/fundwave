@@ -29,7 +29,7 @@ export default function CreatorDashboard() {
   const [selectedCampaign, setSelectedCampaign] = useState<string>("")
   const [activeTab, setActiveTab] = useState("overview")
   const [timeRange, setTimeRange] = useState("7d")
-  const [isFirstTime, setIsFirstTime] = useState(false)
+  const [_isFirstTime, setIsFirstTime] = useState(false)
   // const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
 

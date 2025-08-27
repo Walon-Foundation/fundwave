@@ -163,7 +163,7 @@ export default function CookiePolicyPage() {
 
             <h3>Third-Party Cookies</h3>
             <p>
-              Some cookies are set by third-party services that appear on our pages. We don't control these cookies, and
+              Some cookies are set by third-party services that appear on our pages. We don&apos;t control these cookies, and
               you should check the relevant third party&apos;s website for more information.
             </p>
           </CardContent>
