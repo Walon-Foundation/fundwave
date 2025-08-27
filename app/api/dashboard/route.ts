@@ -2,9 +2,9 @@ import { db } from "@/db/drizzle"
 import { campaignTable, commentTable, notificationTable, paymentTable, userTable } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
 import { eq, inArray, sum, countDistinct, desc } from "drizzle-orm"
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Get the logged-in Clerk user ID
     const { userId: clerkId } = await auth()

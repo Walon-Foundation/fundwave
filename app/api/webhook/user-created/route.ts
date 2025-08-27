@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         const payload = await req.text();
         const wh = new Webhook(webhookSecret);
 
-        let evt: any;
+        let evt:any 
         try {
             evt = wh.verify(payload, {
                 "svix-id": svix_id,

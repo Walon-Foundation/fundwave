@@ -55,7 +55,7 @@ const mockMessages: Message[] = [
   },
 ]
 
-export default function ChatSystem({ campaignId, currentUserId, currentUserName, currentUserAvatar }: ChatSystemProps) {
+export default function ChatSystem({ currentUserId, currentUserName, currentUserAvatar }: ChatSystemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>(mockMessages)
   const [newMessage, setNewMessage] = useState("")

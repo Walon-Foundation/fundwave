@@ -81,8 +81,10 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
           <div className="flex flex-col sm:flex-row">
             <div className="relative sm:w-80 h-48 sm:h-auto overflow-hidden rounded-l-lg">
               <Image
-                src={campaign.image || "/placeholder.svg"}
+                src={campaign.image}
                 alt={campaign.title}
+                height={300}
+                width={200}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               {featured && (
@@ -163,8 +165,10 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
       >
         <div className="relative overflow-hidden">
           <Image
-            src={campaign.image || "/placeholder.svg"}
+            src={campaign.image}
             alt={campaign.title}
+            height={300}
+            width={200}
             className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-300"
           />
 

@@ -418,6 +418,7 @@ export default function HomePage() {
                   <Image
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
+                    fill
                     className="w-12 h-12 rounded-full mr-4"
                   />
                   <div>

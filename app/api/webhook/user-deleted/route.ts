@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 //Todo: fix this hook so clerk can use it
 
-export async function GET(req:NextRequest){
+export async function GET(){
     try{
         return NextResponse.json({
             ok:true,
