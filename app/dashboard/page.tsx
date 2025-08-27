@@ -660,7 +660,7 @@ export default function CreatorDashboard() {
                             </Link>
                             {/* Add Update Button for mobile view */}
                             <Link
-                              href={`/campaigns/${campaign.id}/update`}
+                              href={`/campaigns/${campaign.id}/updates`}
                               className="text-slate-600 hover:text-slate-800"
                               title="Add Update"
                             >
