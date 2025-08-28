@@ -111,6 +111,7 @@ export default function ProfilePage() {
       } : null)
       setUpdateSuccess(true)
       setIsEditing(false)
+      window.location.reload()
     } catch (err: any) {
       console.error("Error updating profile:", err)
       setUpdateError(err.message || "Failed to update profile")
