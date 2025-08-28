@@ -243,7 +243,7 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
         <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Campaign Summary:</h3>
         <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px;">
           <span style="font-weight: 500;">Total Funds Raised:</span>
-          <span style="font-size: 18px; font-weight: bold; color: #ea580c;">$${total}</span>
+          <span style="font-size: 18px; font-weight: bold; color: #ea580c;">NLe${total}</span>
         </div>
         <p style="margin: 0; color: #9a3412;">Every contribution, no matter the size, has made a meaningful impact.</p>
       </div>
@@ -278,14 +278,14 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
       
       <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
       
-      <p style="font-size: 16px; line-height: 1.6;">Your donation of <strong style="color: #16a34a;">$${amount}</strong> to <strong style="color: #2563eb;">${campaign}</strong> has been successfully processed and is now on its way to making a difference.</p>
+      <p style="font-size: 16px; line-height: 1.6;">Your donation of <strong style="color: #16a34a;">NLe${amount}</strong> to <strong style="color: #2563eb;">${campaign}</strong> has been successfully processed and is now on its way to making a difference.</p>
       
       <div style="background-color: #f0fdf4; padding: 18px; border-radius: 8px; margin: 25px 0;">
         <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Donation Details:</h3>
         <div style="background-color: white; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="font-weight: 500;">Amount:</span>
-            <span style="font-weight: bold; color: #16a34a;">$${amount}</span>
+            <span style="font-weight: bold; color: #16a34a;">NLe${amount}</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="font-weight: 500;">Campaign:</span>
@@ -398,6 +398,45 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
       </div>
     </div>
   `,
+  
+  "account-updated": ({ name, changes, timestamp }) => `
+  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #c7d2fe; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #f0f9ff);">
+    <div style="text-align: center; margin-bottom: 25px;">
+      <h2 style="color: #4f46e5; margin-bottom: 15px; font-size: 24px;">Account Updated Successfully ✅</h2>
+      <div style="background-color: #e0e7ff; padding: 16px; border-radius: 8px; border-left: 4px solid #4f46e5;">
+        <p style="margin: 0; color: #3730a3; font-weight: 500;">Your account information has been updated</p>
+      </div>
+    </div>
+    
+    <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
+    
+    <p style="font-size: 16px; line-height: 1.6;">Your FundWave account was successfully updated on <strong>${new Date(timestamp).toLocaleString()}</strong>. Below are the changes that were made:</p>
+    
+    <div style="background-color: #f0f9ff; padding: 18px; border-radius: 8px; margin: 25px 0;">
+      <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Changes Made:</h3>
+      <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #4f46e5;">
+        <p style="margin: 0; color: #4f46e5; font-weight: 500;">${changes}</p>
+      </div>
+    </div>
+    
+    <div style="background-color: #e0f2fe; padding: 18px; border-radius: 8px; margin: 25px 0;">
+      <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Security Note:</h3>
+      <ul style="margin-bottom: 0; padding-left: 20px;">
+        <li style="margin-bottom: 8px;">If you made these changes, no further action is needed</li>
+        <li style="margin-bottom: 8px;">If you didn't make these changes, please secure your account immediately</li>
+        <li style="margin-bottom: 8px;">Consider changing your password and enabling two-factor authentication</li>
+        <li>Contact support if you notice any suspicious activity</li>
+      </ul>
+    </div>
+    
+    <p style="font-size: 16px; line-height: 1.6;">Keeping your account information up to date helps ensure the security of your campaigns and donations.</p>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #c7d2fe;">
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Thank you for keeping your account information current.</p>
+      <p style="font-size: 14px; color: #6b7280; margin: 0;">The FundWave Team</p>
+    </div>
+  </div>
+`,
 };
 
 // ----------------- EMAIL SENDER -----------------

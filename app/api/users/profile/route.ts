@@ -2,9 +2,10 @@ import { db } from "@/db/drizzle";
 import { campaignTable, paymentTable, userTable } from "@/db/schema";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { countDistinct, eq, sum } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 import { sendEmail } from "@/lib/nodeMailer";
+import { deleteSchema } from "@/validations/user";
 
 export async function GET() {
   try {
@@ -174,7 +175,6 @@ export async function GET() {
 }
 
 
-//Todo: do the shadown delete so data can be protected 
 
 export async function DELETE(){
   try{
@@ -190,7 +190,7 @@ export async function DELETE(){
 
    await Promise.all([
     //deleting the user from the database
-    db.delete(userTable).where(eq(userTable.clerkId, clerkId!)).execute(),
+    db.update(userTable).set({email:"", name:"", isDeleted:true, phone:"",isKyc:false, isVerified:false}).where(eq(userTable.clerkId, clerkId!)).execute(),
     (await clerkClient()).users.deleteUser(clerkId),
     sendEmail("account-deleted",user.email, "Your Fundwave account has being deleted", { name:user.name, email:user.email})
    ])
@@ -198,13 +198,57 @@ export async function DELETE(){
     return NextResponse.json({
       ok:true,
       message:"user deleted",
-    }, { status:204 })
+    }, { status:200 })
 
   }catch(err){
     if (process.env.NODE_ENV === "development") console.log(err)
     return NextResponse.json({
       ok:false,
       message:"internal server error",
+    }, { status:500 })
+  }
+}
+
+
+
+export async function PATCH(req:NextRequest){
+  try{
+    const { userId:clerkId } = await auth()
+    const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId as string)).limit(1).execute())[0]
+    if(!user || !clerkId){
+      return NextResponse.json({
+        ok:false,
+        message:"user is not authenticated",
+      }, { status:401 })
+    }
+    const body = await req.json()
+    const { data,error,success } = deleteSchema.safeParse(body)
+    if(!success){
+      return NextResponse.json({
+        ok:false,
+        message:"invalid input data"
+      }, { status:400 })
+    }
+
+    await Promise.all([
+      db.update(userTable).set({
+        name:data.name,
+        bio:data.bio,
+        district:data.location,
+        phone:data.phone
+      }),
+      await sendEmail("account-updated", user.email, "Your Fundwave account has being updated", { name:user.name, changes:'Bio, name, location and phone where update', timestamp:Date.now()})
+    ])
+
+    return NextResponse.json({
+      ok:true,
+      message:"user upadated"
+    }, { status:200 })
+
+  }catch(err){
+    return NextResponse.json({
+      ok:false,
+      message:"internal server error"
     }, { status:500 })
   }
 }

@@ -59,8 +59,6 @@ export async function POST(req:NextRequest){
         })
 
         if(!success){
-            console.log("error 1")
-            console.log(error)
             return NextResponse.json({
                 message:"invalid input campaign data",
                 error:error.format(),
@@ -162,7 +160,6 @@ export async function GET(){
             data:allCampaign,
         }, { status:200})
     }catch(err){
-        if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({
             error:"internal server error",
         },{ status:500 })

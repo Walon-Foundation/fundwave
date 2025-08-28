@@ -67,7 +67,6 @@ export default function CampaignsPage() {
         setCampaigns(Array.isArray(data) ? data : [])
         setFilteredCampaigns(Array.isArray(data) ? data : [])
       } catch (err) {
-        console.log(err)
         setCampaigns([])
         setFilteredCampaigns([])
       } finally {

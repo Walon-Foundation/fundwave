@@ -78,7 +78,7 @@ export default function CreateCampaignPage() {
       case 1:
         if (!formData.title.trim()) newErrors.title = "Campaign title is required"
         if (!formData.category) newErrors.category = "Please select a category"
-        if (!formData.fundingGoal || Number(formData.fundingGoal) < 100000) {
+        if (!formData.fundingGoal || Number(formData.fundingGoal) < 10) {
           newErrors.fundingGoal = "Funding goal must be at least 100,000 SLL"
         }
         if (!formData.location.trim()) newErrors.location = "Location is required"
@@ -210,8 +210,6 @@ export default function CreateCampaignPage() {
       submitData.append("image", formData.image)
     }
 
-    console.log(formData)
-
     try {
       await api.createCampaign(submitData)
       alert("Campaign created successfully")
@@ -342,11 +340,11 @@ export default function CreateCampaignPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Funding Goal (SLL) *</label>
                     <input
                       type="number"
-                      min="100000"
+                      min="10"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
                         errors.fundingGoal ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
                       }`}
-                      placeholder="e.g., 5,000,000"
+                      placeholder="e.g., NLe 5000"
                       value={formData.fundingGoal}
                       onChange={(e) => {
                         setFormData({ ...formData, fundingGoal: e.target.value })

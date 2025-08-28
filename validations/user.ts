@@ -11,3 +11,10 @@ export const kycSchema = z.object({
     phoneNumber:z.string().min(9, "phone number is required"),
     bio:z.string().min(2, "bio is required")
 })
+
+export const deleteSchema = z.object({
+    name:z.string().min(1, "name is required"),
+    bio:z.string().min(2, "bio is required"),
+    phone:z.string().min(1, "phone is required"),
+    location:z.string().min(1, "location is required")
+})

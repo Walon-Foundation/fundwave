@@ -25,10 +25,10 @@ export default async function createPaymentCode(paymentName:string, name:string,
     authorizedPhoneNumber:phoneNumber,
     // authorizedProviders: ["m17", "m18"],
     recurrentPaymentTarget:{
-      expectedPaymentCount: 10,
+      expectedPaymentCount: 1,
       expectedPaymentTotal:{
         currency:"SLE",
-        value:(amount * 2) * 100
+        value:(amount) * 100
       }
     },
     financialAccountId,

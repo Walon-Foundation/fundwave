@@ -55,6 +55,7 @@ export const userTable = pgTable("users", {
   updatedAt: timestamp("updatedAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
+  isDeleted:boolean("isDeleted").notNull().default(false),  
   settings: jsonb("settings")
     .default({
       notifications: {
@@ -106,7 +107,7 @@ export const campaignTable = pgTable("campaigns", {
     withTimezone: true,
   }).notNull(),
   creatorId: text("creator_id")
-    .references(() => userTable.id, { onDelete: "cascade" })
+    .references(() => userTable.id, { onDelete: "restrict" })
     .notNull(),
   creatorName: text("creator_name").notNull(),
   category: text("category").notNull(),
@@ -134,7 +135,7 @@ export const commentTable = pgTable("comments", {
   message: text("message").notNull(),
   username: text("username").notNull(),
   campaignId: text("campaignId")
-    .references(() => campaignTable.id, { onDelete: "cascade" })
+    .references(() => campaignTable.id, { onDelete: "restrict" })
     .notNull(),
   userId: text("userId")
     .references(() => userTable.id, { onDelete: "cascade" })
@@ -171,7 +172,7 @@ export const paymentTable = pgTable("payments", {
   amount: integer("amount").notNull(),
   campaignId: text("campaignId")
     .notNull()
-    .references(() => campaignTable.id, { onDelete: "cascade" }),
+    .references(() => campaignTable.id, { onDelete:"restrict" }),
   monimeId: text("monimeId").notNull(),
   username: text("username"),
   isCompleted: boolean("isCompleted").notNull().default(false),

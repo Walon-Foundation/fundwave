@@ -20,8 +20,7 @@ export default function CampaignDetailPage() {
   const [_isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
   const [editCommentText, setEditCommentText] = useState("")
-  
-  // Temporary variable to simulate current user - replace with actual auth later
+
   const [currentUser, setCurrentUser] = useState<CombinedUserData>()
 
   useEffect(() => {
@@ -98,7 +97,7 @@ export default function CampaignDetailPage() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "SLL",
+      currency: "NLe",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -788,9 +787,14 @@ export default function CampaignDetailPage() {
                 <button
                   onClick={() => setShowDonationModal(true)}
                   className="btn-primary w-full py-2 sm:py-3 text-base sm:text-lg mb-3 sm:mb-4"
-                  disabled={daysLeft <= 0}
+                  disabled={daysLeft <= 0 || campaign.amountReceived === campaign.fundingGoal}
                 >
-                  {daysLeft > 0 ? "Donate Now" : "Campaign Ended"}
+                  {daysLeft > 0 && campaign.amountReceived !== campaign.fundingGoal 
+                    ? "Donate Now" 
+                    : daysLeft <= 0 
+                      ? "Campaign Ended" 
+                      : "Goal Reached"
+                  }
                 </button>
 
                 <div className="text-center text-xs sm:text-sm text-slate-600">
@@ -804,7 +808,7 @@ export default function CampaignDetailPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Recent Donors</h3>
                 <div className="space-y-3">
                   {recentDonors.length > 0 ? (
-                    recentDonors.map((donor, index) => (
+                    recentDonors?.slice(0,5)?.map((donor, index) => (
                       <div key={index} className="flex items-center space-x-3">
                         <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
                           <Users className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />

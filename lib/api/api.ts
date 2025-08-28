@@ -88,7 +88,7 @@ export class API {
 
     //user profile
     async getProfile():Promise<CombinedUserData>{
-        return this.client.get('users/profile').then(res => res.data.data as CombinedUserData )
+        return this.client.get('/users/profile').then(res => res.data.data as CombinedUserData )
     }
 
     //delete user profile
@@ -96,9 +96,14 @@ export class API {
         return this.client.delete("/users/profile").then(res => res.status)
     }
 
+    //update user
+    async updateProfile(data:any){
+        return this.client.patch("/users/profile",data).then(res => res)
+    }
+
     //kyc
     async createKYC(data:FormData){
-        return this.client.post('/users/kyc', data).then(res => res)
+        return this.client.patch('/users/kyc', data).then(res => res)
     }
 } 
 
