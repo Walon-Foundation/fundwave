@@ -94,7 +94,7 @@ export default function CreatorDashboard() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "SLL",
+      currency: "NLe",
       minimumFractionDigits: 0,
     }).format(amount)
   }

@@ -162,8 +162,10 @@ export default function KYCPage() {
                     {previewImages.profilePicture ? (
                       <>
                         <Image
-                          src={previewImages.profilePicture || "/placeholder.svg"}
+                          src={previewImages.profilePicture}
                           alt="Profile preview"
+                          width={500}
+                          height={400}
                           className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
                         />
                         <button
@@ -388,8 +390,10 @@ export default function KYCPage() {
                     {previewImages.documentPhoto ? (
                       <div className="relative">
                         <Image
-                          src={previewImages.documentPhoto || "/placeholder.svg"}
+                          src={previewImages.documentPhoto}
                           alt="Document preview"
+                          width={500}
+                          height={400}
                           className="w-full max-w-md mx-auto h-48 sm:h-64 object-contain rounded-lg shadow-md"
                         />
                         <button
@@ -511,7 +515,9 @@ export default function KYCPage() {
                       {previewImages.profilePicture && (
                         <div className="text-center">
                           <Image
-                            src={previewImages.profilePicture || "/placeholder.svg"}
+                            src={previewImages.profilePicture}
+                            height={300}
+                            width={200}
                             alt="Profile preview"
                             className="w-20 h-20 rounded-full object-cover mx-auto border-2 border-slate-200"
                           />
@@ -521,6 +527,8 @@ export default function KYCPage() {
                       {previewImages.documentPhoto && (
                         <div className="text-center">
                           <Image
+                            height={300}
+                            width={200}
                             src={previewImages.documentPhoto || "/placeholder.svg"}
                             alt="Document preview"
                             className="w-20 h-20 object-cover rounded mx-auto border-2 border-slate-200"
