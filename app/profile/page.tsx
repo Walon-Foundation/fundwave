@@ -35,6 +35,9 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [updateSuccess, setUpdateSuccess] = useState(false)
   
   const router = useRouter()
   const [editForm, setEditForm] = useState({
@@ -75,6 +78,47 @@ export default function ProfilePage() {
     fetchData()
   }, [])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSaveProfile = async () => {
+    if (!data) return
+    
+    setIsUpdating(true)
+    setUpdateError(null)
+    
+    try {
+      const updateData = {
+        name: `${editForm.firstName + editForm.lastName}`,
+        location: editForm.location,
+        bio:editForm.bio,
+        phone:editForm.phone
+      }
+      
+      await api.updateProfile(updateData)
+      const updatedProfile = await api.getProfile()
+      setData(prev => prev ? {
+        ...prev,
+        profile: {
+          ...prev.profile,
+          ...updatedProfile
+        }
+      } : null)
+      setUpdateSuccess(true)
+      setIsEditing(false)
+    } catch (err: any) {
+      console.error("Error updating profile:", err)
+      setUpdateError(err.message || "Failed to update profile")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const handleCancelEdit = () => {
     if (data) {
       setEditForm({
@@ -86,6 +130,7 @@ export default function ProfilePage() {
       })
     }
     setIsEditing(false)
+    setUpdateError(null)
   }
 
   const handleDeleteAccount = async() => {
@@ -104,7 +149,7 @@ export default function ProfilePage() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "SLL",
+      currency: "NLe",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -208,6 +253,18 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8">
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
+        {/* Success/Error Messages */}
+        {updateSuccess && (
+          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+            Profile updated successfully!
+          </div>
+        )}
+        {updateError && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+            {updateError}
+          </div>
+        )}
+
         {/* Profile Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 pointer-events-none" />
@@ -217,7 +274,7 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-4 sm:gap-6 flex-1">
               <div className="relative group">
                 <Image
-                  src={data.profile.profilePicture || "/placeholder.svg"}
+                  src={data.profile.profilePicture as string}
                   alt={`${data.profile.firstName} ${data.profile.lastName}`}
                   width={100}
                   height={100}
@@ -241,22 +298,25 @@ export default function ProfilePage() {
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <input
                         type="text"
+                        name="firstName"
                         value={editForm.firstName}
-                        onChange={(e) => setEditForm((prev) => ({ ...prev, firstName: e.target.value }))}
+                        onChange={handleInputChange}
                         className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         placeholder="First Name"
                       />
                       <input
                         type="text"
+                        name="lastName"
                         value={editForm.lastName}
-                        onChange={(e) => setEditForm((prev) => ({ ...prev, lastName: e.target.value }))}
+                        onChange={handleInputChange}
                         className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         placeholder="Last Name"
                       />
                     </div>
                     <textarea
+                      name="bio"
                       value={editForm.bio}
-                      onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value }))}
+                      onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
                       rows={3}
                       placeholder="Tell us about yourself..."
@@ -264,15 +324,17 @@ export default function ProfilePage() {
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <input
                         type="text"
+                        name="location"
                         value={editForm.location}
-                        onChange={(e) => setEditForm((prev) => ({ ...prev, location: e.target.value }))}
+                        onChange={handleInputChange}
                         className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         placeholder="Location"
                       />
                       <input
                         type="text"
+                        name="phone"
                         value={editForm.phone}
-                        onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))}
+                        onChange={handleInputChange}
                         className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         placeholder="Phone Number"
                       />
@@ -332,16 +394,24 @@ export default function ProfilePage() {
               {isEditing ? (
                 <>
                   <button
-                    // onClick={handleSaveProfile}
-                    className="flex-1 sm:flex-none flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:scale-105 min-h-[44px]"
+                    onClick={handleSaveProfile}
+                    disabled={isUpdating}
+                    className="flex-1 sm:flex-none flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:scale-105 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Save Changes</span>
-                    <span className="sm:hidden">Save</span>
+                    {isUpdating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Save Changes</span>
+                        <span className="sm:hidden">Save</span>
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleCancelEdit}
-                    className="flex-1 sm:flex-none flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-base bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all duration-300 font-medium min-h-[44px]"
+                    disabled={isUpdating}
+                    className="flex-1 sm:flex-none flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 text-sm sm:text-base bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all duration-300 font-medium min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
@@ -371,7 +441,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Quick Stats Cards */}
+        {/* Rest of the component remains the same */}
+        {/* ... (Quick Stats Cards, My Campaigns Section, My Donations Section, Danger Zone) ... */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="group bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 text-center hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -670,6 +741,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
   )
 }
