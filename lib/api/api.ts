@@ -88,12 +88,17 @@ export class API {
 
     //user profile
     async getProfile():Promise<CombinedUserData>{
-        return this.client.get('users/profile').then(res => res.data.data as CombinedUserData )
+        return this.client.get('/users/profile').then(res => res.data.data as CombinedUserData )
     }
 
     //delete user profile
     async deleteProfile(){
         return this.client.delete("/users/profile").then(res => res.status)
+    }
+
+    //update user
+    async updateProfile(data:any){
+        return this.client.patch("/users/profile",data).then(res => res)
     }
 
     //kyc
