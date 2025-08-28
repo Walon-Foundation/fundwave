@@ -64,43 +64,6 @@ export interface GenerateCode {
 
 
 
-export interface ConfirmPayment {
-  allowedProviders: string[];
-  amount: Amount;
-  createTime: string;
-  customerTarget: CustomerTarget;
-  expireTime: string;
-  financialTarget: null;
-  id: string;
-  isActive: boolean;
-  metadata: null;
-  mode: string;
-  name: string;
-  progress: Progress;
-  status: string;
-  ussdCode: string;
-}
-
-interface Progress {
-  isCompleted: boolean;
-  totalPaymentCount: number;
-  totalPaymentSum: Amount;
-}
-
-interface CustomerTarget {
-  name: string;
-  payingPhoneNumber: string;
-  reference: string;
-}
-
-interface Amount {
-  currency: string;
-  value: number;
-}
-
-
-
-
 export interface GenerateAccount {
   success:boolean,
   message:string[],
@@ -121,4 +84,55 @@ export interface GenerateAccount {
     updateTime:string,
     metadata:any
   }
+}
+
+
+export interface ConfirmPayment {
+  apiVersion: string;
+  event: Event;
+  object: Object;
+  data: Data;
+}
+
+interface Data {
+  amount: Amount;
+  authorizedPhoneNumber: string;
+  authorizedProviders: null;
+  createTime: string;
+  customer: null;
+  enable: boolean;
+  expireTime: string;
+  financialAccountId: string;
+  id: string;
+  metadata: null;
+  mode: string;
+  name: string;
+  ownershipGraph: null;
+  processedPaymentData: null;
+  recurrentPaymentTarget: RecurrentPaymentTarget;
+  reference: null;
+  status: string;
+  updateTime: string;
+  ussdCode: string;
+}
+
+interface RecurrentPaymentTarget {
+  expectedPaymentCount: number;
+  expectedPaymentTotal: any;
+}
+
+interface Amount {
+  currency: string;
+  value: number;
+}
+
+interface Object {
+  id: string;
+  type: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  timestamp: string;
 }

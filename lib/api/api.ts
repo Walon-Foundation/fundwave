@@ -98,7 +98,7 @@ export class API {
 
     //kyc
     async createKYC(data:FormData){
-        return this.client.post('/users/kyc', data).then(res => res)
+        return this.client.patch('/users/kyc', data).then(res => res)
     }
 } 
 
