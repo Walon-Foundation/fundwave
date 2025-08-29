@@ -98,7 +98,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     required
                   />
-                  <p className="text-xs text-slate-500 mt-1">Example: +232 XX XXX XXXX</p>
+                  <p className="text-xs text-slate-500 mt-1">Example: 076 XXX XXXX</p>
                 </div>
 
                 <div className="flex gap-3">
@@ -149,8 +149,8 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                 <ul className="text-sm text-slate-600 space-y-1">
                   <li>• Funds will be processed within 24 hours</li>
                   <li>• A confirmation email has been sent to your registered email</li>
-                  <li>• You'll receive an SMS confirmation once the transfer is complete</li>
-                  <li>• Contact support if you don't receive funds within 48 hours</li>
+                  <li>• You&apos;ll receive an SMS confirmation once the transfer is complete</li>
+                  <li>• Contact support if you don&apos;t receive funds within 48 hours</li>
                 </ul>
               </div>
 
