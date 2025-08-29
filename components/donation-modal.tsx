@@ -267,7 +267,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
                 <input
                   type="tel"
-                  placeholder="+232 XX XXX XXXX"
+                  placeholder="076 XXX XXXX"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   value={donorInfo.phone}
                   onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
@@ -323,14 +323,14 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-slate-600">Processing Fee:</span>
                   <span className="text-slate-600">
-                    {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0) * 0.025)}
+                    {formatCurrency((selectedAmount || Number.parseInt(customAmount)))}
                   </span>
                 </div>
                 <div className="border-t border-slate-200 pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Total:</span>
                     <span className="font-semibold">
-                      {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0) * 1.025)}
+                      {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0))}
                     </span>
                   </div>
                 </div>
