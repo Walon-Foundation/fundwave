@@ -156,24 +156,26 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-white text-ocean-700 hover:bg-ocean-50 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
-                >
-                  <Link href="/create-campaign" className="flex items-center">
+                <Link href="/create-campaign">
+                  <Button
+                    size="lg"
+                    className="bg-white text-ocean-700 hover:bg-ocean-50 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center"
+                  >
                     Start Your Campaign
                     <ArrowRight className="ml-2 w-5 h-5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent"
-                >
-                  <Link href="/campaigns">Explore Campaigns</Link>
-                </Button>
+                  </Button>
+                </Link>
+
+                {/* Fixed Button 2 */}
+                <Link href="/campaigns">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent"
+                  >
+                    Explore Campaigns
+                  </Button>
+                </Link>
               </div>
 
               {/* Trust Indicators */}
@@ -231,7 +233,7 @@ export default function HomePage() {
         </div>
       </section>
 
-
+      {/* Rest of the page content remains the same */}
       {/* Stats Section */}
       <section className="py-16 bg-gradient-to-r from-slate-50 to-ocean-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -418,8 +420,9 @@ export default function HomePage() {
                   <Image
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
-                    fill
-                    className="w-12 h-12 rounded-full mr-4"
+                    width={60}
+                    height={60}
+                    className="rounded-full mr-4"
                   />
                   <div>
                     <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
