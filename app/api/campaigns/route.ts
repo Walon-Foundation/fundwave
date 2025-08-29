@@ -1,9 +1,9 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse, NextRequest } from "next/server";
-import { createCampaign } from "../../../validations/campaign";
-import { supabase } from "../../../lib/supabase";
-import { db } from "../../../db/drizzle";
-import { campaignTable, teamMemberTable, userTable } from "../../../db/schema";
+import { createCampaign } from "@/validations/campaign";
+import { supabase } from "@/lib/supabase";
+import { db } from "@/db/drizzle";
+import { campaignTable, teamMemberTable, userTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
@@ -78,6 +78,8 @@ export async function POST(req:NextRequest){
             }, { status:409 })
         }
 
+
+        //todo getting the signed url for the photos
 
         const buffer = Buffer.from(await image.arrayBuffer())
         const filePath = `${data.title}`

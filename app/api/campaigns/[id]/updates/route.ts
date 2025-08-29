@@ -34,6 +34,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
     const content = body.get("content")
     // const image = body.get("image") as File
 
+    //todo try and process the pictures comming from update if any
     const {data, success, error} = createUpdate.safeParse({
       title,
       content

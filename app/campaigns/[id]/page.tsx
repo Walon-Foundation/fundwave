@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X } from "lucide-react"
-import DonationModal from "../../../components/donation-modal"
+import DonationModal from "@/components/donation-modal"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
 import type { CampaignDetails, CombinedUserData } from "@/types/api"
@@ -200,7 +200,7 @@ export default function CampaignDetailPage() {
             {/* Campaign Image */}
             <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-4 sm:mb-6">
               <Image
-                src={campaign.image || "/placeholder.svg"}
+                src={campaign.image}
                 alt={campaign.title}
                 fill
                 className="object-cover"

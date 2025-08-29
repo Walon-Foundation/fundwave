@@ -188,6 +188,8 @@ export async function DELETE(){
       }, { status:401 })
     }
 
+    //Todo delete the profile and document images
+
    await Promise.all([
     //deleting the user from the database
     db.update(userTable).set({email:"", name:"", isDeleted:true, phone:"",isKyc:false, isVerified:false}).where(eq(userTable.clerkId, clerkId!)).execute(),
