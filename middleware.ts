@@ -8,9 +8,9 @@ import { userTable } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 const isPublicRoute = createRouteMatcher([
- "/",
-  "/sign-in",
-  "/sign-up",
+  "/",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
   "/privacy",
   "/terms",
   "/cookie-policy",
@@ -21,13 +21,15 @@ const isPublicRoute = createRouteMatcher([
   "/about",
   "/campaigns",       // campaigns list
   "/campaigns/:id",
+  "/api/(.*)",         // All API routes
+  "/api/campaigns"
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
 
-  // Skip auth checks for public routes
-  if (isPublicRoute(req)) {
+  // Skip auth checks for public routes and API routes
+  if (isPublicRoute(req) || url.pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
@@ -36,22 +38,24 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId } = await auth();
     
     if (!userId) {
-      return NextResponse.redirect(new URL("/sign-in", req.url));
+      // Redirect to sign-in with return URL
+      const signInUrl = new URL("/sign-in", req.url);
+      signInUrl.searchParams.set("redirect_url", url.toString());
+      return NextResponse.redirect(signInUrl);
     }
 
-    // Get user data
+    // Get user data (only for protected routes)
     const dbUser = (await db
       .select()
       .from(userTable)
       .where(eq(userTable.clerkId, userId))
     )[0];
 
-    
+    // KYC checks
     if (url.pathname.startsWith("/kyc") && dbUser?.isKyc) {
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
-
 
     if (url.pathname.startsWith("/create-campaign") && !dbUser?.isKyc) {
       url.pathname = "/kyc";
@@ -61,13 +65,16 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);
-    return NextResponse.redirect(new URL("/sign-in", req.url));
+    const signInUrl = new URL("/sign-in", req.url);
+    signInUrl.searchParams.set("redirect_url", url.toString());
+    return NextResponse.redirect(signInUrl);
   }
 });
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/api/(.*),"
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // '/(api|trpc)(.*)',
   ],
-};
+}
