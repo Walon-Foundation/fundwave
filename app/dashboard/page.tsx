@@ -21,8 +21,9 @@ import {
 } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 // import DashboardSetupWizard from "@/components/dashboard-setup-wizard"
-import { Dashboard } from "@/types/api"
+import type { Dashboard } from "@/types/api"
 import { api } from "@/lib/api/api"
+import CashoutModal from "@/components/cashout-modal"
 
 export default function CreatorDashboard() {
   const [data, setData] = useState<Dashboard>()
@@ -32,6 +33,10 @@ export default function CreatorDashboard() {
   const [_isFirstTime, setIsFirstTime] = useState(false)
   // const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [cashoutModal, setCashoutModal] = useState<{ isOpen: boolean; campaign: any }>({
+    isOpen: false,
+    campaign: null,
+  })
 
   // Pagination states for each section
   const [campaignsPage, setCampaignsPage] = useState(1)
@@ -126,18 +131,32 @@ export default function CreatorDashboard() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
 
+  const isCampaignEnded = (endDate: Date) => {
+    const today = new Date()
+    const end = new Date(endDate)
+    return today >= end
+  }
+
+  const handleCashout = (campaign: any) => {
+    setCashoutModal({ isOpen: true, campaign })
+  }
+
   // Pagination component
-  const Pagination = ({ currentPage, totalPages, paginate }: { currentPage: number, totalPages: number, paginate: (page: number) => void }) => {
+  const Pagination = ({
+    currentPage,
+    totalPages,
+    paginate,
+  }: { currentPage: number; totalPages: number; paginate: (page: number) => void }) => {
     const pageNumbers = []
-    
+
     // Show up to 5 page numbers with current page in the middle
     let startPage = Math.max(1, currentPage - 2)
     const endPage = Math.min(totalPages, startPage + 4)
-    
+
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4)
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i)
     }
@@ -147,49 +166,49 @@ export default function CreatorDashboard() {
         <button
           onClick={() => paginate(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`p-2 rounded-lg ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+          className={`p-2 rounded-lg ${currentPage === 1 ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        
+
         {startPage > 1 && (
           <>
             <button
               onClick={() => paginate(1)}
-              className={`px-3 py-1 rounded-lg ${1 === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+              className={`px-3 py-1 rounded-lg ${1 === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
             >
               1
             </button>
             {startPage > 2 && <span className="px-1 text-slate-400">...</span>}
           </>
         )}
-        
-        {pageNumbers.map(number => (
+
+        {pageNumbers.map((number) => (
           <button
             key={number}
             onClick={() => paginate(number)}
-            className={`px-3 py-1 rounded-lg ${number === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+            className={`px-3 py-1 rounded-lg ${number === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
           >
             {number}
           </button>
         ))}
-        
+
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && <span className="px-1 text-slate-400">...</span>}
             <button
               onClick={() => paginate(totalPages)}
-              className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+              className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
             >
               {totalPages}
             </button>
           </>
         )}
-        
+
         <button
           onClick={() => paginate(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`p-2 rounded-lg ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+          className={`p-2 rounded-lg ${currentPage === totalPages ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -224,7 +243,7 @@ export default function CreatorDashboard() {
   }
 
   const selectedCampaignData = data.campaigns?.find((c) => c.id === selectedCampaign)
-  const activeCampaigns = data.campaigns?.filter(c => c.status === "active")?.length
+  const activeCampaigns = data.campaigns?.filter((c) => c.status === "active")?.length
   const totalCampaigns = data.campaigns?.length
 
   return (
@@ -260,7 +279,7 @@ export default function CreatorDashboard() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-slate-600">Total Raised</p>
                 <p className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
-                  {typeof data.totalRaised === 'number' ? formatCurrency(data.totalRaised) : data.totalRaised || 0}
+                  {typeof data.totalRaised === "number" ? formatCurrency(data.totalRaised) : data.totalRaised || 0}
                 </p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -382,10 +401,10 @@ export default function CreatorDashboard() {
                       ))}
                     </div>
                     {activityTotalPages > 1 && (
-                      <Pagination 
-                        currentPage={activityPage} 
-                        totalPages={activityTotalPages} 
-                        paginate={paginateActivity} 
+                      <Pagination
+                        currentPage={activityPage}
+                        totalPages={activityTotalPages}
+                        paginate={paginateActivity}
                       />
                     )}
                   </>
@@ -446,7 +465,8 @@ export default function CreatorDashboard() {
                   <div>
                     <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Your Campaigns</h2>
                     <p className="text-sm text-slate-500 mt-1">
-                      Showing {Math.min(campaignsPerPage, currentCampaigns?.length)} of {data.campaigns?.length} campaigns
+                      Showing {Math.min(campaignsPerPage, currentCampaigns?.length)} of {data.campaigns?.length}{" "}
+                      campaigns
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -478,6 +498,7 @@ export default function CreatorDashboard() {
                       {currentCampaigns?.map((campaign) => {
                         const progress = (campaign.donated / campaign.amountNeeded) * 100
                         const daysLeft = calculateDaysLeft(campaign.endDate)
+                        const campaignEnded = isCampaignEnded(campaign.endDate)
                         return (
                           <tr key={campaign.id} className="border-b border-slate-100 hover:bg-slate-50">
                             <td className="py-4 px-4">
@@ -572,6 +593,15 @@ export default function CreatorDashboard() {
                                     <Play className="w-4 h-4" />
                                   )}
                                 </button>
+                                {campaignEnded && campaign.donated > 0 && (
+                                  <button
+                                    onClick={() => handleCashout(campaign)}
+                                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+                                    title="Cashout Funds"
+                                  >
+                                    Cashout
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -580,10 +610,10 @@ export default function CreatorDashboard() {
                     </tbody>
                   </table>
                   {campaignsTotalPages > 1 && (
-                    <Pagination 
-                      currentPage={campaignsPage} 
-                      totalPages={campaignsTotalPages} 
-                      paginate={paginateCampaigns} 
+                    <Pagination
+                      currentPage={campaignsPage}
+                      totalPages={campaignsTotalPages}
+                      paginate={paginateCampaigns}
                     />
                   )}
                 </div>
@@ -592,6 +622,7 @@ export default function CreatorDashboard() {
                   {currentCampaigns?.map((campaign) => {
                     const progress = (campaign.donated / campaign.amountNeeded) * 100
                     const daysLeft = calculateDaysLeft(campaign.endDate)
+                    const campaignEnded = isCampaignEnded(campaign.endDate)
                     return (
                       <div key={campaign.id} className="border border-slate-200 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-3">
@@ -678,16 +709,25 @@ export default function CreatorDashboard() {
                                 <Play className="w-4 h-4" />
                               )}
                             </button>
+                            {campaignEnded && campaign.donated > 0 && (
+                              <button
+                                onClick={() => handleCashout(campaign)}
+                                className="text-green-600 hover:text-green-800 text-sm font-medium"
+                                title="Cashout Funds"
+                              >
+                                Cashout
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
                     )
                   })}
                   {campaignsTotalPages > 1 && (
-                    <Pagination 
-                      currentPage={campaignsPage} 
-                      totalPages={campaignsTotalPages} 
-                      paginate={paginateCampaigns} 
+                    <Pagination
+                      currentPage={campaignsPage}
+                      totalPages={campaignsTotalPages}
+                      paginate={paginateCampaigns}
                     />
                   )}
                 </div>
@@ -776,7 +816,8 @@ export default function CreatorDashboard() {
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Notifications</h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing {Math.min(notificationsPerPage, currentNotifications?.length)} of {data?.notifications?.length} notifications
+                  Showing {Math.min(notificationsPerPage, currentNotifications?.length)} of{" "}
+                  {data?.notifications?.length} notifications
                 </p>
               </div>
               <button className="text-sm text-indigo-600 hover:text-indigo-800">Mark all as read</button>
@@ -814,18 +855,16 @@ export default function CreatorDashboard() {
                             </p>
                           </div>
                         </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
-                        )}
+                        {!notification.read && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />}
                       </div>
                     </div>
                   ))}
                 </div>
                 {notificationsTotalPages > 1 && (
-                  <Pagination 
-                    currentPage={notificationsPage} 
-                    totalPages={notificationsTotalPages} 
-                    paginate={paginateNotifications} 
+                  <Pagination
+                    currentPage={notificationsPage}
+                    totalPages={notificationsTotalPages}
+                    paginate={paginateNotifications}
                   />
                 )}
               </>
@@ -837,6 +876,12 @@ export default function CreatorDashboard() {
             )}
           </div>
         )}
+
+        <CashoutModal
+          isOpen={cashoutModal.isOpen}
+          onClose={() => setCashoutModal({ isOpen: false, campaign: null })}
+          campaign={cashoutModal.campaign}
+        />
       </div>
     </div>
   )
