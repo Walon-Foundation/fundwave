@@ -82,6 +82,7 @@ export async function PATCH(req:NextRequest){
     const profileBuffer = Buffer.from(await profilePicture.arrayBuffer())
     const documentPhotoBuffer = Buffer.from(await documentPhoto.arrayBuffer())
   
+    //Todo get the signed url for photos
     const { data:uploadData, error:uploadError }  = await supabase.storage.from("profiles").upload(profilePhotoName, profileBuffer,{
       contentType:profilePicture.type,
       upsert:false,

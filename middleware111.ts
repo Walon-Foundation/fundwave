@@ -8,12 +8,19 @@ import { userTable } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)", 
-  "/sign-up(.*)",
-  "/campaigns",
-  "/",
-  "/api/webhook/(.*)",
-  "/api/campaigns",
+ "/",
+  "/sign-in",
+  "/sign-up",
+  "/privacy",
+  "/terms",
+  "/cookie-policy",
+  "/refund-policy",
+  "/community-guidelines",
+  "/contact",
+  "/help",
+  "/about",
+  "/campaigns",       // campaigns list
+  "/campaigns/:id",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -61,6 +68,6 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/api/(.*),"
   ],
 };

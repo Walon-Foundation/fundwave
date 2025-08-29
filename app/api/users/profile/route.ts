@@ -17,7 +17,7 @@ export async function GET() {
           ok: false,
           message: "User is not authenticated",
         },
-        { status: 401 }
+        { status: 200 }
       );
     }
 
@@ -187,6 +187,8 @@ export async function DELETE(){
         message:"user is not authenticated",
       }, { status:401 })
     }
+
+    //Todo delete the profile and document images
 
    await Promise.all([
     //deleting the user from the database
