@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 import { sendEmail } from "@/lib/nodeMailer";
 import { deleteSchema } from "@/validations/user";
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
   try {
@@ -176,40 +177,69 @@ export async function GET() {
 
 
 
-export async function DELETE(){
-  try{
-    const { userId:clerkId } = await auth()
-    const user = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId!)).limit(1).execute())[0]
+export async function DELETE() {
+  try {
+    const { userId: clerkId } = await auth()
+    const user = (
+      await db
+        .select()
+        .from(userTable)
+        .where(eq(userTable.clerkId, clerkId!))
+        .limit(1)
+        .execute()
+    )[0]
 
-    if(!clerkId || !user){
-      return NextResponse.json({
-        ok:false,
-        message:"user is not authenticated",
-      }, { status:401 })
+    if (!clerkId || !user) {
+      return NextResponse.json(
+        { ok: false, message: "user is not authenticated" },
+        { status: 401 }
+      )
     }
 
-    //Todo delete the profile and document images
+    // ✅ Run all cleanup tasks in parallel
+    await Promise.all([
+      // Delete images from Supabase
+      supabase.storage.from("profiles").remove([user.name]),
+      supabase.storage.from("documents").remove([user.name]),
 
-   await Promise.all([
-    //deleting the user from the database
-    db.update(userTable).set({email:"", name:"", isDeleted:true, phone:"",isKyc:false, isVerified:false}).where(eq(userTable.clerkId, clerkId!)).execute(),
-    (await clerkClient()).users.deleteUser(clerkId),
-    sendEmail("account-deleted",user.email, "Your Fundwave account has being deleted", { name:user.name, email:user.email})
-   ])
+      // Delete user from DB
+      db.update(userTable)
+        .set({
+          email: "",
+          name: "",
+          isDeleted: true,
+          phone: "",
+          isKyc: false,
+          isVerified: false,
+        })
+        .where(eq(userTable.clerkId, clerkId!))
+        .execute(),
 
-    return NextResponse.json({
-      ok:true,
-      message:"user deleted",
-    }, { status:200 })
+      // Delete Clerk account
+      (await clerkClient()).users.deleteUser(clerkId),
 
-  }catch(err){
-    if (process.env.NODE_ENV === "development") console.log(err)
-    return NextResponse.json({
-      ok:false,
-      message:"internal server error",
-    }, { status:500 })
+      // Send email
+      sendEmail(
+        "account-deleted",
+        user.email,
+        "Your Fundwave account has being deleted",
+        { name: user.name, email: user.email }
+      ),
+    ])
+
+    return NextResponse.json(
+      { ok: true, message: "user deleted" },
+      { status: 200 }
+    )
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error(err)
+    return NextResponse.json(
+      { ok: false, message: "internal server error" },
+      { status: 500 }
+    )
   }
 }
+
 
 
 
