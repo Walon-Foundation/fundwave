@@ -105,6 +105,11 @@ export class API {
     async createKYC(data:FormData){
         return this.client.patch('/users/kyc', data).then(res => res)
     }
+
+    //withdrawal
+    async makeWithdrawal(data:any, id:string){
+        return this.client.post(`/campaigns/${id}/cash-out`).then(res => res)
+    }
 } 
 
 export const api = new API()

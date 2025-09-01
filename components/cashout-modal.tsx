@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { X, DollarSign, CheckCircle, AlertCircle, Smartphone, Clock, Shield, ArrowRight } from "lucide-react"
+import { api } from "@/lib/api/api"
 
 interface CashoutModalProps {
   isOpen: boolean
@@ -51,7 +52,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await api.makeWithdrawal(phoneNumber, campaign.id)
       setShowConfirmation(true)
     } catch (err) {
       setError("Failed to process cashout. Please try again.")
