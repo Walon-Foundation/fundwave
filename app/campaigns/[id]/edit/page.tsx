@@ -89,7 +89,7 @@ export default function EditCampaignPage() {
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     alert("Campaign updated successfully!")
-    router.push(`/campaigns/${(await params).id}`)
+    router.push(`/campaigns/${(params).id}`)
   }
 
   return (

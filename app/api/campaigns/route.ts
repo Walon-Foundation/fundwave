@@ -14,19 +14,15 @@ export async function POST(req:NextRequest){
     try{
         //authenticating the user
         const { userId:clerkId } = await auth();
-        if (!clerkId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const userExist = await db.select().from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1)
+        const userExist = (await db.select().from(userTable).where(eq(userTable.clerkId, clerkId as string)).limit(1).execute())[0]
         
-        if(userExist.length === 0){
+        if(!userExist || !clerkId){
         return NextResponse.json({
-            error:"user auth token is invalid",
+            error:"user is not authenticated",
         }, { status:401 })
         }
         
-        const userId = userExist[0].id;
+        const userId = userExist.id;
 
         const body = await req.formData()
         const title = body.get("title")
@@ -65,7 +61,7 @@ export async function POST(req:NextRequest){
             }, { status:400 })
         }
 
-        if(image.size > 5 *1024 * 1024 ){
+        if(image.size > 50 *1024 * 1024 ){
             return NextResponse.json({
                 message:"image is to large",
             }, { status:400 })
@@ -78,18 +74,17 @@ export async function POST(req:NextRequest){
             }, { status:409 })
         }
 
-
-        //todo getting the signed url for the photos
-
         const buffer = Buffer.from(await image.arrayBuffer())
         const filePath = `${data.title}`
 
-        const {data:uploadData, error:uploadError } = await supabase.storage.from("campaigns").upload(filePath, buffer,{
+        const { error:uploadError } = await supabase.storage.from("campaigns").upload(filePath, buffer,{
             contentType:image.type,
             upsert:true,
         })
 
-        if(uploadError){
+        const { data:signedUrlData } = await  supabase.storage.from("campaigns").createSignedUrl(filePath, 60 * 60 * 24 * 365 * 2)
+
+        if(uploadError || !signedUrlData){
             return NextResponse.json({
                 message:"failed to upload image",
             }, { status: 500})
@@ -102,8 +97,6 @@ export async function POST(req:NextRequest){
                 message:"failed to created campaign account"
             },{ status:500 })
         }
-
-        const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
     
         const [newCampaign] = await db.insert(campaignTable).values({
             id:nanoid(16),
@@ -116,12 +109,12 @@ export async function POST(req:NextRequest){
             solution:data.solution,
             impact:data.impact,
             fundingGoal:data.fundingGoal,
-            image:url,
+            image:signedUrlData.signedUrl,
             financialAccountId:response.result.id,
             category:data.category,
             creatorId: userId,
             campaignType:data.campaignType,
-            creatorName: userExist[0].name,
+            creatorName: userExist.name,
         }).returning()
 
         if((data?.teamMembers ?? []).length > 0){
@@ -134,12 +127,13 @@ export async function POST(req:NextRequest){
         }
 
         //send email to confirm campaign creation
-        await sendEmail("campaign-created", userExist[0].email, "Campaign has been created", { name: userExist[0].name, campaign:newCampaign.title })
+        await sendEmail("campaign-created", userExist.email, "Campaign has been created", { name: userExist.name, campaign:newCampaign.title })
 
         //sending the response to client
         return NextResponse.json({
             message:"campaign created",
         }, { status:201 })
+
     }catch(err){
         if (process.env.NODE_ENV === "development") console.log(err)
         return NextResponse.json({

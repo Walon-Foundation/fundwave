@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse, NextRequest } from "next/server";
-import { kycSchema } from "../../../../validations/user";
-import { db } from "../../../../db/drizzle";
-import { userDocumentTable, userTable } from "../../../../db/schema";
+import { kycSchema } from "@/validations/user";
+import { db } from "@/db/drizzle";
+import { userDocumentTable, userTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
 
@@ -13,24 +13,16 @@ export async function PATCH(req:NextRequest){
   try{
     //authenticating the user
     const { userId } = await auth();
-    // if (!userId) {
-    //   console.log("no auth")
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
-
-    //getting the user details from clerk
-    // const user = (await clerkClient()).users.getUser(userId)
-
-    const userExist = await db.select().from(userTable).where(eq(userTable.clerkId, userId!)).limit(1)
+    const userExist = (await db.select().from(userTable).where(eq(userTable.clerkId, userId!)).limit(1).execute())[0]
     
-    if(!userId || userExist.length === 0){
+    if(!userId || !userExist){
       console.log("user nor dea")
       return NextResponse.json({
         error:"user auth token is invalid",
       }, { status:401 })
     }
 
-    if(userExist[0].isKyc){
+    if(userExist.isKyc){
       return NextResponse.json({
         message:"user has already done the kyc",
       }, { status:200 })
@@ -51,7 +43,7 @@ export async function PATCH(req:NextRequest){
     const profilePicture =  body.get("profilePicture") as File
     const documentPhoto =  body.get("documentPhoto") as File
 
-    if(profilePicture.size > 5 * 1024* 1024 || documentPhoto.size > 5 * 1024 * 1024){
+    if(profilePicture.size > 50 * 1024* 1024 || documentPhoto.size > 50 * 1024 * 1024){
       return NextResponse.json({
         error:"user profile picture and document photo too large",
       }, { status:400 })
@@ -76,19 +68,19 @@ export async function PATCH(req:NextRequest){
       }, { status:400 })
     }
 
-    const profilePhotoName = `${userExist[0].name}`
-    const documentPhotoName = `${userExist[0].name}`
+    const profilePhotoName = `${userExist.name}`
+    const documentPhotoName = `${userExist.name}`
 
     const profileBuffer = Buffer.from(await profilePicture.arrayBuffer())
     const documentPhotoBuffer = Buffer.from(await documentPhoto.arrayBuffer())
   
-    //Todo get the signed url for photos
-    const { data:uploadData, error:uploadError }  = await supabase.storage.from("profiles").upload(profilePhotoName, profileBuffer,{
+
+    const { error:uploadError }  = await supabase.storage.from("profiles").upload(profilePhotoName, profileBuffer,{
       contentType:profilePicture.type,
       upsert:false,
     })
 
-    const {data:uploadDocumentData, error:uploadDocumentError } = await supabase.storage.from("documents").upload(documentPhotoName,documentPhotoBuffer,{
+    const { error:uploadDocumentError } = await supabase.storage.from("documents").upload(documentPhotoName,documentPhotoBuffer,{
       contentType:documentPhoto.type,
       upsert:false,
     })
@@ -107,33 +99,40 @@ export async function PATCH(req:NextRequest){
       }, { status:500 })
     }
 
-    const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
-    const documentUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${uploadDocumentData.fullPath}`
+    const {data:signUrlProfileData} = await supabase.storage.from("profiles").createSignedUrl(profilePhotoName, 60 * 60 * 23 * 365 * 2)
+    const {data:signUrlDocumentData} = await supabase.storage.from("profiles").createSignedUrl(documentPhotoName, 60 * 60 * 23 * 365 * 2) 
 
-    const newUser = await db.update(userTable).set({
+    if(!signUrlDocumentData || !signUrlProfileData){
+      return NextResponse.json({
+        ok:false,
+        message:"failed to created signedurl",
+      }, { status:500 })
+    }
+
+    const newUser = (await db.update(userTable).set({
       isKyc:true,
       isVerified:true,
       occupation:data.occupation,
       address:data.address,
       age:data.age,
       nationality:data.nationality,
-      profilePicture:url,
+      profilePicture:signUrlProfileData.signedUrl,
       district:data.district,
       phone:data.phoneNumber,
       bio:data.bio
-    }).where(eq(userTable.clerkId, userId)).returning()
+    }).where(eq(userTable.clerkId, userId)).returning())[0]
     
 
    //saving the document and sending the email
    await Promise.all([
       db.insert(userDocumentTable).values({
         documentNumber:data.documentNumber,
-        documentPhoto:documentUrl,
+        documentPhoto:signUrlDocumentData.signedUrl,
         documentType:data.documentType,
         id:nanoid(16),
-        userId:newUser[0].id
+        userId:newUser.id
       }),
-      sendEmail("kyc-complete", newUser[0].email, "Kyc has being completed", { name: newUser[0].name })
+      sendEmail("kyc-complete", newUser.email, "Kyc has being completed", { name: newUser.name })
    ])
 
     return NextResponse.json({
