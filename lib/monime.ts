@@ -1,6 +1,6 @@
 import axios from "axios"
 import { nanoid } from "nanoid";
-import { GenerateCode,  GenerateAccount } from "../types/monimeTypes";
+import { GenerateCode,  GenerateAccount, Cashout } from "../types/monimeTypes";
 
 const spaceId = process.env.MONIME_SPACE_ID || "enter monime_space_id"
 const token = process.env.MONIME_ACCESS_TOKEN || "enter access token from monime";
@@ -87,5 +87,41 @@ export async function createAccount( name:string ):Promise<GenerateAccount | und
   }catch(err){
     console.log(err)
   }
+}
+
+
+
+export async function campaignCashout(amount:number, financialAccountId:string, phoneNumber:string):Promise<Cashout | undefined>{
+ try{
+    const URL = 'https://api.monime.io/v1/payouts'
+    const body = {
+      "amount":{
+        "currency":"SLE",
+        "value": (amount) * 100,
+      },
+      "source":{
+        "financialAccountId":financialAccountId
+      },
+      "destination":{
+        "type":"momo",
+        "providerId":["m17", "m18"],
+        "phoneNumber":phoneNumber,
+      },
+      metaData:{}
+    }
+
+    const res = await axios.post(URL, body, {
+      headers:{
+        'Monime-Space-Id': `${spaceId}`,
+        'Idempotency-Key': `${nanoid(24)}`,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    return res.data as Cashout
+ }catch(err){
+  console.log(err)
+ }
 }
 
