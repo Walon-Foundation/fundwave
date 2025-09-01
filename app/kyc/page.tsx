@@ -207,7 +207,7 @@ export default function KYCPage() {
                     <Upload className="w-4 h-4 mr-2" />
                     {formData.profilePicture ? "Change Photo" : "Upload Photo"}
                   </label>
-                  <p className="text-xs text-slate-500 mt-2">JPG, PNG or GIF (max 5MB)</p>
+                  <p className="text-xs text-slate-500 mt-2">JPG, PNG or GIF (max 50MB)</p>
                 </div>
               </div>
 

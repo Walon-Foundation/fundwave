@@ -47,6 +47,7 @@ export default function CampaignUpdatesPage() {
     getData()
   }, [param.id])
 
+
   const handleCreateUpdate = async() => {
     if (!newUpdate.title.trim() || !newUpdate.message.trim()) return
     
@@ -145,9 +146,9 @@ export default function CampaignUpdatesPage() {
       formData.append("title", editUpdate.title)
       formData.append("content", editUpdate.message)
       
-      // if (editUpdate.image) {
-      //   formData.append("image", editUpdate.image)
-      // }
+      if (editUpdate.image) {
+        formData.append("image", editUpdate.image)
+      }
 
       const response = await api.updateUpdate(formData, param.id, updateId)
       
@@ -353,7 +354,7 @@ export default function CampaignUpdatesPage() {
                     {(editUpdate.imagePreview || editUpdate.existingImage) && (
                       <div className="mt-4 relative">
                         <Image
-                          src={editUpdate.imagePreview || editUpdate.existingImage || ""}
+                          src={editUpdate.imagePreview as string || editUpdate.existingImage as string}
                           alt="Update image"
                           width={300}
                           height={200}
