@@ -24,7 +24,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/(.*)",         // All API routes
   "/api/campaigns",
   "/careers",
-  "success-stories",
+  "/success-stories",
   '/blog',
   '/press'
 ]);
