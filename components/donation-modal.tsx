@@ -517,7 +517,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                     <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                       5
                     </span>
-                    You'll receive a confirmation SMS
+                    You&apos;ll receive a confirmation SMS
                   </li>
                 </ol>
               </div>
@@ -550,7 +550,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg flex items-center justify-center space-x-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>I've Completed Payment</span>
+                  <span>I&apos;ve Completed Payment</span>
                 </button>
               </div>
             </div>
@@ -566,7 +566,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
               <div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You for Your Donation! 🎉</h3>
                 <p className="text-slate-600">
-                  Your generosity makes a real difference. You'll receive a confirmation email shortly.
+                  Your generosity makes a real difference. You&apos;ll receive a confirmation email shortly.
                 </p>
               </div>
 
@@ -606,7 +606,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 <ul className="text-sm text-blue-800 space-y-1 text-left">
                   <li>• Your donation will be processed within 24 hours</li>
                   <li>• The campaign organizer will be notified</li>
-                  <li>• You'll receive updates on the campaign's progress</li>
+                  <li>• You&apos;ll receive updates on the campaign&apos;s progress</li>
                   <li>• A tax receipt will be emailed to you if applicable</li>
                 </ul>
               </div>

@@ -42,7 +42,11 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{updateId
             }, { status:401 })
         }
 
-        await db.delete(updateTable).where(eq(updateTable.id, updateId))
+        //deleting both the update and update image if there is images
+        await Promise.all([
+            db.delete(updateTable).where(eq(updateTable.id, updateId)),
+            supabase.storage.from("updates").remove([update.title])
+        ])
 
         return NextResponse.json({
             ok:true,

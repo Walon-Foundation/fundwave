@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "../../../../db/drizzle";
-import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "../../../../db/schema";
+import { db } from "@/db/drizzle";
+import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "@/db/schema";
 import { eq,asc, sum, count,and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendEmail } from "@/lib/nodeMailer";
+import { supabase } from "@/lib/supabase";
 
 export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string}>} ){
   try{
@@ -27,11 +28,21 @@ export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string
     //the campaign id from the params
     const id  = (await params).id
 
+    //getting the campaign
+    const campaign = (await db.select().from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0]
+    if(!campaign){
+      return NextResponse.json({
+        ok:false,
+        message:"invalid campaign id",
+      }, { status:400 })
+    }
+
     //Todo: send email to all the donors about the campaign being deleted
     //Todo: add logger to this api route
     await Promise.all([
       await sendEmail("campaign-deleted", user.email, "Campaign has being deleted", { name:user.name }),
-      await db.delete(campaignTable).where(eq(campaignTable.id, id))
+      await db.delete(campaignTable).where(eq(campaignTable.id, id)),
+      await supabase.storage.from("campaigns").remove([campaign.title])
     ])
 
     return NextResponse.json({
