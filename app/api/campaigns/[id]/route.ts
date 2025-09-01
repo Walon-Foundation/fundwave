@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "../../../../db/drizzle";
-import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "../../../../db/schema";
+import { db } from "@/db/drizzle";
+import { campaignTable, commentTable, paymentTable, teamMemberTable, updateTable, userTable } from "@/db/schema";
 import { eq,asc, sum, count,and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendEmail } from "@/lib/nodeMailer";
