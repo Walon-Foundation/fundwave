@@ -231,8 +231,8 @@ export default function CreatorDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">No Data Available</h1>
-          <p className="text-slate-600">We couldn&apos;t load your dashboard data</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4">No Data Available</h1>
+          <p className="text-lg sm:text-xl text-slate-600">We couldn&apos;t load your dashboard data</p>
           <Link href="/create-campaign" className="btn-primary mt-4 inline-flex items-center">
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Campaign
@@ -559,7 +559,7 @@ export default function CreatorDashboard() {
                                 )}
                               </div>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-4 px-5">
                               <div className="flex items-center space-x-2">
                                 <Link
                                   href={`/campaigns/${campaign.id}`}
@@ -569,37 +569,45 @@ export default function CreatorDashboard() {
                                 </Link>
                                 <Link
                                   href={`/campaigns/${campaign.id}/edit`}
-                                  className="text-slate-600 hover:text-slate-800 text-sm"
+                                  className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                                 >
-                                  <Edit className="w-4 h-4" />
+                                  <Edit className="w-4 h-4 mr-1" />
+                                  <span className="hidden lg:inline">Edit</span>
                                 </Link>
-                                {/* Add Update Button */}
                                 <Link
                                   href={`/campaigns/${campaign.id}/updates`}
-                                  className="text-slate-600 hover:text-slate-800"
+                                  className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                                   title="Add Update"
                                 >
-                                  <FileText className="w-4 h-4" />
+                                  <FileText className="w-4 h-4 mr-1" />
+                                  <span className="hidden lg:inline">Updates</span>
                                 </Link>
-                                <button
+                                {/* <button
                                   onClick={() =>
                                     handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
                                   }
-                                  className="text-slate-600 hover:text-slate-800"
+                                  className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                                 >
                                   {campaign.status === "active" ? (
-                                    <Pause className="w-4 h-4" />
+                                    <>
+                                      <Pause className="w-4 h-4 mr-1" />
+                                      <span className="hidden lg:inline">Pause</span>
+                                    </>
                                   ) : (
-                                    <Play className="w-4 h-4" />
+                                    <>
+                                      <Play className="w-4 h-4 mr-1" />
+                                      <span className="hidden lg:inline">Resume</span>
+                                    </>
                                   )}
-                                </button>
-                                {campaignEnded && campaign.donated > 0 && (
+                                </button> */}
+                                {campaignEnded && campaign.donated > 0 &&  (
                                   <button
                                     onClick={() => handleCashout(campaign)}
-                                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+                                    className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
                                     title="Cashout Funds"
                                   >
-                                    Cashout
+                                    <DollarSign className="w-4 h-4 mr-1" />
+                                    <span className="hidden lg:inline">Cashout</span>
                                   </button>
                                 )}
                               </div>
@@ -685,37 +693,40 @@ export default function CreatorDashboard() {
                             </Link>
                             <Link
                               href={`/campaigns/${campaign.id}/edit`}
-                              className="text-slate-600 hover:text-slate-800 text-sm"
+                              className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 mr-1" />
                             </Link>
-                            {/* Add Update Button for mobile view */}
                             <Link
                               href={`/campaigns/${campaign.id}/updates`}
-                              className="text-slate-600 hover:text-slate-800"
+                              className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                               title="Add Update"
                             >
-                              <FileText className="w-4 h-4" />
+                              <FileText className="w-4 h-4 mr-1" />
                             </Link>
-                            <button
+                            {/* <button
                               onClick={() =>
                                 handleCampaignAction(campaign.id, campaign.status === "active" ? "pause" : "resume")
                               }
-                              className="text-slate-600 hover:text-slate-800"
+                              className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                             >
                               {campaign.status === "active" ? (
-                                <Pause className="w-4 h-4" />
+                                <>
+                                  <Pause className="w-4 h-4 mr-1" />
+                                </>
                               ) : (
-                                <Play className="w-4 h-4" />
+                                <>
+                                  <Play className="w-4 h-4 mr-1" />
+                                </>
                               )}
-                            </button>
+                            </button> */}
                             {campaignEnded && campaign.donated > 0 && (
                               <button
                                 onClick={() => handleCashout(campaign)}
                                 className="text-green-600 hover:text-green-800 text-sm font-medium"
                                 title="Cashout Funds"
                               >
-                                Cashout
+                                <DollarSign className="w-4 h-4" />
                               </button>
                             )}
                           </div>
