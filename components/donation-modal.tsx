@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { X, Smartphone, Lock, Copy, CheckCircle, Mail } from "lucide-react"
+import { X, Smartphone, Lock, Copy, CheckCircle, ArrowLeft, ArrowRight, AlertCircle, Heart } from "lucide-react"
 import { api } from "@/lib/api/api"
 
 interface DonationModalProps {
@@ -26,10 +26,11 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
     phone: "",
     anonymous: false,
   })
-  const [step, setStep] = useState(1) 
+  const [step, setStep] = useState(1)
   const [ussdCode, setUssdCode] = useState("")
   const [copied, setCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
@@ -39,41 +40,64 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
     }).format(amount)
   }
 
-  const handleNext = () => {
+  const validateAmount = () => {
     const amount = selectedAmount || Number.parseInt(customAmount)
     if (!amount || amount < 1) {
-      alert("Minimum donation amount is NLe 1")
-      return
+      setError("Minimum donation amount is NLe 1")
+      return false
     }
+    if (amount > 50000) {
+      setError("Maximum donation amount is NLe 50,000")
+      return false
+    }
+    setError("")
+    return true
+  }
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^(076|077|078|030|031|032|033|034|025|088|075)\d{6}$/
+    return phoneRegex.test(phone.replace(/\s/g, ""))
+  }
+
+  const handleNext = () => {
+    if (!validateAmount()) return
     setStep(step + 1)
   }
 
   const handlePaymentDetails = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
+
+    if (!validatePhone(donorInfo.phone)) {
+      setError("Please enter a valid Sierra Leone phone number")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const data = await api.createPayment({
-        name: donorInfo.name || undefined,
-        amount: selectedAmount || Number.parseInt(customAmount),
-        phone: donorInfo.phone,
-        email: donorInfo.email,
-        isAnonymous:donorInfo.anonymous
-      }, campaign.id)
+      const data = await api.createPayment(
+        {
+          name: donorInfo.name || undefined,
+          amount: selectedAmount || Number.parseInt(customAmount),
+          phone: donorInfo.phone,
+          email: donorInfo.email,
+          isAnonymous: donorInfo.anonymous,
+        },
+        campaign.id,
+      )
 
-      console.log(data)
       setUssdCode(data)
       setStep(4)
     } catch (error) {
       console.error("Error generating USSD code:", error)
-      alert("Failed to generate payment code. Please try again.")
+      setError("Failed to generate payment code. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDonate = () => {
-    // Directly show confirmation without verification
     setStep(5)
   }
 
@@ -83,7 +107,6 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      // Fallback for older browsers
       console.log(err)
       const textArea = document.createElement("textarea")
       textArea.value = ussdCode
@@ -96,162 +119,201 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
     }
   }
 
+  const stepTitles = ["", "Select Amount", "Payment Method", "Your Details", "Complete Payment", "Thank You!"]
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[95vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">Make a Donation</h2>
-            <button className="text-slate-400 hover:text-slate-600" onClick={() => onClose()}>
-              <X className="w-6 h-6" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Make a Donation</h2>
+                <p className="text-sm text-slate-600">{stepTitles[step]}</p>
+              </div>
+            </div>
+            <button
+              className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+              onClick={() => onClose()}
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="flex items-center mb-6">
+          {/* Enhanced Progress Indicator */}
+          <div className="flex items-center mb-8">
             {[1, 2, 3, 4, 5].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step >= stepNumber ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                    step >= stepNumber
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg scale-110"
+                      : step === stepNumber - 1
+                        ? "bg-indigo-100 text-indigo-600 border-2 border-indigo-200"
+                        : "bg-slate-100 text-slate-400"
                   }`}
                 >
-                  {stepNumber}
+                  {step > stepNumber ? <CheckCircle className="w-5 h-5" /> : stepNumber}
                 </div>
                 {stepNumber < 5 && (
-                  <div className={`w-8 h-1 mx-1 ${step > stepNumber ? "bg-indigo-600" : "bg-slate-200"}`} />
+                  <div
+                    className={`h-1 w-8 mx-2 rounded-full transition-all duration-300 ${
+                      step > stepNumber ? "bg-gradient-to-r from-indigo-500 to-purple-600" : "bg-slate-200"
+                    }`}
+                  />
                 )}
               </div>
             ))}
           </div>
 
           {/* Campaign Info */}
-          <div className="bg-slate-50 rounded-lg p-4 mb-6">
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
             <h3 className="font-semibold text-slate-900 mb-1">{campaign.title}</h3>
             <p className="text-sm text-slate-600">by {campaign.organizer}</p>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
           {/* Step 1: Amount Selection */}
           {step === 1 && (
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Select Donation Amount</h3>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {donationAmounts.map((amount) => (
-                  <button
-                    key={amount}
-                    type="button"
-                    onClick={() => {
-                      setSelectedAmount(amount)
-                      setCustomAmount("")
-                    }}
-                    className={`p-3 rounded-lg border text-center font-medium transition-colors ${
-                      selectedAmount === amount
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-600"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    {formatCurrency(amount)}
-                  </button>
-                ))}
-              </div>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Select Donation Amount</h3>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {donationAmounts.map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAmount(amount)
+                        setCustomAmount("")
+                        setError("")
+                      }}
+                      className={`p-4 rounded-xl border-2 text-center font-semibold transition-all duration-200 hover:scale-105 ${
+                        selectedAmount === amount
+                          ? "border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-lg"
+                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      {formatCurrency(amount)}
+                    </button>
+                  ))}
+                </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Or enter custom amount</label>
-                <input
-                  type="number"
-                  placeholder="Enter amount in  NLe"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  value={customAmount}
-                  onChange={(e) => {
-                    setCustomAmount(e.target.value)
-                    setSelectedAmount(null)
-                  }}
-                  min="1"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Or enter custom amount</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      placeholder="Enter amount in NLe"
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      value={customAmount}
+                      onChange={(e) => {
+                        setCustomAmount(e.target.value)
+                        setSelectedAmount(null)
+                        setError("")
+                      }}
+                      min="1"
+                      max="50000"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="text-slate-400 text-sm">NLe</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">Minimum: NLe 1 • Maximum: NLe 50,000</p>
+                </div>
               </div>
 
               <button
                 onClick={handleNext}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
               >
-                Continue
+                <span>Continue</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           )}
 
           {/* Step 2: Payment Method */}
           {step === 2 && (
-            <div>
+            <div className="space-y-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Choose Payment Method</h3>
-              <div className="space-y-3 mb-6">
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50">
+              <div className="space-y-3">
+                <label className="flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 transition-all duration-200 hover:border-orange-200">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="orange-money"
                     checked={paymentMethod === "orange-money"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mr-3"
+                    className="mr-4 w-4 h-4 text-orange-500"
                   />
-                  <Smartphone className="w-5 h-5 mr-3 text-orange-500" />
-                  <div>
-                    <span className="font-medium">Orange Money</span>
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                    <Smartphone className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-slate-900">Orange Money</span>
                     <p className="text-sm text-slate-600">Pay with your Orange Money wallet</p>
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50">
+                <label className="flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 transition-all duration-200 hover:border-blue-200">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="africell-money"
                     checked={paymentMethod === "africell-money"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mr-3"
+                    className="mr-4 w-4 h-4 text-blue-500"
                   />
-                  <Smartphone className="w-5 h-5 mr-3 text-blue-500" />
-                  <div>
-                    <span className="font-medium">Africell Money</span>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <Smartphone className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-slate-900">Africell Money</span>
                     <p className="text-sm text-slate-600">Pay with your Africell Money wallet</p>
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-slate-50 opacity-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="credit-card"
-                    disabled
-                    className="mr-3"
-                  />
-                  <div className="flex items-center">
-                    <div className="relative mr-3">
-                      <Smartphone className="w-5 h-5 text-slate-400" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs font-bold text-slate-400">SOON</span>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="font-medium text-slate-400">Credit/Debit Card</span>
-                      <p className="text-sm text-slate-400">Coming soon</p>
-                    </div>
+                <div className="flex items-center p-4 border-2 border-slate-100 rounded-xl opacity-60 bg-slate-50">
+                  <input type="radio" disabled className="mr-4 w-4 h-4" />
+                  <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center mr-4">
+                    <Smartphone className="w-5 h-5 text-slate-400" />
                   </div>
-                </label>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-slate-400">Credit/Debit Card</span>
+                      <span className="bg-slate-200 text-slate-500 text-xs px-2 py-1 rounded-full">Coming Soon</span>
+                    </div>
+                    <p className="text-sm text-slate-400">International payments</p>
+                  </div>
+                </div>
               </div>
 
               <div className="flex space-x-3">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex-1 border-2 border-slate-200 text-slate-700 py-3 px-6 rounded-xl hover:bg-slate-50 transition-all duration-200 font-semibold flex items-center justify-center space-x-2"
                 >
-                  Back
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg flex items-center justify-center space-x-2"
                 >
-                  Continue
+                  <span>Continue</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -259,79 +321,86 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
 
           {/* Step 3: Payment Details */}
           {step === 3 && (
-            <form onSubmit={handlePaymentDetails}>
+            <form onSubmit={handlePaymentDetails} className="space-y-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment Details</h3>
 
-              {/* Mobile Money Form */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  placeholder="076 XXX XXXX"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  value={donorInfo.phone}
-                  onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
-                  required
-                />
-                <input
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number *</label>
+                  <input
+                    type="tel"
+                    placeholder="076 XXX XXXX"
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    value={donorInfo.phone}
+                    onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Enter your {paymentMethod === "orange-money" ? "Orange" : "Africell"} number
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email Address *</label>
+                  <input
                     type="email"
-                    placeholder="Email Address"
-                    className="w-full mt-3 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     value={donorInfo.email}
                     onChange={(e) => setDonorInfo({ ...donorInfo, email: e.target.value })}
                     required
                   />
+                </div>
               </div>
 
-              {/* Donor Information */}
-              <div className="mb-6">
+              <div className="bg-slate-50 rounded-xl p-4">
                 <div className="flex items-center mb-4">
                   <input
                     type="checkbox"
                     id="anonymous"
                     checked={donorInfo.anonymous}
                     onChange={(e) => setDonorInfo({ ...donorInfo, anonymous: e.target.checked })}
-                    className="mr-2"
+                    className="mr-3 w-4 h-4 text-indigo-600 rounded"
                   />
-                  <label htmlFor="anonymous" className="text-sm text-slate-700">
+                  <label htmlFor="anonymous" className="text-sm font-medium text-slate-700">
                     Make this donation anonymous
                   </label>
                 </div>
 
                 {!donorInfo.anonymous && (
-                  <div className="space-y-4">
+                  <div>
                     <input
                       type="text"
-                      placeholder="Full Name"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Full Name (optional)"
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       value={donorInfo.name}
                       onChange={(e) => setDonorInfo({ ...donorInfo, name: e.target.value })}
-                      required
                     />
                   </div>
                 )}
               </div>
 
-              {/* Summary */}
-              <div className="bg-slate-50 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-600">Donation Amount:</span>
-                  <span className="font-semibold">
-                    {formatCurrency(selectedAmount || Number.parseInt(customAmount) || 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-600">Processing Fee:</span>
-                  <span className="text-slate-600">
-                    {formatCurrency((selectedAmount || Number.parseInt(customAmount)))}
-                  </span>
-                </div>
-                <div className="border-t border-slate-200 pt-2">
+              {/* Enhanced Summary */}
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                <h4 className="font-semibold text-slate-900 mb-3">Donation Summary</h4>
+                <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold">Total:</span>
-                    <span className="font-semibold">
-                      {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0))}
+                    <span className="text-slate-600">Donation Amount:</span>
+                    <span className="font-semibold text-lg">
+                      {formatCurrency(selectedAmount || Number.parseInt(customAmount) || 0)}
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500">Processing Fee:</span>
+                    <span className="text-slate-500">Included</span>
+                  </div>
+                  <div className="border-t border-slate-200 pt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-slate-900">Total:</span>
+                      <span className="font-bold text-xl text-indigo-600">
+                        {formatCurrency(selectedAmount || Number.parseInt(customAmount) || 0)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -340,19 +409,27 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex-1 border-2 border-slate-200 text-slate-700 py-3 px-6 rounded-xl hover:bg-slate-50 transition-all duration-200 font-semibold flex items-center justify-center space-x-2"
                 >
-                  Back
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg flex items-center justify-center space-x-2"
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                  ) : null}
-                  Generate USSD Code
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Generate USSD Code</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -360,83 +437,120 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
 
           {/* Step 4: USSD Payment */}
           {step === 4 && (
-            <div>
+            <div className="space-y-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Complete Payment</h3>
 
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Smartphone className="w-8 h-8 text-indigo-600" />
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Smartphone className="w-10 h-10 text-indigo-600" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-2">
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">
                   {paymentMethod === "orange-money" ? "Orange Money" : "Africell Money"} Payment
                 </h4>
-                <p className="text-slate-600 text-sm">
-                  Dial the USSD code below on your {paymentMethod === "orange-money" ? "Orange" : "Africell"} line to
-                  complete your donation
+                <p className="text-slate-600">
+                  Dial the USSD code below on your {paymentMethod === "orange-money" ? "Orange" : "Africell"} line
                 </p>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-4 mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-700">USSD Code:</span>
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-medium text-slate-700">USSD Code:</span>
                   <button
                     onClick={copyUSSDCode}
-                    className="flex items-center text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                    className={`flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      copied
+                        ? "bg-green-100 text-green-700 border border-green-200"
+                        : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200"
+                    }`}
                   >
                     {copied ? (
                       <>
-                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <CheckCircle className="w-4 h-4 mr-2" />
                         Copied!
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-1" />
-                        Copy
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Code
                       </>
                     )}
                   </button>
                 </div>
-                <div className="bg-white border-2 border-dashed border-slate-300 rounded-lg p-4 text-center">
-                  <code className="text-2xl font-mono font-bold text-slate-900">{ussdCode}</code>
+                <div className="bg-white border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center">
+                  <code className="text-3xl font-mono font-bold text-slate-900 tracking-wider">{ussdCode}</code>
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h5 className="font-semibold text-blue-900 mb-2">Instructions:</h5>
-                <ol className="text-sm text-blue-800 space-y-1">
-                  <li>1. Copy the USSD code above</li>
-                  <li>2. Open your phone dialer</li>
-                  <li>3. Dial the USSD code</li>
-                  <li>4. Follow the prompts to complete payment</li>
-                  <li>5. You&apos;ll receive a confirmation SMS</li>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h5 className="font-semibold text-blue-900 mb-3 flex items-center">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                    <span className="text-blue-600 text-sm font-bold">i</span>
+                  </div>
+                  Payment Instructions:
+                </h5>
+                <ol className="text-sm text-blue-800 space-y-2">
+                  <li className="flex items-start">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                      1
+                    </span>
+                    Copy the USSD code above
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                      2
+                    </span>
+                    Open your phone dialer
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                      3
+                    </span>
+                    Dial the USSD code and press call
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                      4
+                    </span>
+                    Follow the prompts to complete payment
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                      5
+                    </span>
+                    You'll receive a confirmation SMS
+                  </li>
                 </ol>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-600">Amount to Pay:</span>
-                  <span className="font-semibold">
-                    {formatCurrency((selectedAmount || Number.parseInt(customAmount) || 0))} + Charges
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Phone Number:</span>
-                  <span className="font-semibold">{donorInfo.phone}</span>
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-slate-600">Amount to Pay:</span>
+                    <p className="font-semibold text-lg">
+                      {formatCurrency(selectedAmount || Number.parseInt(customAmount) || 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-600">Phone Number:</span>
+                    <p className="font-semibold">{donorInfo.phone}</p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex space-x-3">
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-1 border border-slate-300 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex-1 border-2 border-slate-200 text-slate-700 py-3 px-6 rounded-xl hover:bg-slate-50 transition-all duration-200 font-semibold flex items-center justify-center space-x-2"
                 >
-                  Back
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
                 </button>
                 <button
                   onClick={handleDonate}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg flex items-center justify-center space-x-2"
                 >
-                  I&apos;ve Completed Payment
+                  <CheckCircle className="w-4 h-4" />
+                  <span>I've Completed Payment</span>
                 </button>
               </div>
             </div>
@@ -444,45 +558,62 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
 
           {/* Step 5: Payment Confirmation */}
           {step === 5 && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-green-600" />
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+                <Heart className="w-10 h-10 text-green-600" />
               </div>
-              
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                Thank You for Your Donation!
-              </h3>
-              
-              <p className="text-slate-600 mb-6">
-                You will receive a confirmation email shortly with your receipt. 
-                Please check your inbox (and spam folder) for the confirmation.
-              </p>
-              
-              <div className="bg-slate-50 rounded-lg p-4 mb-6 text-left">
-                <h4 className="font-medium text-slate-900 mb-2">Donation Summary:</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
+
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You for Your Donation! 🎉</h3>
+                <p className="text-slate-600">
+                  Your generosity makes a real difference. You'll receive a confirmation email shortly.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 text-left border border-slate-200">
+                <h4 className="font-semibold text-slate-900 mb-4 flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                  Donation Summary
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
                     <span className="text-slate-600">Campaign:</span>
-                    <span className="font-medium">{campaign.title}</span>
+                    <span className="font-medium text-right max-w-48 truncate">{campaign.title}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-slate-600">Amount:</span>
-                    <span className="font-medium">
+                    <span className="font-bold text-lg text-green-600">
                       {formatCurrency(selectedAmount || Number.parseInt(customAmount) || 0)}
                     </span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600">Payment Method:</span>
+                    <span className="font-medium">
+                      {paymentMethod === "orange-money" ? "Orange Money" : "Africell Money"}
+                    </span>
+                  </div>
                   {!donorInfo.anonymous && donorInfo.email && (
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Confirmation sent to:</span>
-                      <span className="font-medium">{donorInfo.email}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600">Receipt sent to:</span>
+                      <span className="font-medium text-right max-w-48 truncate">{donorInfo.email}</span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h5 className="font-semibold text-blue-900 mb-2">What happens next:</h5>
+                <ul className="text-sm text-blue-800 space-y-1 text-left">
+                  <li>• Your donation will be processed within 24 hours</li>
+                  <li>• The campaign organizer will be notified</li>
+                  <li>• You'll receive updates on the campaign's progress</li>
+                  <li>• A tax receipt will be emailed to you if applicable</li>
+                </ul>
+              </div>
+
               <button
                 onClick={onClose}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg text-lg"
               >
                 Done
               </button>
@@ -490,9 +621,9 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
           )}
 
           {step < 5 && (
-            <div className="mt-6 flex items-center justify-center text-xs text-slate-500">
-              <Lock className="w-3 h-3 mr-1" />
-              Your payment is secure and encrypted
+            <div className="mt-8 flex items-center justify-center text-xs text-slate-500 bg-slate-50 rounded-lg p-3">
+              <Lock className="w-4 h-4 mr-2" />
+              <span>Your payment is secure and encrypted with 256-bit SSL</span>
             </div>
           )}
         </div>
