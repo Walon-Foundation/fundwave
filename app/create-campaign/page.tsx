@@ -128,7 +128,7 @@ export default function CreateCampaignPage() {
     const file = e.target.files?.[0]
     if (file) {
       const validTypes = ["image/jpeg", "image/png", "image/gif"]
-      const maxSize = 5 * 1024 * 1024 // 5MB
+      const maxSize = 50 * 1024 * 1024 // 50MB
 
       if (!validTypes.includes(file.type)) {
         setErrors((prev) => ({ ...prev, image: "Only JPG, PNG, and GIF files are allowed" }))
@@ -570,7 +570,7 @@ export default function CreateCampaignPage() {
                       <>
                         <Upload className="w-12 h-12 sm:w-16 sm:h-16 text-slate-400 mx-auto mb-4" />
                         <p className="text-slate-600 mb-4 text-lg">Click to select an image file</p>
-                        <p className="text-slate-500 text-sm mb-4">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+                        <p className="text-slate-500 text-sm mb-4">Supported formats: JPG, PNG, GIF (Max 50MB)</p>
                       </>
                     )}
                     <input
