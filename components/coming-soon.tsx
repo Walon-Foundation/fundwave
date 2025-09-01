@@ -78,7 +78,7 @@ export default function ComingSoon({
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                   <Heart className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">What's Coming</h3>
+                <h3 className="text-xl font-semibold text-gray-900">What&apos;s Coming</h3>
               </div>
               <ul className="space-y-4">
                 {features.map((feature, index) => (
@@ -101,7 +101,7 @@ export default function ComingSoon({
               </div>
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  We're building this feature with your needs in mind. Join our community and be the first to experience
+                  We&apos;re building this feature with your needs in mind. Join our community and be the first to experience
                   the future of crowdfunding in Sierra Leone.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
@@ -125,8 +125,8 @@ export default function ComingSoon({
                     <div className="space-y-2">
                       <h3 className="text-2xl font-semibold text-gray-900">Get Notified</h3>
                       <p className="text-gray-600 max-w-md mx-auto">
-                        Be the first to know when {featureName.toLowerCase()} is ready. We'll send you an email as soon
-                        as it's available.
+                        Be the first to know when {featureName.toLowerCase()} is ready. We&apos;ll send you an email as soon
+                        as it&apos;s available.
                       </p>
                     </div>
                   </div>
@@ -162,9 +162,9 @@ export default function ComingSoon({
                 <div className="space-y-4 py-4">
                   <CheckCircle className="w-16 h-16 mx-auto text-green-500" />
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-semibold text-gray-900">You're All Set!</h3>
+                    <h3 className="text-2xl font-semibold text-gray-900">You&apos;re All Set!</h3>
                     <p className="text-gray-600">
-                      Thanks for your interest! We'll notify you as soon as {featureName.toLowerCase()} is available.
+                      Thanks for your interest! We&apos;ll notify you as soon as {featureName.toLowerCase()} is available.
                     </p>
                   </div>
                 </div>

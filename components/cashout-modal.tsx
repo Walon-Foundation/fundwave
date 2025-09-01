@@ -117,7 +117,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Funds will be sent to your mobile money account</li>
                   <li>• Processing time: 1-24 hours</li>
-                  <li>• You'll receive SMS confirmation when complete</li>
+                  <li>• You&apos;ll receive SMS confirmation when complete</li>
                   <li>• A receipt will be emailed to your registered email</li>
                 </ul>
               </div>
@@ -265,11 +265,11 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>You'll receive an SMS confirmation once the transfer is complete</span>
+                    <span>You&apos;ll receive an SMS confirmation once the transfer is complete</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>Contact support if you don't receive funds within 48 hours</span>
+                    <span>Contact support if you don&apos;t receive funds within 48 hours</span>
                   </li>
                 </ul>
               </div>
