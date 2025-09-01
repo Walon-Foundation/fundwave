@@ -1,10 +1,11 @@
 import { NextResponse,NextRequest } from "next/server"
-import { db } from "../../../../../db/drizzle"
-import { campaignTable, updateTable, userTable } from "../../../../../db/schema"
+import { db } from "@/db/drizzle"
+import { campaignTable, updateTable, userTable } from "@/db/schema"
 import { and, eq } from "drizzle-orm"
-import { createUpdate } from "../../../../../validations/update"
+import { createUpdate } from "@/validations/update"
 import { nanoid } from "nanoid"
 import { auth } from "@clerk/nextjs/server"
+import { supabase } from "@/lib/supabase"
 
 export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}>}) {
   try{
@@ -21,9 +22,9 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
     const id = (await params).id
 
-    const campaign = await db.select().from(campaignTable).where(and(eq(campaignTable.id, id), eq(campaignTable.creatorId, user.id))).limit(1)
+    const campaign = (await db.select().from(campaignTable).where(and(eq(campaignTable.id, id), eq(campaignTable.creatorId, user.id))).limit(1).execute())[0]
 
-    if(!user || campaign.length === 0){
+    if(!user || !campaign){
       return NextResponse.json({
         error:"user is not the campaign creator",
       }, { status:401 })
@@ -32,9 +33,8 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
     const body = await req.formData()
     const title = body.get("title")
     const content = body.get("content")
-    // const image = body.get("image") as File
+    const image = body.get("image") as File
 
-    //todo try and process the pictures comming from update if any
     const {data, success, error} = createUpdate.safeParse({
       title,
       content
@@ -47,10 +47,47 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
       }, { status:400 })
     }
 
+    let signedUrl = ""
+
+    if(image){
+       if(image.size > 50 * 1024 * 1024){
+        return NextResponse.json({
+          ok:false,
+          message:"image is large than 50mb"
+        }, { status:400 })
+      }
+
+      const FILEPATH = data?.title as string
+      const buffer = Buffer.from(await image.arrayBuffer())
+
+      const { error:uploadError } = await supabase.storage.from("updates").upload(FILEPATH, buffer, {
+        contentType:image.type,
+        upsert:true
+      })
+
+      if (uploadError){
+        return NextResponse.json({
+          ok:false,
+          message:"failed to upload the update image"
+        }, { status: 500})
+      }
+
+      const { data:updateSignedUrlData } = await supabase.storage.from("updates").createSignedUrl(FILEPATH, 60 * 60 * 24 * 356 * 2)
+      if(!updateSignedUrlData){
+        return NextResponse.json({
+          ok:false,
+          message:"failed to created signedUrl"
+        }, {status:500})
+      }
+
+      signedUrl = updateSignedUrlData.signedUrl
+    }
+
     const newUpdate = (await db.insert(updateTable).values({
       id:nanoid(16),
       title:data.title,
       message:data.content,
+      image:signedUrl || "",
       campaignId:id,
     }).returning().execute())[0]
 

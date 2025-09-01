@@ -38,39 +38,37 @@ export async function POST(req: NextRequest) {
 
         if (type === "user.created") {
             // Check if already exists
-            const existing = await db.select()
-                .from(userTable)
-                .where(eq(userTable.clerkId, data.id))
-                .limit(1);
+            const existing = (await db.select().from(userTable).where(eq(userTable.clerkId, data.id)).limit(1))[0]
 
-            if (existing.length === 0) {
-                await db.insert(userTable).values({
+            if (existing){
+                return NextResponse.json({
+                    ok:true,
+                },{ status: 200 })
+            }
+
+            await Promise.all([
+                db.insert(userTable).values({
                     id: nanoid(16),
                     clerkId: data.id,
                     name: `${data.first_name} ${data.last_name}`,
                     email: data.email_addresses[0].email_address,
                     profilePicture: data.profile_image_url
-                });
-
-                if (process.env.NODE_ENV === "development") {
-                    console.log("user added to the database from the hook");
-                }
-
+                }),
                 // Send welcome email
-                await sendEmail(
+                sendEmail(
                     "welcome",
                     data.email_addresses[0].email_address,
                     "Welcome to Fundwave",
                     { name: data.first_name }
-                );
-            } else {
-                if (process.env.NODE_ENV === "development") {
-                    console.log("duplicate webhook ignored");
-                }
+                ),
+            ])
+
+            if(process.env.NODE_ENV === "development"){
+                console.log("hooked recieved")
             }
         }
 
-        return NextResponse.json({ ok: true, message: "hook received" }, { status: 200 });
+        return NextResponse.json({ ok: true }, { status: 200 });
 
     } catch (err) {
         console.error(err);

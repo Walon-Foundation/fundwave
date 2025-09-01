@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
 import { createUpdate } from "@/validations/update";
+import { supabase } from "@/lib/supabase";
 
 
 export async function DELETE(req:NextRequest, {params}:{params:Promise<{updateId:string}>}){
@@ -75,6 +76,7 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
 
         const title = reqBody.get("title")
         const content = reqBody.get("content")
+        const image = reqBody.get("image") as File
 
         const { success, data, error } = createUpdate.safeParse({
             title,
@@ -89,7 +91,50 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
             }, { status:400 })
         }
 
-        const updateUpdate = (await db.update(updateTable).set({ title:data.title, message:data.content, updatedAt:new Date()}).where(eq(updateTable.id, updateId)).returning().execute())[0]
+        const updatedUpdate = (await db.select().from(updateTable).where(eq(updateTable.id, updateId)).limit(1).execute())[0]
+
+        let signedUrl = ""
+
+        if(image && image.size > 0){
+            if(image.size > 50 * 1024 * 1024){
+                return NextResponse.json({
+                    ok:false,
+                    message:"image size is larger than 50mb",
+                }, { status:400 })
+            }
+
+            const FILEPATH = data.title as string
+            const buffer = Buffer.from(await image.arrayBuffer())
+
+            const { error:uploadError } = await supabase.storage.from("updates").upload(FILEPATH, buffer, {
+                contentType:image.type,
+                upsert:false
+            })
+
+            if(uploadError){
+                return NextResponse.json({
+                    ok:false,
+                    message:"failed to upload images"
+                }, { status:500 })
+            }
+
+            const { data:signedUrlData } = await supabase.storage.from("update").createSignedUrl(FILEPATH, 60 * 60 * 24 * 365 * 2)
+            if(!signedUrlData){
+                return NextResponse.json({
+                    ok:false,
+                    message:"failed to created signedurl",
+                }, { status:500 })
+            }
+
+            signedUrl = signedUrlData.signedUrl
+        }
+
+        const updateUpdate = (await db.update(updateTable).set({ 
+            title:data.title, 
+            message:data.content,
+            image:signedUrl || updatedUpdate.image, 
+            updatedAt:new Date()
+        }).where(eq(updateTable.id, updateId)).returning().execute())[0]
 
         await sendNotification("update updated", "update", user.id, updateUpdate.campaignId)
 
