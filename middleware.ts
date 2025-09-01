@@ -22,7 +22,11 @@ const isPublicRoute = createRouteMatcher([
   "/campaigns",       // campaigns list
   "/campaigns/:id",
   "/api/(.*)",         // All API routes
-  "/api/campaigns"
+  "/api/campaigns",
+  "/careers",
+  "success-stories",
+  '/blog',
+  '/press'
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

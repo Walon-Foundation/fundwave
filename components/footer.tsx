@@ -44,9 +44,9 @@ const socialLinks = [
 const contactInfo = [
   {
     icon: Mail,
-    value: "support@fundwavesl.com",
+    value: "fundwavesl@gmail.com",
     label: "Email Support",
-    href: "mailto:support@fundwavesl.com",
+    href: "malito:fundwavesl@gmail.com",
   },
   {
     icon: Phone,
