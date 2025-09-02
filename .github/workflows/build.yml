@@ -10,19 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: '22.16.0'
 
-      - name: Install pnpm
-        run: |
-          npm install -g pnpm
-          pnpm --version  
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.15.0  # specify the pnpm version you want
 
       - name: Install dependencies
         run: pnpm install
