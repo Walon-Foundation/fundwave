@@ -304,22 +304,22 @@ export default function KYCPage() {
                     onChange={handleChange}
                   >
                     <option value="">Select District</option>
-                    <option value="Western Area Rural">Western Area Rural</option>
                     <option value="Bo">Bo</option>
-                    <option value="Kenema">Kenema</option>
-                    <option value="Kono">Kono</option>
-                    <option value="Kailahun">Kailahun</option>
-                    <option value="Falaba">Falaba</option>
-                    <option value="Tonkolili">Tonkolili</option>
-                    <option value="Western Area Urban">Western Area Urban</option>
                     <option value="Bombali">Bombali</option>
-                    <option value="Koinadugu">Koinadugu</option>
-                    <option value="Port Loko">Port Loko</option>
-                    <option value="Kambia">Kambia</option>
                     <option value="Bonthe">Bonthe</option>
-                    <option value="Moyamba">Moyamba</option>
-                    <option value="Punjehun">Punjehun</option>
+                    <option value="Falaba">Falaba</option>
+                    <option value="Kailahun">Kailahun</option>
+                    <option value="Kambia">Kambia</option>
                     <option value="Karene">Karene</option>
+                    <option value="Kenema">Kenema</option>
+                    <option value="Koinadugu">Koinadugu</option>
+                    <option value="Kono">Kono</option>
+                    <option value="Moyamba">Moyamba</option>
+                    <option value="Port Loko">Port Loko</option>
+                    <option value="Punjehun">Punjehun</option>
+                    <option value="Tonkolili">Tonkolili</option>
+                    <option value="Western Area Rural">Western Area Rural</option>
+                    <option value="Western Area Urban">Western Area Urban</option>
                   </select>
                 </div>
               </div>
