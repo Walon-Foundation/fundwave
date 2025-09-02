@@ -1,12 +1,9 @@
-name: Build
+name: Build on PR
 
 on:
   pull_request:
     branches:
       - main
-  # push:
-  #   branches:
-  #     - main
 
 jobs:
   build:
@@ -19,11 +16,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Use your node version
+          node-version: '20'
           cache: 'pnpm'
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: |
+          npm install -g pnpm
+          pnpm --version  
 
       - name: Install dependencies
         run: pnpm install
