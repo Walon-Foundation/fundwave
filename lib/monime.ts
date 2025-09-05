@@ -91,9 +91,10 @@ export async function createAccount( name:string ):Promise<GenerateAccount | und
 
 
 
-export async function campaignCashout(amount:number, financialAccountId:string, phoneNumber:string):Promise<Cashout | undefined>{
+export async function campaignCashout(amount:number, financialAccountId:string, phoneNumber:string, provider:string):Promise<Cashout | undefined>{
  try{
     const URL = 'https://api.monime.io/v1/payouts'
+    const providerName = provider === "orange" ? "m17": "m18"
     const body = {
       "amount":{
         "currency":"SLE",
@@ -104,10 +105,9 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
       },
       "destination":{
         "type":"momo",
-        "providerId":["m17", "m18"],
+        "providerId":providerName,
         "phoneNumber":phoneNumber,
       },
-      metaData:{}
     }
 
     const res = await axios.post(URL, body, {
@@ -123,5 +123,15 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
  }catch(err){
   console.log(err)
  }
-}
+  // if (axios.isAxiosError(err)) {
+  //   console.error("❌ Axios request failed");
+  //   console.error("real error: ", err.response?.data)
+  //   console.error("Status:", err.response?.status);
+  //   console.error("Message:", err.response?.statusText);
+  //   console.error("Data:", err.response?.data); // <-- API error details
+	// console.error("Error: ", err.response?.data.error.details)
+  // } else {
+  //   console.error("❌ Unexpected error:", err);
+  // }}
+ }
 
