@@ -162,11 +162,11 @@ export async function TransferToMainAccount(financialAccountId:string, amount:nu
         "value": amount * 100,
       },
       "sourceFinancialAccount":{
-        // "id":"fac-k6G5y2PT9KhcHDTGWZiamfW4EKY"
-		  "id":"fac-k6GeJjHSLjvobTqzhgEiWF8RjYE"
-      },
-      "destinationFinancialAccount":{
         "id":financialAccountId
+		         
+      },
+      "destinationFinancialAccount":{     
+        "id":process.env.MONIME_MAIN_ACCOUNT_ID_PROD
       },
     }
 

@@ -9,9 +9,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 function calculateThreePercent(value:number, decimals=4) {
-    const threePercent = value * 0.03;
-    const remainingValue = value - threePercent;
-    
+    let threePercent = value * 0.03;
+    let remainingValue = value - threePercent;
+
     return {
         amountForMain: Number(threePercent.toFixed(decimals)),
         amountForCashout: Number(remainingValue.toFixed(decimals))
@@ -76,6 +76,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:500 })
         }
 
+        console.log(mainRes?.result)
         console.log(res?.result.id)
 
         await db.insert(withdrawalTable).values({
