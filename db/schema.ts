@@ -222,6 +222,7 @@ export const withdrawalTable = pgTable("withdrawals", {
     .references(() => campaignTable.id, { onDelete: "cascade" })
     .notNull(),
   amount: integer("amount").notNull(),
+  monime_id:text("monime_id").notNull(),
   status: withdrawalStatusEnum("status").default("pending").notNull(),
   paymentDetails: jsonb("paymentDetails").notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true })
