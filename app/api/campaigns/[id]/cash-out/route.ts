@@ -6,16 +6,18 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
+import { Decimal } from "decimal.js"
 
 
-function calculateThreePercent(value:number, decimals=2) {
-    let threePercent = value * 0.03;
-    let remainingValue = value - threePercent;
-
-    return {
-        amountForMain: Number(threePercent.toFixed(decimals)),
-        amountForCashout: Number(remainingValue.toFixed(decimals))
-    };
+function calculateThreePercent(value:number) {
+  const decimalValue = new Decimal(value);
+  const threePercent = decimalValue.times(0.03).toDecimalPlaces(2);
+  const remainingValue = decimalValue.minus(threePercent).toDecimalPlaces(2);
+  
+  return {
+    amountForMain: threePercent.toNumber(),
+    amountForCashout: remainingValue.toNumber() 
+  };
 }
 
 
