@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
 
-function calculateThreePercent(value:number, decimals=4) {
+function calculateThreePercent(value:number, decimals=2) {
     let threePercent = value * 0.03;
     let remainingValue = value - threePercent;
 
