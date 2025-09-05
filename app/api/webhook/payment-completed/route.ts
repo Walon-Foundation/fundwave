@@ -9,6 +9,8 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { sendEmail } from "@/lib/nodeMailer";
 import { sendNotification } from "@/lib/notification";
+import axios from "axios";
+import { FinancialAccount } from "@/lib/monime";
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
       // Get campaign record
       const campaign = (
         await db
-          .select({ title: campaignTable.title })
+          .select({ title: campaignTable.title, financialId:campaignTable.financialAccountId })
           .from(campaignTable)
           .where(eq(campaignTable.id, payment.campaignId as string))
           .limit(1)
@@ -57,6 +59,17 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      //fetch the account details from the monime to get the real amount
+      const account = await FinancialAccount(campaign.financialId as string)
+      if(account?.success){
+        await db
+            .update(campaignTable)
+            .set({
+              amountReceived: sql`${campaignTable.amountReceived} + ${(account.result.amount.value) / 100}`,
+            })
+            .where(eq(campaignTable.id, payment.campaignId))
+      }
+
       // update amount
       const amount = (paymentData.data.amount.value) / 100
 
@@ -67,14 +80,6 @@ export async function POST(req: NextRequest) {
             .update(paymentTable)
             .set({ isCompleted: true })
             .where(eq(paymentTable.monimeId, paymentData.data.id)),
-
-          // increment campaign amount
-          db
-            .update(campaignTable)
-            .set({
-              amountReceived: sql`${campaignTable.amountReceived} + ${amount}`,
-            })
-            .where(eq(campaignTable.id, payment.campaignId)),
 
           // increment user amount
           db
@@ -108,13 +113,6 @@ export async function POST(req: NextRequest) {
             .update(paymentTable)
             .set({ isCompleted: true })
             .where(eq(paymentTable.monimeId, paymentData.data.id)),
-
-          db
-            .update(campaignTable)
-            .set({
-              amountReceived: sql`${campaignTable.amountReceived} + ${amount}`,
-            })
-            .where(eq(campaignTable.id, payment.campaignId)),
 
           sendEmail(
             "payment-complete",

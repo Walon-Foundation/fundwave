@@ -1,11 +1,22 @@
 import { db } from "@/db/drizzle";
 import { campaignTable, userTable, withdrawalTable } from "@/db/schema";
-import { campaignCashout } from "@/lib/monime";
+import { campaignCashout, TransferToMainAccount } from "@/lib/monime";
 import { withdrawSchema } from "@/validations/withdrawal";
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
+
+
+function calculateThreePercent(value:number, decimals=4) {
+    const threePercent = value * 0.03;
+    const remainingValue = value - threePercent;
+    
+    return {
+        amountForMain: Number(threePercent.toFixed(decimals)),
+        amountForCashout: Number(remainingValue.toFixed(decimals))
+    };
+}
 
 
 export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}>}){
@@ -51,8 +62,14 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:400 })
         }
 
-        const res = await campaignCashout(data.amount, campaign.financialAccountId as string, data.phoneNumber, data.provider)
-        if(!res?.success){
+        const { amountForMain, amountForCashout } = calculateThreePercent(data.amount)
+
+        const [mainRes, res] = await Promise.all([
+            TransferToMainAccount(campaign.financialAccountId as string, amountForMain),
+            campaignCashout(amountForCashout, campaign.financialAccountId as string, data.phoneNumber, data.provider)
+        ])
+
+        if(!res?.success && !mainRes?.success){
             return NextResponse.json({
                 ok:false,
                 message:"cashout failed",
