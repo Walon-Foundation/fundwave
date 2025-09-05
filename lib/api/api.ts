@@ -108,7 +108,7 @@ export class API {
 
     //withdrawal
     async makeWithdrawal(data:any, id:string){
-        return this.client.post(`/campaigns/${id}/cash-out`).then(res => res)
+        return this.client.post(`/campaigns/${id}/cash-out`, data).then(res => res)
     }
 } 
 
