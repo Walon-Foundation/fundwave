@@ -9,14 +9,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { Decimal } from "decimal.js"
 
 
-function calculateThreePercent(value:number) {
-  const decimalValue = new Decimal(value);
-  const threePercent = decimalValue.times(0.03).toDecimalPlaces(2);
-  const remainingValue = decimalValue.minus(threePercent).toDecimalPlaces(2);
+function calculateThreePercentForServer(value) {
+  const valueInCents = Math.round(value * 100);
+  const threePercentInCents = Math.round(valueInCents * 3 / 100);
+  const remainingValueInCents = valueInCents - threePercentInCents;
   
+  // Return as integers for server processing
   return {
-    amountForMain: threePercent.toNumber(),
-    amountForCashout: remainingValue.toNumber() 
+    originalAmount: valueInCents,        // 500 cents for $5.00
+    amountForMain: threePercentInCents,      // 15 cents for $0.15
+    amountForCashout: remainingValueInCents     // 485 cents for $4.85
   };
 }
 
