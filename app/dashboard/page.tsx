@@ -829,9 +829,14 @@ export default function CreatorDashboard() {
                 <p className="text-sm text-slate-500 mt-1">
                   Showing {Math.min(notificationsPerPage, currentNotifications?.length)} of{" "}
                   {data?.notifications?.length} notifications
+                  {notificationsTotalPages > 1 && ` (Page ${notificationsPage} of ${notificationsTotalPages})`}
                 </p>
               </div>
-              <button className="text-sm text-indigo-600 hover:text-indigo-800">Mark all as read</button>
+              <div className="flex items-center gap-2">
+                <button className="text-sm text-indigo-600 hover:text-indigo-800 px-3 py-1 border border-indigo-200 rounded-md">
+                  Mark all as read
+                </button>
+              </div>
             </div>
 
             {currentNotifications?.length > 0 ? (
@@ -871,6 +876,8 @@ export default function CreatorDashboard() {
                     </div>
                   ))}
                 </div>
+                
+                {/* Pagination for notifications */}
                 {notificationsTotalPages > 1 && (
                   <Pagination
                     currentPage={notificationsPage}
