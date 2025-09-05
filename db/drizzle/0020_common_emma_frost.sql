@@ -1,0 +1,1 @@
+ALTER TABLE "withdrawals" ADD COLUMN "monime_id" text NOT NULL;

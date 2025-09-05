@@ -15,23 +15,54 @@ interface CashoutModalProps {
   }
 }
 
+type Provider = "orange" | "africell" | ""
+
 export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModalProps) {
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [cashoutAmount, setCashoutAmount] = useState("")
+  const [provider, setProvider] = useState<Provider>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [error, setError] = useState("")
+  const [useFullAmount, setUseFullAmount] = useState(true)
+  const [currentStep, setCurrentStep] = useState(1) // 1: Provider, 2: Details, 3: Confirmation
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (num: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
       currency: "NLe",
       minimumFractionDigits: 0,
-    }).format(amount)
+    }).format(num)
   }
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^(076|077|078|030|031|032|033|034|025|088|075)\d{6}$/
     return phoneRegex.test(phone.replace(/\s/g, ""))
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "")
+    setCashoutAmount(value)
+  }
+
+  const handleFullAmountToggle = () => {
+    setUseFullAmount(!useFullAmount)
+    if (!useFullAmount) {
+      setCashoutAmount("")
+    }
+  }
+
+  const amount = useFullAmount ? campaign?.donated : Number(cashoutAmount)
+
+  const handleProviderSelect = (selectedProvider: Provider) => {
+    setProvider(selectedProvider)
+    setCurrentStep(2)
+  }
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,12 +79,30 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
       return
     }
 
+    if (!useFullAmount && (!cashoutAmount || Number(cashoutAmount) <= 0)) {
+      setError("Please enter a valid amount to cashout")
+      return
+    }
+    
+    if (amount > campaign.donated) {
+      setError("Amount cannot exceed available funds")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await api.makeWithdrawal(phoneNumber, campaign.id)
+      // Simulate API call with the amount
+      const body =  {
+        phoneNumber,
+        amount,
+        provider
+      }
+
+      console.log(body)
+      await api.makeWithdrawal(body, campaign.id)
       setShowConfirmation(true)
+      setCurrentStep(3)
     } catch (err) {
       setError("Failed to process cashout. Please try again.")
     } finally {
@@ -63,8 +112,12 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
 
   const handleClose = () => {
     setPhoneNumber("")
+    setCashoutAmount("")
+    setProvider("")
+    setUseFullAmount(true)
     setShowConfirmation(false)
     setError("")
+    setCurrentStep(1)
     onClose()
   }
 
@@ -73,29 +126,82 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[95vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
-        {!showConfirmation ? (
-          <>
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <DollarSign className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">Cashout Funds</h2>
-                  <p className="text-sm text-slate-600 max-w-48 truncate">{campaign.name}</p>
-                </div>
-              </div>
-              <button
-                onClick={handleClose}
-                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <DollarSign className="w-6 h-6 text-white" />
             </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Cashout Funds</h2>
+              <p className="text-sm text-slate-600 max-w-48 truncate">{campaign.name}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
+        {/* Progress Steps */}
+        <div className="px-6 py-4 border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex flex-col items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep >= step 
+                    ? "bg-green-600 text-white" 
+                    : "bg-slate-200 text-slate-600"
+                }`}>
+                  {step}
+                </div>
+                <span className="text-xs mt-1 text-slate-600">
+                  {step === 1 ? "Provider" : step === 2 ? "Details" : "Confirm"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Step 1: Provider Selection */}
+          {currentStep === 1 && (
+            <>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Select Mobile Money Provider</h3>
+                <p className="text-slate-600">Choose where you want to receive your funds</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => handleProviderSelect("orange")}
+                  className="p-4 border-2 border-orange-200 rounded-xl hover:border-orange-400 transition-all flex flex-col items-center"
+                >
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-orange-600 font-bold">O</span>
+                  </div>
+                  <span className="font-medium">Orange Money</span>
+                </button>
+
+                <button
+                  onClick={() => handleProviderSelect("africell")}
+                  className="p-4 border-2 border-purple-200 rounded-xl hover:border-purple-400 transition-all flex flex-col items-center"
+                >
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-purple-600 font-bold">A</span>
+                  </div>
+                  <span className="font-medium">Africell Money</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Step 2: Details Form */}
+          {currentStep === 2 && (
+            <>
               {/* Available Amount Display */}
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -106,35 +212,48 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                 <p className="text-xs text-green-700 mt-2">Funds ready for withdrawal</p>
               </div>
 
-              {/* Information */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                    <span className="text-blue-600 text-sm font-bold">i</span>
-                  </div>
-                  Important Information
-                </h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Funds will be sent to your mobile money account</li>
-                  <li>• Processing time: 1-24 hours</li>
-                  <li>• You&apos;ll receive SMS confirmation when complete</li>
-                  <li>• A receipt will be emailed to your registered email</li>
-                </ul>
-              </div>
-
-              {/* Error Display */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  <p className="text-sm text-red-700">{error}</p>
+              {/* Amount Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="fullAmount"
+                    checked={useFullAmount}
+                    onChange={handleFullAmountToggle}
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="fullAmount" className="ml-2 block text-sm text-gray-900">
+                    Cash out full amount
+                  </label>
                 </div>
-              )}
+
+                {!useFullAmount && (
+                  <div>
+                    <label htmlFor="cashoutAmount" className="block text-sm font-medium text-slate-700 mb-2">
+                      Enter amount to cashout *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <DollarSign className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="cashoutAmount"
+                        value={cashoutAmount}
+                        onChange={handleAmountChange}
+                        placeholder="Enter amount"
+                        className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-slate-700 mb-2">
-                    Mobile Money Number *
+                    {provider === "orange" ? "Orange Money" : "Africell Money"} Number *
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -148,37 +267,42 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                         setPhoneNumber(e.target.value)
                         setError("")
                       }}
-                      placeholder="076 XXX XXXX"
+                      placeholder={provider === "orange" ? "076 XXX XXXX" : "077 XXX XXXX"}
                       className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                       required
                     />
                   </div>
-                  <div className="mt-2 flex items-center space-x-4 text-xs text-slate-500">
-                    <span>Supported: Orange Money, Africell Money</span>
-                  </div>
                 </div>
+
+                {/* Error Display */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
 
                 {/* Summary */}
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                   <h4 className="font-semibold text-slate-900 mb-3">Transaction Summary</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Campaign:</span>
-                      <span className="font-medium text-right max-w-32 truncate">{campaign.name}</span>
+                      <span className="text-slate-600">Provider:</span>
+                      <span className="font-medium text-right">
+                        {provider === "orange" ? "Orange Money" : "Africell Money"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Gross Amount:</span>
-                      <span className="font-semibold">{formatCurrency(campaign.donated)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-500">Platform Fee (5%):</span>
-                      <span className="text-slate-500">-{formatCurrency(campaign.donated * 0.05)}</span>
+                      <span className="text-slate-600">Amount to cashout:</span>
+                      <span className="font-semibold">
+                        {formatCurrency(useFullAmount ? campaign.donated : Number(cashoutAmount) || 0)}
+                      </span>
                     </div>
                     <div className="border-t border-slate-200 pt-2">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-slate-900">Net Amount:</span>
                         <span className="font-bold text-xl text-green-600">
-                          {formatCurrency(campaign.donated * 0.95)}
+                          {formatCurrency(amount)}
                         </span>
                       </div>
                     </div>
@@ -188,14 +312,14 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={handleClose}
+                    onClick={handleBack}
                     className="flex-1 px-4 py-3 border-2 border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-semibold"
                   >
-                    Cancel
+                    Back
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || !phoneNumber.trim()}
+                    disabled={isSubmitting || !phoneNumber.trim() || (!useFullAmount && !cashoutAmount)}
                     className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg flex items-center justify-center space-x-2"
                   >
                     {isSubmitting ? (
@@ -205,32 +329,26 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                       </>
                     ) : (
                       <>
-                        <span>Send Funds</span>
+                        <span>Continue</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
                 </div>
               </form>
+            </>
+          )}
 
-              {/* Security Notice */}
-              <div className="flex items-center justify-center text-xs text-slate-500 bg-slate-50 rounded-lg p-3">
-                <Shield className="w-4 h-4 mr-2" />
-                <span>All transactions are secure and encrypted</span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Success Confirmation */}
-            <div className="p-6 text-center space-y-6">
+          {/* Step 3: Confirmation */}
+          {currentStep === 3 && (
+            <>
               <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
 
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Funds Sent Successfully! 🎉</h2>
-                <p className="text-slate-600">Your cashout request has been processed and is on its way.</p>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Cashout Request Submitted! 🎉</h2>
+                <p className="text-slate-600">Your request is being processed. We&pos;ve sent a confirmation email with details.</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
@@ -239,13 +357,15 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                     <DollarSign className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium text-green-800 mb-1">Amount Sent:</p>
-                    <p className="text-2xl font-bold text-green-900">{formatCurrency(campaign.donated * 0.95)}</p>
+                    <p className="text-sm font-medium text-green-800 mb-1">Amount Requested:</p>
+                    <p className="text-2xl font-bold text-green-900">{formatCurrency(amount)}</p>
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-green-700 mb-1">Sent to:</p>
-                  <p className="text-lg font-semibold text-green-900">{phoneNumber}</p>
+                  <p className="text-sm text-green-700 mb-1">To be sent to:</p>
+                  <p className="text-lg font-semibold text-green-900">
+                    {provider === "orange" ? "Orange Money" : "Africell Money"}: {phoneNumber}
+                  </p>
                 </div>
               </div>
 
@@ -257,11 +377,11 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                 <ul className="text-sm text-slate-600 space-y-2">
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>Funds will be processed within 1-24 hours</span>
+                    <span>Check your email for confirmation details</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>A confirmation email has been sent to your registered email</span>
+                    <span>Funds will be processed within 1-24 hours</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
@@ -277,7 +397,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <h4 className="font-semibold text-blue-900 mb-2">Need Help?</h4>
                 <p className="text-sm text-blue-800">
-                  If you have any questions or concerns about your cashout, please contact our support team at{" "}
+                  If you have any questions about your cashout, please contact our support team at{" "}
                   <span className="font-semibold">support@fundwave.sl</span> or call{" "}
                   <span className="font-semibold">+232 76 XXX XXXX</span>
                 </p>
@@ -289,9 +409,17 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
               >
                 Done
               </button>
+            </>
+          )}
+
+          {/* Security Notice */}
+          {currentStep !== 3 && (
+            <div className="flex items-center justify-center text-xs text-slate-500 bg-slate-50 rounded-lg p-3">
+              <Shield className="w-4 h-4 mr-2" />
+              <span>All transactions are secure and encrypted</span>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )
