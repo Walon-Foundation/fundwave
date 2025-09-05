@@ -1,7 +1,6 @@
 import { db } from "@/db/drizzle";
 import { campaignTable, userTable, withdrawalTable } from "@/db/schema";
 import { campaignCashout } from "@/lib/monime";
-import { sendEmail } from "@/lib/nodeMailer";
 import { withdrawSchema } from "@/validations/withdrawal";
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
@@ -21,13 +20,14 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
         }
 
         const reqBody = await req.json()
+        console.log(reqBody)
 
         //validate the body
         const { data, success, error } = withdrawSchema.safeParse(reqBody)
         if(!success){
             return NextResponse.json({
                 ok:false,
-                message:"invalid body",
+                message:error.message,
             }, { status:400 })
         }
 
@@ -44,23 +44,30 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:400 })
         }
 
-        const res = await campaignCashout(campaign.amountReceived, campaign.financialAccountId as string, data.phoneNumber)
-        if(res?.success){
-            await Promise.all([
-                //save to withdraw table and send email of withdraw successfull
-                db.insert(withdrawalTable).values({
-                    id:nanoid(16),
-                    campaignId:campaign.id,
-                    userId:user.id,
-                    amount:campaign.amountReceived,
-                    status: "completed",
-                    paymentDetails: {
-
-                    }
-                }),
-                sendEmail('payout-sent', user.email, "Withdrawal was successfull", { name:user.name, amount:campaign.amountReceived})
-            ])
+        if(data.amount > campaign.amountReceived){
+            return NextResponse.json({
+                ok:false,
+                message:"invalid amount to be cashout"
+            }, { status:400 })
         }
+
+        const res = await campaignCashout(data.amount, campaign.financialAccountId as string, data.phoneNumber, data.provider)
+        if(!res?.success){
+            return NextResponse.json({
+                ok:false,
+                message:"cashout failed",
+            }, { status:500 })
+        }
+
+        await db.insert(withdrawalTable).values({
+            id:nanoid(16),
+            campaignId:campaign.id,
+            userId:user.id,
+            monime_id:res?.result.id as string,
+            amount:campaign.amountReceived,
+            status: "pending",
+            paymentDetails: {}
+        })
 
         return NextResponse.json({
             ok:true,
@@ -68,6 +75,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
         }, { status:200 })
 
     }catch(err){
+        console.log(err)
         return NextResponse.json({
             ok:false,
             message:"internal server error"
