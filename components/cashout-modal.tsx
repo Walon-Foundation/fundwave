@@ -348,7 +348,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
 
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Cashout Request Submitted! 🎉</h2>
-                <p className="text-slate-600">Your request is being processed. We've sent a confirmation email with details.</p>
+                <p className="text-slate-600">Your request is being processed. We&pos;ve sent a confirmation email with details.</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
@@ -385,11 +385,11 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>You'll receive an SMS confirmation once the transfer is complete</span>
+                    <span>You&apos;ll receive an SMS confirmation once the transfer is complete</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>Contact support if you don't receive funds within 48 hours</span>
+                    <span>Contact support if you don&apos;t receive funds within 48 hours</span>
                   </li>
                 </ul>
               </div>
