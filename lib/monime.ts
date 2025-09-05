@@ -98,7 +98,7 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
     const body = {
       "amount":{
         "currency":"SLE",
-        "value": (amount) * 100,
+        "value": (amount),
       },
       "source":{
         "financialAccountId":financialAccountId
@@ -159,7 +159,7 @@ export async function TransferToMainAccount(financialAccountId:string, amount:nu
     const body = {
       "amount":{
         "currency":"SLE",
-        "value": amount * 100,
+        "value": amount ,
       },
       "sourceFinancialAccount":{
         "id":financialAccountId
