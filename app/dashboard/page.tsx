@@ -43,7 +43,7 @@ export default function CreatorDashboard() {
   const [notificationsPage, setNotificationsPage] = useState(1)
   const [activityPage, setActivityPage] = useState(1)
   const [campaignsPerPage] = useState(5)
-  const [notificationsPerPage] = useState(8)
+  const [notificationsPerPage] = useState(5)
   const [activityPerPage] = useState(5)
 
   const { user } = useUser()
