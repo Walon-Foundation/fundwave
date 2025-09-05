@@ -1,6 +1,6 @@
 import axios from "axios"
 import { nanoid } from "nanoid";
-import { GenerateCode,  GenerateAccount, Cashout } from "../types/monimeTypes";
+import { GenerateCode,  GenerateAccount, Cashout, GetFinancialAccount, MainResponse } from "../types/monimeTypes";
 
 const spaceId = process.env.MONIME_SPACE_ID || "enter monime_space_id"
 const token = process.env.MONIME_ACCESS_TOKEN || "enter access token from monime";
@@ -133,5 +133,52 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
   // } else {
   //   console.error("❌ Unexpected error:", err);
   // }}
- }
+}
 
+
+export async function FinancialAccount(id:string):Promise<GetFinancialAccount | undefined>{
+  try{
+    const res = await axios.get(`https://api.monime.io/v1/financial-accounts/${id}`, {
+    headers:{
+      'Monime-Space-Id': `${spaceId}`,
+      'Idempotency-Key': `${nanoid(24)}`,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  return res.data as GetFinancialAccount
+
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
+export async function TransferToMainAccount(financialAccountId:string, amount:number):Promise<MainResponse | undefined>{
+  try{
+    const url = "https://api.monime.io/v1/internal-transfers"
+    const body = {
+      "amount":{
+        "currency":"SLE",
+        "amount": amount * 100,
+      },
+      "sourceFinancialAccount":"fac-k6GeJjHSLjvobTqzhgEiWF8RjYE",
+      "desitinationFinancialAccount":financialAccountId,
+
+    }
+
+    const res = await axios.post(url, body, {
+      headers:{
+        'Monime-Space-Id': `${spaceId}`,
+        'Idempotency-Key': `${nanoid(24)}`,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    return res.data as MainResponse
+  }catch(err){
+    console.log(err)
+  }
+}
