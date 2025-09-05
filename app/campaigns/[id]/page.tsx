@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X } from "lucide-react"
+import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X, ChevronLeft, ChevronRight, LogIn } from "lucide-react"
 import DonationModal from "@/components/donation-modal"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
 import type { CampaignDetails, CombinedUserData } from "@/types/api"
+import Link from "next/link"
 
 export default function CampaignDetailPage() {
   const params = useParams()
@@ -17,27 +18,41 @@ export default function CampaignDetailPage() {
   const [newComment, setNewComment] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [_isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
   const [editCommentText, setEditCommentText] = useState("")
+  const [currentUser, setCurrentUser] = useState<CombinedUserData | null>(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
-  const [currentUser, setCurrentUser] = useState<CombinedUserData>()
+  // Pagination states
+  const [updatesPage, setUpdatesPage] = useState(1)
+  const [commentsPage, setCommentsPage] = useState(1)
+  const [itemsPerPage] = useState(3) // Number of items per page
 
   useEffect(() => {
     const fetchCampaignData = async () => {
       try {
         setIsLoading(true)
-        const [data, user] = await Promise.all([
-          api.getCampaignDetails(id),
-          api.getProfile()
-        ])
-        setCurrentUser(user)
+        setIsCheckingAuth(true)
+        
+        // Fetch campaign data first
+        const data = await api.getCampaignDetails(id)
         setCampaignInfo(data)
+        
+        // Try to fetch user profile (might fail if not logged in)
+        try {
+          const user = await api.getProfile()
+          setCurrentUser(user)
+        } catch (err) {
+          console.log("User not logged in")
+          setCurrentUser(null)
+        }
       } catch (err) {
         setError("Failed to load campaign details")
         console.error("Error fetching campaign:", err)
       } finally {
         setIsLoading(false)
+        setIsCheckingAuth(false)
       }
     }
 
@@ -123,6 +138,11 @@ export default function CampaignDetailPage() {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim()) return
+    if (!currentUser) {
+      // Redirect to login or show login modal
+      alert("Please log in to comment")
+      return
+    }
 
     setIsSubmittingComment(true)
     
@@ -136,6 +156,8 @@ export default function CampaignDetailPage() {
         comments: [data, ...prev!.comments]
       }))
       setNewComment("")
+      // Reset to first page when adding a new comment
+      setCommentsPage(1)
     } catch (err) {
       console.error("Error posting comment:", err)
       setError("Failed to post comment. Please try again.")
@@ -189,6 +211,67 @@ export default function CampaignDetailPage() {
       console.error("Error updating comment:", err)
       setError("Failed to update comment. Please try again.")
     }
+  }
+
+  // Pagination functions for updates
+  const totalUpdatesPages = Math.ceil(updates.length / itemsPerPage)
+  const currentUpdates = updates.slice(
+    (updatesPage - 1) * itemsPerPage,
+    updatesPage * itemsPerPage
+  )
+
+  const handleUpdatesPageChange = (newPage: number) => {
+    setUpdatesPage(newPage)
+  }
+
+  // Pagination functions for comments
+  const totalCommentsPages = Math.ceil(comments.length / itemsPerPage)
+  const currentComments = comments.slice(
+    (commentsPage - 1) * itemsPerPage,
+    commentsPage * itemsPerPage
+  )
+
+  const handleCommentsPageChange = (newPage: number) => {
+    setCommentsPage(newPage)
+  }
+
+  // Pagination component
+  const Pagination = ({ 
+    currentPage, 
+    totalPages, 
+    onPageChange 
+  }: { 
+    currentPage: number
+    totalPages: number
+    onPageChange: (page: number) => void 
+  }) => {
+    if (totalPages <= 1) return null
+
+    return (
+      <div className="flex items-center justify-between mt-6 border-t border-slate-200 pt-4">
+        <div className="text-sm text-slate-600">
+          Page {currentPage} of {totalPages}
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 text-sm border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 text-sm border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -382,18 +465,18 @@ export default function CampaignDetailPage() {
                       <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
                           <svg
-                            className="w-5 h-5 text-indigo-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
+                                className="w-5 h-5 text-indigo-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
                         </div>
                         <h4 className="text-xl font-bold text-slate-900">Campaign Details</h4>
                       </div>
@@ -591,29 +674,36 @@ export default function CampaignDetailPage() {
 
               {activeTab === "updates" && (
                 <div className="space-y-4 sm:space-y-6">
-                  {updates?.length > 0 ? (
-                    updates?.map((update) => (
-                      <div key={update.id} className="card">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
-                          <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
-                          <span className="text-sm text-slate-500">
-                            {formatDateTime(update?.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
-                        {update.image && (
-                          <div className="mt-4">
-                            <Image
-                              src={update.image}
-                              alt={`Update ${update.id} image`}
-                              width={600}
-                              height={400}
-                              className="rounded-lg w-full h-auto"
-                            />
+                  {currentUpdates.length > 0 ? (
+                    <>
+                      {currentUpdates.map((update) => (
+                        <div key={update.id} className="card">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                            <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
+                            <span className="text-sm text-slate-500">
+                              {formatDateTime(update?.createdAt)}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    ))
+                          <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
+                          {update.image && (
+                            <div className="mt-4">
+                              <Image
+                                src={update.image}
+                                alt={`Update ${update.id} image`}
+                                width={600}
+                                height={400}
+                                className="rounded-lg w-full h-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <Pagination
+                        currentPage={updatesPage}
+                        totalPages={totalUpdatesPages}
+                        onPageChange={handleUpdatesPageChange}
+                      />
+                    </>
                   ) : (
                     <div className="text-center py-8 sm:py-12">
                       <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
@@ -626,123 +716,154 @@ export default function CampaignDetailPage() {
 
               {activeTab === "comments" && (
                 <div className="space-y-6">
-                  {/* Comment Form */}
-                  <form onSubmit={handleCommentSubmit} className="card">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Leave a Comment</h3>
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Share your thoughts or ask a question..."
-                      className="input min-h-[100px] mb-4"
-                      required
-                    />
-                    <button type="submit" className="btn-primary">
-                      Post Comment
-                    </button>
-                  </form>
+                  {/* Comment Form - Only show if user is logged in */}
+                  {currentUser ? (
+                    <form onSubmit={handleCommentSubmit} className="card">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Leave a Comment</h3>
+                      <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Share your thoughts or ask a question..."
+                        className="input min-h-[100px] mb-4"
+                        required
+                      />
+                      <button 
+                        type="submit" 
+                        className="btn-primary"
+                        disabled={isSubmittingComment}
+                      >
+                        {isSubmittingComment ? "Posting..." : "Post Comment"}
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="card text-center py-8">
+                      <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <LogIn className="w-8 h-8 text-indigo-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2">Sign in to comment</h3>
+                      <p className="text-slate-600 mb-4">You need to be logged in to leave a comment.</p>
+                      <Link 
+                        href="/login" 
+                        className="btn-primary inline-flex items-center"
+                      >
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Sign In
+                      </Link>
+                    </div>
+                  )}
 
                   {/* Comments List */}
                   <div className="space-y-4">
-                    {comments?.length > 0 ? (
-                      comments?.map((comment) => (
-                        <div key={comment.id} className="card group relative">
-                          <div className="flex items-start space-x-3">
-                            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
-                              {comment?.username?.charAt(0)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              {/* Header with name, timestamp, and actions */}
-                              <div className="flex items-start justify-between mb-2 gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-semibold text-slate-900 text-sm sm:text-base truncate">
-                                      {comment?.username}
-                                    </h4>
-                                    {comment.userId === currentUser?.profile?.id && (
-                                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex-shrink-0">
-                                        You
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-xs sm:text-sm text-slate-500 block">
-                                    {formatDateTime(comment?.createdAt)}
-                                    {comment?.updatedAt !== comment?.createdAt && " (edited)"}
-                                  </span>
-                                </div>
-
-                                {/* Action buttons - only show if current user is the comment creator */}
-                                {comment?.userId === currentUser?.profile?.id && (
-                                  <div className="flex gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                    {editingCommentId === comment.id ? (
-                                      <>
-                                        <button
-                                          onClick={() => handleSaveEdit(comment.id)}
-                                          className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                                          title="Save changes"
-                                        >
-                                          <Save className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                          onClick={handleCancelEdit}
-                                          className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
-                                          title="Cancel edit"
-                                        >
-                                          <X className="w-4 h-4" />
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <button
-                                          onClick={() => handleStartEditComment(comment.id, comment.message)}
-                                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                          title="Edit comment"
-                                        >
-                                          <Edit className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteComment(comment.id)}
-                                          className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                          title="Delete comment"
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+                    {currentComments.length > 0 ? (
+                      <>
+                        {currentComments.map((comment) => (
+                          <div key={comment.id} className="card group relative">
+                            <div className="flex items-start space-x-3">
+                              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
+                                {comment?.username?.charAt(0)}
                               </div>
+                              <div className="flex-1 min-w-0">
+                                {/* Header with name, timestamp, and actions */}
+                                <div className="flex items-start justify-between mb-2 gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h4 className="font-semibold text-slate-900 text-sm sm:text-base truncate">
+                                        {comment?.username}
+                                      </h4>
+                                      {comment.userId === currentUser?.profile?.id && (
+                                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex-shrink-0">
+                                          You
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs sm:text-sm text-slate-500 block">
+                                      {formatDateTime(comment?.createdAt)}
+                                      {comment?.updatedAt !== comment?.createdAt && " (edited)"}
+                                    </span>
+                                  </div>
 
-                              {/* Comment content */}
-                              {editingCommentId === comment.id ? (
-                                <div className="mb-3">
-                                  <textarea
-                                    value={editCommentText}
-                                    onChange={(e) => setEditCommentText(e.target.value)}
-                                    className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
-                                    rows={3}
-                                  />
+                                  {/* Action buttons - only show if current user is the comment creator */}
+                                  {comment?.userId === currentUser?.profile?.id && (
+                                    <div className="flex gap-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                      {editingCommentId === comment.id ? (
+                                        <>
+                                          <button
+                                            onClick={() => handleSaveEdit(comment.id)}
+                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                                            title="Save changes"
+                                          >
+                                            <Save className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            onClick={handleCancelEdit}
+                                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
+                                            title="Cancel edit"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            onClick={() => handleStartEditComment(comment.id, comment.message)}
+                                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                            title="Edit comment"
+                                          >
+                                            <Edit className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteComment(comment.id)}
+                                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                            title="Delete comment"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
-                                  {comment.message}
-                                </p>
-                              )}
 
-                              {/* Like button */}
-                              <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
-                                <ThumbsUp className="w-3 h-3 mr-1" />
-                                Like
-                              </button>
+                                {/* Comment content */}
+                                {editingCommentId === comment.id ? (
+                                  <div className="mb-3">
+                                    <textarea
+                                      value={editCommentText}
+                                      onChange={(e) => setEditCommentText(e.target.value)}
+                                      className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
+                                      rows={3}
+                                    />
+                                  </div>
+                                ) : (
+                                  <p className="text-slate-700 mb-3 leading-relaxed text-sm sm:text-base break-words">
+                                    {comment.message}
+                                  </p>
+                                )}
+
+                                {/* Like button */}
+                                <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
+                                  <ThumbsUp className="w-3 h-3 mr-1" />
+                                  Like
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        ))}
+                        <Pagination
+                          currentPage={commentsPage}
+                          totalPages={totalCommentsPages}
+                          onPageChange={handleCommentsPageChange}
+                        />
+                      </>
                     ) : (
                       <div className="text-center py-8 sm:py-12">
                         <ThumbsUp className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">No comments yet</h3>
                         <p className="text-slate-600 text-sm sm:text-base">
-                          Be the first to comment and show your support!
+                          {currentUser 
+                            ? "Be the first to comment and show your support!" 
+                            : "Sign in to be the first to comment!"
+                          }
                         </p>
                       </div>
                     )}
@@ -838,14 +959,14 @@ export default function CampaignDetailPage() {
                     <button className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                       View all donors →
                     </button>
-                  </div>
+                </div>
                 )}
               </div>
 
               {/* Creator Info */}
               <div className="card mt-4 sm:mt-6">
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Campaign Creator</h3>
-                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="flex flex-col sm:flexRow items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
                   <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold">
                     {creator.name.charAt(0)}
                   </div>
