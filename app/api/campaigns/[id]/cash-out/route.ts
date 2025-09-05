@@ -6,10 +6,9 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
-import { Decimal } from "decimal.js"
 
 
-function calculateThreePercentForServer(value) {
+function calculateThreePercentForServer(value:number) {
   const valueInCents = Math.round(value * 100);
   const threePercentInCents = Math.round(valueInCents * 3 / 100);
   const remainingValueInCents = valueInCents - threePercentInCents;
@@ -66,7 +65,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:400 })
         }
 
-        const { amountForMain, amountForCashout } = calculateThreePercent(data.amount)
+        const { amountForMain, amountForCashout } = calculateThreePercentForServer(data.amount)
 
         const [mainRes, res] = await Promise.all([
             TransferToMainAccount(campaign.financialAccountId as string, amountForMain),
