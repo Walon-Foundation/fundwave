@@ -121,18 +121,16 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
 
     return res.data as Cashout
  }catch(err){
-  console.log(err)
- }
-  // if (axios.isAxiosError(err)) {
-  //   console.error("❌ Axios request failed");
-  //   console.error("real error: ", err.response?.data)
-  //   console.error("Status:", err.response?.status);
-  //   console.error("Message:", err.response?.statusText);
-  //   console.error("Data:", err.response?.data); // <-- API error details
-	// console.error("Error: ", err.response?.data.error.details)
-  // } else {
-  //   console.error("❌ Unexpected error:", err);
-  // }}
+  if (axios.isAxiosError(err)) {
+    console.error("❌ Axios request failed");
+    console.error("real error: ", err.response?.data)
+    console.error("Status:", err.response?.status);
+    console.error("Message:", err.response?.statusText);
+    console.error("Data:", err.response?.data); // <-- API error details
+	console.error("Error: ", err.response?.data.error.details)
+  } else {
+    console.error("❌ Unexpected error:", err);
+  }}
 }
 
 
@@ -154,18 +152,21 @@ export async function FinancialAccount(id:string):Promise<GetFinancialAccount | 
   }
 }
 
-
+// fac-k6GeJjHSLjvobTqzhgEiWF8RjYE
 export async function TransferToMainAccount(financialAccountId:string, amount:number):Promise<MainResponse | undefined>{
   try{
     const url = "https://api.monime.io/v1/internal-transfers"
     const body = {
       "amount":{
         "currency":"SLE",
-        "amount": amount * 100,
+        "value": amount * 100,
       },
-      "sourceFinancialAccount":"fac-k6GeJjHSLjvobTqzhgEiWF8RjYE",
-      "desitinationFinancialAccount":financialAccountId,
-
+      "sourceFinancialAccount":{
+        "id":"fac-k6G5y2PT9KhcHDTGWZiamfW4EKY"
+      },
+      "destinationFinancialAccount":{
+        "id":financialAccountId
+      },
     }
 
     const res = await axios.post(url, body, {
@@ -179,6 +180,13 @@ export async function TransferToMainAccount(financialAccountId:string, amount:nu
 
     return res.data as MainResponse
   }catch(err){
-    console.log(err)
-  }
-}
+    if (axios.isAxiosError(err)) {
+    console.error("❌ Axios request failed");
+    console.error("real error: ", err.response?.data)
+    console.error("Status:", err.response?.status);
+    console.error("Message:", err.response?.statusText);
+    console.error("Data:", err.response?.data); // <-- API error details
+	console.error("Error: ", err.response?.data.error.details)
+  } else {
+    console.error("❌ Unexpected error:", err);
+  }}}

@@ -76,6 +76,8 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:500 })
         }
 
+        console.log(res?.result.id)
+
         await db.insert(withdrawalTable).values({
             id:nanoid(16),
             campaignId:campaign.id,
