@@ -567,13 +567,13 @@ export default function CreatorDashboard() {
                                 >
                                   View
                                 </Link>
-                                <Link
+                                {/* <Link
                                   href={`/campaigns/${campaign.id}/edit`}
                                   className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                                 >
                                   <Edit className="w-4 h-4 mr-1" />
                                   <span className="hidden lg:inline">Edit</span>
-                                </Link>
+                                </Link> */}
                                 <Link
                                   href={`/campaigns/${campaign.id}/updates`}
                                   className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
@@ -691,12 +691,12 @@ export default function CreatorDashboard() {
                             >
                               View
                             </Link>
-                            <Link
+                            {/* <Link
                               href={`/campaigns/${campaign.id}/edit`}
                               className="text-slate-600 hover:text-slate-800 text-sm flex items-center"
                             >
                               <Edit className="w-4 h-4 mr-1" />
-                            </Link>
+                            </Link> */}
                             <Link
                               href={`/campaigns/${campaign.id}/updates`}
                               className="text-slate-600 hover:text-slate-800 text-sm flex items-center"

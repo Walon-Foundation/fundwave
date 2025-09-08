@@ -1,6 +1,6 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "fundwave",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -10,8 +10,7 @@
     "db:generate": "npx drizzle-kit generate",
     "db:studio": "npx drizzle-kit studio",
     "lint": "next lint",
-    "start": "next start",
-    "db:seed": "tsx --env-file=.env scripts/seed.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.23.3",

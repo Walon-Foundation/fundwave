@@ -13,11 +13,10 @@ function calculateThreePercentForServer(value:number) {
   const threePercentInCents = Math.round(valueInCents * 3 / 100);
   const remainingValueInCents = valueInCents - threePercentInCents;
   
-  // Return as integers for server processing
   return {
-    originalAmount: valueInCents,        // 500 cents for $5.00
-    amountForMain: threePercentInCents,      // 15 cents for $0.15
-    amountForCashout: remainingValueInCents     // 485 cents for $4.85
+    originalAmount: valueInCents,       
+    amountForMain: threePercentInCents,    
+    amountForCashout: remainingValueInCents     
   };
 }
 
@@ -78,9 +77,6 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
                 message:"cashout failed",
             }, { status:500 })
         }
-
-        console.log(mainRes?.result)
-        console.log(res?.result.id)
 
         await db.insert(withdrawalTable).values({
             id:nanoid(16),

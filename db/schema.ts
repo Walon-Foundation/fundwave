@@ -1,11 +1,12 @@
 import {
   pgTable,
   text,
-  integer,
+  doublePrecision,
   boolean,
   timestamp,
   jsonb,
   pgEnum,
+  integer
 } from "drizzle-orm/pg-core";
 
 export const levelEnum = pgEnum("level", [
@@ -41,7 +42,7 @@ export const userTable = pgTable("users", {
   age: integer("age"),
   phone: text("phone"),
   isKyc: boolean("isKyc").default(false).notNull(),
-  amountContributed: integer("amountContribute").default(0).notNull(),
+  amountContributed: doublePrecision("amountContribute").default(0).notNull(),
   isVerified: boolean("isVerifed").notNull().default(false),
   district: text("district"),
   bio:text("bio"),
@@ -100,8 +101,8 @@ export const campaignTypeEnum = pgEnum("campaign_type", [
 export const campaignTable = pgTable("campaigns", {
   id: text("id").primaryKey().notNull(),
   title: text("title").notNull().unique(),
-  fundingGoal: integer("funding_goal").notNull(),
-  amountReceived: integer("amount_received").default(0).notNull(),
+  fundingGoal: doublePrecision("funding_goal").notNull(),
+  amountReceived: doublePrecision("amount_received").default(0).notNull(),
   location: text("location").notNull(),
   campaignEndDate: timestamp("campaign_end_date", {
     withTimezone: true,
@@ -169,7 +170,7 @@ export const paymentTable = pgTable("payments", {
   userId: text("userId").references(() => userTable.id, {
     onDelete: "cascade",
   }),
-  amount: integer("amount").notNull(),
+  amount: doublePrecision("amount").notNull(),
   campaignId: text("campaignId")
     .notNull()
     .references(() => campaignTable.id, { onDelete:"restrict" }),
@@ -221,7 +222,7 @@ export const withdrawalTable = pgTable("withdrawals", {
   campaignId: text("campaignId")
     .references(() => campaignTable.id, { onDelete: "cascade" })
     .notNull(),
-  amount: integer("amount").notNull(),
+  amount: doublePrecision("amount").notNull(),
   monime_id:text("monime_id").notNull(),
   status: withdrawalStatusEnum("status").default("pending").notNull(),
   paymentDetails: jsonb("paymentDetails").notNull(),
