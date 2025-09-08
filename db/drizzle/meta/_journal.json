@@ -148,6 +148,13 @@
       "when": 1757021327066,
       "tag": "0020_common_emma_frost",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1757365271167,
+      "tag": "0021_clean_pepper_potts",
+      "breakpoints": true
     }
   ]
 }
