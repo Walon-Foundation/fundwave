@@ -1,302 +1,297 @@
-# FundWave
 
-FundWave is a robust platform designed to help manage and track fundraising campaigns effectively. Built using modern web technologies, FundWave allows users to create and manage campaigns, verify users and their KYC, and manage payments via Supabase.
+# FundwaveSL
 
+FundWaveSL is Sierra Leone’s first dedicated crowdfunding platform, built to help individuals, communities, and organizations raise funds easily and securely. With local mobile money integration, zero platform fees, and bank-level security, FundWaveSL makes it simple to launch campaigns, receive donations, and withdraw funds. Trusted by thousands of users and supporting both local and international payments, the platform is tailored to Sierra Leone’s unique needs—empowering people to turn ideas and causes into real impact.
+
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.12.0-brightgreen)](https://nodejs.org/)
+[![Nextjs](https://img.shields.io/badge/Nextjs-%23ff3e00.svg?style=flat&logo=nextjs&logoColor=white)](https://nextjs.org/)
+[![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
+
+
+
+---
+
+>  👩‍💻**Currently in active development. We welcome contributions and feedback from the community!**
+
+---
 ## Features
 
-- **User Authentication** : Secure user login, signup, password recovery, and verification.
-- **KYC Management** : KYC system for user verification.
-- **Campaign Management**: Create, update, and view fundraising campaigns.
-- **Payment Integration**: Manage and track payments for campaigns.
-- **Campaign Analytics**: Real-time analytics and progress tracking for each campaign.
-- **Information Pages**: Static pages for about us, contact us, how it works, and privacy policy.
-- **UI Components**: Reusable UI components for a seamless user experience.
+- Easy Campaign Creation – Launch fundraising campaigns quickly with images, descriptions, and funding goals.
+- Local & International Payments – Accept donations via mobile money, bank transfers, and international channels.
+- Zero Platform Fees – Fundraisers keep all the funds they raise.
+- Secure & Transparent – Bank-level security, KYC verification, and real-time tracking of donations.
+- Multi-Channel Notifications – Stay updated via SMS, email, or WhatsApp(comming soon...).
+- Inclusive & Localized – Designed for Sierra Leone, supporting local languages and payment infrastructure.
+- Campaign Management – Edit campaigns, track progress, and withdraw funds safely.
 
-## Installation
 
-1. **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-repo/fundwave.git
-    cd fundwave
-    ```
+## Tech Stack
 
-2. **Install dependencies:**
-    ```sh
-    npm install
-    ```
+## Client (Frontend)
 
-3. **Set up environment variables:**
-    Copy the `.env.example` file to `.env` and configure the environment variables accordingly.
+- **[Next.js](https://nextjs.org)** – React framework for server-side rendering and static site generation.
+- **[React](https://react.dev)** – UI library for building interactive interfaces.
+- **[TailwindCSS](https://tailwindcss.com/)**: Utility-first CSS framework with custom design system
+- **[Shadcn/ui](https://ui.shadcn.com/)**: Modern UI component.
+- **[Typescripts](https://www.typescriptlang.org/)** - Ui component library.
 
-4. **Start the development server:**
-    ```sh
-    npm run dev
-    ```
+## Backend
 
-## Usage
+- **[PostgreSQL](https://www.postgresql.org/)**: Robust relational database for data persistence
+- **[Node.js](https://nodejs.org/)**: Server-side JavaScript runtime environment
+- **[Drizzle](https://orm.drizzle.team/)** – ORM for database modeling and queries.
 
-FundWave offers a simple yet powerful interface to manage fundraising campaigns from the creation to updates and payments. Here’s how you can use it:
+## External Tools & Integrations
 
-- **User Flow**:
-  - Visit the homepage to see featured campaigns.
-  - Navigate to the login page to authenticate.
-  - Complete your KYC verification if prompted.
-  - Create a campaign or update an existing one.
+- **[Monime](https://monime.io)** – Payment processing.
+- **[Vercel](https://vercel.com)** – Hosting, CDN, and deployment.
 
-- **Admin Dashboards**:
-  - Access the admin dashboard for an overview of all campaigns.
-  - Manage campaigns, user activities, and payments.
+## Quality Assurance
 
-- **Information Pages**:
-  - Learn more about the platform, how it works, and privacy policies through static pages.
+- **[Prettier](https://prettier.io/)**: Code formatting for consistent style
+- **[ESLint](https://eslint.org/)**: Code linting for quality assurance
+- **[GitHub Actions](https://github.com/features/actions)**: Continuous integration and deployment
 
-## Technologies
-
-- **Frontend**: React, Next.js
-- **Database**: Supabase, MongoDB
-- **Authentication**: JsonWebToken, BcryptJS
-- **Styling**: Tailwind CSS
-- **Email Service**: Nodemailer
-
-## Configuration and Environment
-
-Ensure you have the following environment variables set in your `.env` file:
-
-```plaintext
-DATABASE_URI=
-ACCESS_TOKEN_SECRET=
-USER_TOKEN_SECRET=
-SESSION_TOKEN_SECRET=
-VERIFICATION_TOKEN_SECRET=
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SERVICE_ROLE_KEY=
-NODE_ENV=
-EMAIL=
-PASSWORD=
-```
-
-## Folder Structure
+## Project structure
 
 ```
-├── .env
-├── .env.example
-├── .gitignore
-├── README.md
-├── components.json
-├── eslint.config.mjs
-├── license.txt
-├── next-env.d.ts
-├── next.config.ts
-├── package-lock.json
-├── package.json
-├── postcss.config.mjs
-├── public
-├── src
-│  ├── app
-│  │  ├── (Auth)
-│  │  │  ├── admin
-│  │  │  │  ├── dashboard
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── login
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── kyc
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── login
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── profile
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── signup
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── verification
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── verifyemail
-│  │  │  │  │  ├── page.tsx
-│  │  ├── (Info)
-│  │  │  ├── aboutus
-│  │  │  │  ├── page.tsx
-│  │  │  ├── contactus
-│  │  │  │  ├── page.tsx
-│  │  │  ├── howitworks
-│  │  │  │  ├── page.tsx
-│  │  │  ├── privacypolicy
-│  │  │  │  ├── page.tsx
-│  │  ├── (campaign_folder)
-│  │  │  ├── campaign
-│  │  │  │  ├── [id]
-│  │  │  │  │  ├── page.tsx
-│  │  │  │  ├── create
-│  │  │  │  |  ├── page.tsx
-│  │  │  │  ├── page.tsx
-│  │  │  ├── payment
-│  │  │  │  ├── page.tsx
-│  │  ├── api
-│  │  │  ├── auth
-│  │  │  │  ├── forgotpassword
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── login
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── logout
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── register
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── update
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── users
-│  │  │  │  │  ├── [userId]
-│  │  │  │  │  │  ├── route.ts
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── verify
-│  │  │  │  │  ├── route.ts
-│  │  │  ├── campaign
-│  │  │  │  ├── [campaignId]
-│  │  │  │  │  ├── comment
-│  │  │  │  │  │  ├── route.ts
-│  │  │  │  │  ├── route.ts
-│  │  │  │  │  ├── update
-│  │  │  │  │  │  ├── route.ts
-│  │  │  │  ├── route.ts
-│  │  │  ├── comment
-│  │  │  │  ├── [commentId]
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── route.ts
-│  │  │  ├── payment
-│  │  │  ├── update
-│  │  │  │  ├── [updateId]
-│  │  │  │  │  ├── route.ts
-│  │  │  │  ├── route.ts
-│  │  ├── dashboard
-│  │  │  ├── page.tsx
-│  │  ├── favicon.ico
-│  │  ├── globals.css
-│  │  ├── layout.tsx
-│  │  ├── page.tsx
-│  ├── assets
-│  │  ├── aprof.jpg
-│  │  ├── assets.ts
-│  │  ├── bootcamp.jpg
-│  │  ├── cancer.jpg
-│  │  ├── clean.jpg
-│  │  ├── f_logo.png
-│  │  ├── funding.png
-│  │  ├── g2_logo.png
-│  │  ├── holder.png
-│  │  ├── knee.jpg
-│  │  ├── logo.png
-│  │  ├── mobilmed.jpg
-│  │  ├── nema.jpg
-│  │  ├── soladdress.jpg
-│  │  ├── solar.jpg
-│  │  ├── stadium.jpg
-│  │  ├── swaray.jpg
-│  │  ├── tjalloh.jpg
-│  │  ├── walon.jpg
-│  │  ├── water.jpg
-│  ├── components
-│  │  ├── Footer.tsx
-│  │  ├── Navbar.tsx
-│  │  ├── campaign
-│  │  │  ├── designSection
-│  │  │  │  ├── commentSection.tsx
-│  │  │  │  ├── creatorCard.tsx
-│  │  │  │  ├── dashboardUI
-│  │  │  │  │  ├── campaignCard.tsx
-│  │  │  │  │  ├── commentCard.tsx
-│  │  │  │  ├── shareCard.tsx
-│  │  │  │  ├── updateSection.tsx
-│  │  │  ├── forms
-│  │  │  │  ├── campaignCreateForm.tsx
-│  │  │  │  ├── commentForm.tsx
-│  │  │  │  ├── updateForm.tsx
-│  │  ├── campaign-picture-preview.tsx
-│  │  ├── heroPart
-│  │  │  ├── FeatureCampaign.tsx
-│  │  │  ├── Hero.tsx
-│  │  │  ├── Impact.tsx
-│  │  │  ├── Info.tsx
-│  │  ├── profile-picture-preview.tsx
-│  │  ├── ui
-│  │  │  ├── alert.tsx
-│  │  │  ├── avatar.tsx
-│  │  │  ├── badge.tsx
-│  │  │  ├── button.tsx
-│  │  │  ├── calendar.tsx
-│  │  │  ├── card.tsx
-│  │  │  ├── checkbox.tsx
-│  │  │  ├── dropdown-menu.tsx
-│  │  │  ├── input.tsx
-│  │  │  ├── label.tsx
-│  │  │  ├── pagination.tsx
-│  │  │  ├── popover.tsx
-│  │  │  ├── progress.tsx
-│  │  │  ├── select.tsx
-│  │  │  ├── separator.tsx
-│  │  │  ├── sheet.tsx
-│  │  │  ├── table.tsx
-│  │  │  ├── tabs.tsx
-│  │  │  ├── textarea.tsx
-│  ├── core
-│  │  ├── api
-│  │  │  ├── axiosInstance.ts
-│  │  ├── configs
-│  │  │  ├── mongoDB.ts
-│  │  │  ├── nodemailer.ts
-│  │  │  ├── supabase.ts
-│  │  ├── helpers
-│  │  │  ├── apiResponse.ts
-│  │  │  ├── calculateDayRemaining.ts
-│  │  │  ├── calculateFundingPercentage.ts
-│  │  │  ├── catergoryColor.ts
-│  │  │  ├── errorHandler.ts
-│  │  │  ├── formatDate.ts
-│  │  │  ├── jwtHelpers.ts
-│  │  ├── hooks
-│  │  │  ├── storeHooks.ts
-│  │  │  ├── use-mobile.tsx
-│  │  │  ├── useAuthRedirect.ts
-│  │  │  ├── useIsCampaign.ts
-│  │  ├── models
-│  │  │  ├── campaignModel.ts
-│  │  │  ├── commentModel.ts
-│  │  │  ├── updateModel.ts
-│  │  │  ├── userModel.ts
-│  │  ├── store
-│  │  │  ├── features
-│  │  │  │  ├── campaigns
-│  │  │  │  │  ├── campaignSlice.ts
-│  │  │  │  ├── comments
-│  │  │  │  │  ├── commentSlice.ts
-│  │  │  │  ├── update
-│  │  │  │  │  ├── updateSlice.ts
-│  │  │  │  ├── user
-│  │  │  │  │  ├── userSlice.ts
-│  │  │  ├── store.ts
-│  │  │  ├── storeProvider.tsx
-│  │  ├── types
-│  │  │  ├── slicesTypes.ts
-│  │  │  ├── types.ts
-│  │  ├── validators
-│  │  │  ├── campaign.schema.ts
-│  │  │  ├── comment.schema.ts
-│  │  │  ├── update.schema.ts
-│  │  │  ├── user.schema.ts
-│  ├── lib
-│  │  ├── utils.ts
-│  ├── middleware.ts
-├── tailwind.config.ts
-├── tsconfig.json
+fundwave/
+    ├── .gitignore
+    ├── LICENSE
+    ├── README.md
+    ├── app
+    |  ├── about
+    |  |  ├── page.tsx
+    |  ├── api
+    |  |  ├── campaigns
+    |  |  |  ├── [id]
+    |  |  |  |  ├── cash-out
+    |  |  |  |  |  ├── route.ts
+    |  |  |  |  ├── comments
+    |  |  |  |  |  ├── [commentId]
+    |  |  |  |  |  |  ├── route.ts
+    |  |  |  |  |  ├── route.ts
+    |  |  |  |  ├── payments
+    |  |  |  |  |  ├── route.ts
+    |  |  |  |  ├── report
+    |  |  |  |  |  ├── route.ts
+    |  |  |  |  ├── route.ts
+    |  |  |  ├── user-created
+    |  |  |  |  ├── route.ts
+    |  |  |  ├── user-deleted
+    |  |  ├── page.tsx
+    |  ├── dashboard
+    |  |  ├── page.tsx
+    |  ├── error.tsx
+    |  ├── favicon.ico
+    |  ├── globals.css
+    |  ├── help
+    ├── assets
+    |  ├── assets.ts
+    |  ├── logo.png
+    |  ├── nema.jpg
+    |  ├── swaray.jpg
+    |  ├── tjalloh.jpg
+    |  ├── walon.jpg
+    ├── components
+    |  ├── ClientLayoutWrapper.tsx
+    |  ├── campaign-card.tsx
+    |  ├── cashout-modal.tsx
+    |  ├── ui
+    |  |  ├── accordion.tsx
+    |  |  ├── alert-dialog.tsx
+    |  |  ├── alert.tsx
+    |  |  ├── aspect-ratio.tsx
+    |  |  ├── avatar.tsx
+    |  |  ├── badge.tsx
+    |  |  ├── breadcrumb.tsx
+    |  |  ├── button.tsx
+    |  |  ├── calendar.tsx
+    |  |  ├── card.tsx
+    |  |  ├── carousel.tsx
+    |  |  ├── checkbox.tsx
+    |  |  ├── collapsible.tsx
+    |  |  ├── command.tsx
+    |  |  ├── context-menu.tsx
+    |  |  ├── dialog.tsx
+    |  |  ├── drawer.tsx
+    |  |  ├── dropdown-menu.tsx
+    |  |  ├── form.tsx
+    |  |  ├── hover-card.tsx
+    ├── components.json
+    ├── db
+    |  ├── drizzle
+    |  |  ├── 0000_heavy_mother_askani.sql
+    |  |  |  ├── 0005_snapshot.json
+    |  ├── drizzle.ts
+    |  ├── schema.ts
+    ├── drizzle.config.ts
+    ├── eslint.config.mjs
+    ├── lib
+    |  ├── ai.ts
+    |  ├── api
+    |  |  ├── api.ts
+    |  ├── logger.ts
+    |  ├── monime.ts
+    |  ├── nodeMailer.ts
+    |  ├── notification.ts
+    |  ├── supabase.ts
+    |  ├── utils.ts
+    ├── middleware.ts
+    ├── next-env.d.ts
+    ├── next.config.ts
+    ├── package.json
+    ├── pnpm-lock.yaml
+    ├── postcss.config.mjs
+    ├── public
+    |  ├── robots.txt
+    ├── styles
+    |  ├── globals.css
+    ├── tailwind.config.ts
+    ├── tsconfig.json
+    ├── types
+    |  ├── api.ts
+    |  ├── monimeTypes.ts
+    ├── validations
+    |  ├── campaign.ts
+    |  ├── comment.ts
+    |  ├── payment.ts
+    |  ├── update.ts
+    |  ├── user.ts
+    |  ├── withdrawal.ts
+
 ```
+## 🚀 Quick Start
 
-## Authors
+### Prerequisites
 
-**[Your Name](https://github.com/yourhandle)** - Initial work and concepts.
+Ensure you have the following installed on your development machine:
+
+- **Node.js** (v20.12.0 or higher) - [Download](https://nodejs.org/)
+- **npm** (comes with Node.js) or **yarn** as package manager
+- **Git** for version control
+- **Vercel CLI** (optional, for deployment) - [Install Guide](https://vercel.com/cli)
+
+### Installation
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/Walon-Foundation/fundwave.git
+   cd fundwave
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Then configure your `.env` file with the following variables:
+   ```env
+   # Supabase Configuration
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # clerk Configuration
+   CLERK_SECRET_KEY=*******
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=*****
+   WEBHOOK_SECRET=**********
+
+   # Database Configuration
+   DATABASE_BASE_URL=***************
+   
+   # Monime Configuration
+   MONIME_SPACE_ID=************
+   MONIME_ACCESS_TOKEN=**********
+   MONIME_MAIN_ACCOUNT_ID_PROD=******************
+
+   # SMTP Configuration
+   GOOGLE_SMTP_EMAIL=***********
+   GOOGLE_SMTP_PASSWORD=*****************
+
+   NODE_ENV=********************
+   ```
+4. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+   
+   Your application will be available at `http://localhost:3000`
+
+### Development Commands
+
+```bash
+# Development server with hot reload
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run start
+
+# Lint
+npm run lint
+```
+## Lessons Learned
+
+What did you learn while building this project? What challenges did you face and how did you overcome them?
+
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
 
-1. Fork the repository.
-2. Create a new branch: `git checkout -b my-new-feature`.
-3. Make your changes and commit them: `git commit -am 'Add some feature'`.
-4. Push to the branch: `git push origin my-new-feature`.
-5. Submit a pull request.
+We welcome contributions from developers, designers, and DPG enthusiasts! Here's how you can get involved:
+
+### Getting Started
+1. **Fork the repository** on GitHub
+2. **Clone your fork** locally
+3. **Create a feature branch** from `main`
+4. **Make your changes** following our coding conventions
+5. **Test your changes** thoroughly
+6. **Submit a pull request** with a clear description
+
+### Development Guidelines
+- Follow the existing code style and conventions
+- Write meaningful commit messages
+- Include tests for new features
+- Update documentation when necessary
+- Keep PRs focused and manageable in size
+
+For detailed contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+### Code of Conduct
+We are committed to providing a welcoming and inclusive environment for all contributors. Please read and follow our Code of Conduct.
+
+## 🌍 Community & Support
+
+### Get Help
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/Walon-Foundation/fundawave/issues)
+- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/christex-foundation/pipeline/discussions)
+- **Documentation**: Comprehensive guides in the `/docs` directory
+
+### Stay Updated
+- **Watch** the repository for updates
+- **Star** the project if you find it useful
+- **Follow** [@Walon-Foundation](https://github.com/Walon-Foundation) for announcements
+## License
+
+This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+
+
+## Acknowledgements
+
+- **Walon-Foundation** for project sponsorship and support
+- **Open Source Community** for the amazing tools and libraries that make this project possible
+- **Contributors** who help improve and maintain this platform
+
+
+
+
