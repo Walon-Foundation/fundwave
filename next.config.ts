@@ -4,9 +4,33 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     remotePatterns: [
+      //development
       {
-        protocol: "https",
-        hostname: "lutmdjilgtykwwzsgnnj.supabase.co",
+        protocol: 'https',
+        hostname: 'iziaioorslstbzozmwte.storage.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'iziaioorslstbzozmwte.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
+
+      
+      //production
+      {
+        protocol: 'https',
+        hostname: 'lutmdjilgtykwwzsgnnj.storage.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lutmdjilgtykwwzsgnnj.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
       },
       {
         protocol: "https",
