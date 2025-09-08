@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { MapPin, Target, Clock, Heart, Share2, TrendingUp } from "lucide-react"
+import { MapPin, Target, Clock, Heart, Share2, TrendingUp, CalendarX, CheckCircle } from "lucide-react"
 import { Card, CardContent, CardFooter } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
@@ -10,7 +10,6 @@ import { Progress } from "./ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Campaign } from "@/types/api"
 import Image from "next/image"
-
 
 interface CampaignCardProps {
   campaign: Campaign
@@ -31,6 +30,10 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
   }
 
   const daysLeft = getDaysLeft(campaign.campaignEndDate)
+  const isCampaignEnded = daysLeft === 0
+  const isGoalReached = campaign.amountReceived >= campaign.fundingGoal
+  const isCampaignCompleted = isCampaignEnded || isGoalReached
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -72,7 +75,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
 
   if (viewMode === "list") {
     return (
-      <Link href={`/campaign/${campaign.id}`} className="block">
+      <Link href={`/campaigns/${campaign.id}`} className="block">
         <Card
           className={`group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm cursor-pointer hover:scale-[1.02] ${
             featured ? "ring-2 ring-blue-200 shadow-lg" : ""
@@ -145,7 +148,9 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
 
                   <div className="flex items-center gap-1 text-slate-500">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">{daysLeft} days left</span>
+                    <span className="text-sm">
+                      {isCampaignEnded ? "Ended" : isGoalReached ? "Goal Reached" : `${daysLeft} days left`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -285,25 +290,48 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
               <div className="text-right">
                 <div className="flex items-center gap-1 text-slate-500">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm font-medium">{daysLeft}</span>
+                  <span className="text-sm font-medium">
+                    {isCampaignEnded ? "Ended" : isGoalReached ? "Goal Reached" : daysLeft}
+                  </span>
                 </div>
-                <span className="text-xs text-slate-500">days left</span>
+                <span className="text-xs text-slate-500">
+                  {isCampaignEnded || isGoalReached ? "" : "days left"}
+                </span>
               </div>
             </div>
           </div>
         </CardContent>
 
         <CardFooter className="p-4 sm:p-6 pt-0">
-          <Button
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-          >
-            <Target className="w-4 h-4 mr-2" />
-            Support Campaign
-          </Button>
+          {isCampaignCompleted ? (
+            <Button
+              className="w-full bg-gray-400 hover:bg-gray-500 text-white border-0 shadow-lg cursor-default"
+              disabled
+            >
+              {isGoalReached ? (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Goal Achieved
+                </>
+              ) : (
+                <>
+                  <CalendarX className="w-4 h-4 mr-2" />
+                  Campaign Ended
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Support Campaign
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </Link>
