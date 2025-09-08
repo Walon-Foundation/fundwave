@@ -95,9 +95,9 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
             }, { status:400 })
         }
 
-        const updatedUpdate = (await db.select().from(updateTable).where(eq(updateTable.id, updateId)).limit(1).execute())[0]
+        const oldUpdate = (await db.select().from(updateTable).where(eq(updateTable.id, updateId)).limit(1).execute())[0]
 
-        let signedUrl = ""
+        let signedUrl = oldUpdate.image
 
         if(image && image.size > 0){
             if(image.size > 50 * 1024 * 1024){
@@ -106,6 +106,19 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
                     message:"image size is larger than 50mb",
                 }, { status:400 })
             }
+
+
+           if(oldUpdate.image !== ""){
+                const { error:removeError } = await supabase.storage.from("updates").remove([oldUpdate.title])
+                if(removeError){
+                    console.log("error from delete")
+                    console.log(removeError)
+                    return NextResponse.json({
+                        ok:false,
+                        message:"failed to remove old update image",
+                    }, { status:500 })
+                }
+           }
 
             const FILEPATH = data.title as string
             const buffer = Buffer.from(await image.arrayBuffer())
@@ -116,14 +129,16 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
             })
 
             if(uploadError){
+                console.log(uploadError)
                 return NextResponse.json({
                     ok:false,
                     message:"failed to upload images"
                 }, { status:500 })
             }
 
-            const { data:signedUrlData } = await supabase.storage.from("update").createSignedUrl(FILEPATH, 60 * 60 * 24 * 365 * 2)
+            const { data:signedUrlData } = await supabase.storage.from("updates").createSignedUrl(FILEPATH, 60 * 60 * 24 * 365 * 2)
             if(!signedUrlData){
+                console.log("no sign url")
                 return NextResponse.json({
                     ok:false,
                     message:"failed to created signedurl",
@@ -133,19 +148,19 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{updateId:
             signedUrl = signedUrlData.signedUrl
         }
 
-        const updateUpdate = (await db.update(updateTable).set({ 
+        const newUpdate = (await db.update(updateTable).set({ 
             title:data.title, 
             message:data.content,
-            image:signedUrl || updatedUpdate.image, 
+            image:signedUrl, 
             updatedAt:new Date()
         }).where(eq(updateTable.id, updateId)).returning().execute())[0]
 
-        await sendNotification("update updated", "update", user.id, updateUpdate.campaignId)
+        await sendNotification("update updated", "update", user.id, newUpdate.campaignId)
 
         return NextResponse.json({
             ok:true,
             message:"updated update",
-            data:updateUpdate
+            data:newUpdate
         }, { status:200 })
         
     }catch(err){
