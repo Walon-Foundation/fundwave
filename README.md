@@ -21,7 +21,6 @@ FundWaveSL is Sierra Leone’s first dedicated crowdfunding platform, built to h
 
 - Easy Campaign Creation – Launch fundraising campaigns quickly with images, descriptions, and funding goals.
 - Local & International Payments – Accept donations via mobile money, bank transfers, and international channels.
-- Zero Platform Fees – Fundraisers keep all the funds they raise.
 - Secure & Transparent – Bank-level security, KYC verification, and real-time tracking of donations.
 - Multi-Channel Notifications – Stay updated via SMS, email, or WhatsApp(comming soon...).
 - Inclusive & Localized – Designed for Sierra Leone, supporting local languages and payment infrastructure.
