@@ -7,6 +7,7 @@ import { Upload, ChevronLeft, ChevronRight, User, FileText, CheckCircle2, Shield
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/api/api"
 import Image from "next/image"
+import { toast, Toaster } from "react-hot-toast"
 
 export default function KYCPage() {
   const [step, setStep] = useState(1)
@@ -93,11 +94,11 @@ export default function KYCPage() {
       const res = await api.createKYC(submitData)
       if (res.status === 200) {
         router.push("/dashboard")
-        alert("KYC completed successfully")
+        toast.success("KYC completed successfully")
       }
     } catch (error) {
       console.log(error)
-      alert("An error occurred while submitting KYC. Please try again.")
+      toast.error("An error occurred while submitting KYC. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -617,6 +618,12 @@ export default function KYCPage() {
             </div>
           </div>
         </div>
+        <Toaster
+        position="top-center"
+        toastOptions={{
+          duration:3000
+        }}
+        />
       </div>
     </div>
   )

@@ -47,9 +47,14 @@ const sortOptions = [
   { value: "ending", label: "Ending Soon" },
 ]
 
+// Number of campaigns to load per click
+const CAMPAIGNS_PER_PAGE = 10
+
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([])
+  const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([])
+  const [displayCount, setDisplayCount] = useState(CAMPAIGNS_PER_PAGE)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedType, setSelectedType] = useState("all")
@@ -75,8 +80,6 @@ export default function CampaignsPage() {
     }
     fetchCampaigns()
   }, [])
-
-
 
   useEffect(() => {
     let filtered = Array.isArray(campaigns) ? [...campaigns] : []
@@ -108,7 +111,8 @@ export default function CampaignsPage() {
           campaign?.category?.toLowerCase()?.includes(searchLower) ||
           campaign?.problemStatement?.toLowerCase()?.includes(searchLower) ||
           campaign?.solution?.toLowerCase()?.includes(searchLower)
-  )}
+      )
+    }
 
     // Sorting
     switch (sortBy) {
@@ -140,7 +144,20 @@ export default function CampaignsPage() {
     }
 
     setFilteredCampaigns(filtered)
+    // Reset display count when filters change
+    setDisplayCount(CAMPAIGNS_PER_PAGE)
   }, [campaigns, selectedCategory, selectedType, selectedStatus, searchTerm, sortBy])
+
+  // Update displayed campaigns whenever filtered campaigns or display count changes
+  useEffect(() => {
+    setDisplayedCampaigns(filteredCampaigns.slice(0, displayCount))
+  }, [filteredCampaigns, displayCount])
+
+  const loadMore = () => {
+    setDisplayCount(prev => prev + CAMPAIGNS_PER_PAGE)
+  }
+
+  const hasMoreCampaigns = displayCount < filteredCampaigns.length
 
   const getDaysLeft = (endDate?: Date) => {
     if (!endDate) return Infinity
@@ -151,13 +168,13 @@ export default function CampaignsPage() {
     return Math.max(0, diffDays)
   }
 
-  const featuredCampaigns = Array.isArray(filteredCampaigns) ? filteredCampaigns.filter((campaign) => {
+  const featuredCampaigns = Array.isArray(displayedCampaigns) ? displayedCampaigns.filter((campaign) => {
     const progress = (campaign?.amountReceived || 0) / (campaign?.fundingGoal || 1)
     const daysLeft = getDaysLeft(campaign?.campaignEndDate || new Date())
     return progress > 0.7 || daysLeft <= 10
   }) : []
 
-  const regularCampaigns = Array.isArray(filteredCampaigns) ? filteredCampaigns.filter((campaign) => {
+  const regularCampaigns = Array.isArray(displayedCampaigns) ? displayedCampaigns.filter((campaign) => {
     const progress = (campaign?.amountReceived || 0) / (campaign?.fundingGoal || 1)
     const daysLeft = getDaysLeft(campaign?.campaignEndDate || new Date())
     return progress <= 0.7 && daysLeft > 10
@@ -314,7 +331,7 @@ export default function CampaignsPage() {
 
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-slate-600">
-                      {filteredCampaigns.length} campaigns found
+                      Showing {displayedCampaigns.length} of {filteredCampaigns.length} campaigns
                     </Badge>
 
                     {(selectedCategory !== "All" ||
@@ -370,7 +387,7 @@ export default function CampaignsPage() {
         )}
 
         {/* Regular Campaigns */}
-        {filteredCampaigns.length === 0 ? (
+        {displayedCampaigns.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
             <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center">
               <Search className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400" />
@@ -406,15 +423,16 @@ export default function CampaignsPage() {
           </div>
         )}
 
-        {/* Load More Button */}
-        {filteredCampaigns.length > 0 && (
+        {/* Load More Button - Only show if there are more campaigns to load */}
+        {hasMoreCampaigns && (
           <div className="text-center mt-8 sm:mt-12">
             <Button
+              onClick={loadMore}
               variant="outline"
               size="lg"
               className="border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent"
             >
-              Load More Campaigns
+              Load More Campaigns ({filteredCampaigns.length - displayedCampaigns.length} remaining)
             </Button>
           </div>
         )}
