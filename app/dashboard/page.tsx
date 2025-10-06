@@ -479,7 +479,7 @@ export default function CreatorDashboard() {
                             <td className="py-4 px-4">
                               <div className="w-32">
                                 <div className="flex justify-between text-sm text-slate-600 mb-1">
-                                  <span>{formatCurrency(campaign.donated)}</span>
+                                  <span>Raised: {formatCurrency(campaign.donated)}</span>
                                   <span>{Math.round(progress)}%</span>
                                 </div>
                                 <div className="w-full bg-slate-200 rounded-full h-2">
@@ -609,7 +609,7 @@ export default function CreatorDashboard() {
 
                         <div className="mb-4">
                           <div className="flex justify-between text-sm text-slate-600 mb-2">
-                            <span>{formatCurrency(campaign.donated)}</span>
+                            <span>Raised: {formatCurrency(campaign.donated)}</span>
                             <span>{Math.round(progress)}%</span>
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-2">
