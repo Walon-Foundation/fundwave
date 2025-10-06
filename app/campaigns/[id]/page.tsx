@@ -166,6 +166,7 @@ export default function CampaignDetailPage() {
       setNewComment("")
       // Reset to first page when adding a new comment
       setCommentsPage(1)
+      toast.success("comment added")
     } catch (err) {
       console.error("Error posting comment:", err)
       setError("Failed to post comment. Please try again.")
