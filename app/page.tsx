@@ -501,12 +501,12 @@ export default function HomePage() {
       </section>
 
       {/* Chat System */}
-      <ChatSystem
+      {/* <ChatSystem
         campaignId="general"
         currentUserId="user1"
         currentUserName="Guest User"
         currentUserAvatar="/placeholder.svg?height=40&width=40"
-      />
+      /> */}
     </div>
   )
 }
