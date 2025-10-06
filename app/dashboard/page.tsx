@@ -25,6 +25,7 @@ import type { Dashboard } from "@/types/api"
 import { api } from "@/lib/api/api"
 import CashoutModal from "@/components/cashout-modal"
 import { EmptyState } from "@/components/empty-state"
+import { StatCard } from "@/components/stat-card"
 
 export default function CreatorDashboard() {
   const [data, setData] = useState<Dashboard>()
@@ -275,61 +276,16 @@ export default function CreatorDashboard() {
           </div>
         </div>
 
-        {/* Enhanced Stats Overview */}
+        {/* Stats Overview (StatCard) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 stats-overview">
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Raised</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
-                  {typeof data.totalRaised === "number" ? formatCurrency(data.totalRaised) : data.totalRaised || 0}
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-              </div>
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600">Across all campaigns</div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Donors</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900">{data.totalDonors || 0}</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600">Unique donors</div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-slate-600">Active Campaigns</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900">{activeCampaigns || 0}</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-              </div>
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600">{totalCampaigns || 0} total campaigns</div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-slate-600">Total Views</p>
-                <p className="text-lg sm:text-2xl font-bold text-slate-900">Coming soon</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
-              </div>
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600">Feature in development</div>
-          </div>
+          <StatCard
+            icon={DollarSign}
+            value={String(typeof data.totalRaised === "number" ? formatCurrency(data.totalRaised) : data.totalRaised || 0)}
+            label="Total Raised"
+          />
+          <StatCard icon={Users} value={String(data.totalDonors || 0)} label="Total Donors" />
+          <StatCard icon={TrendingUp} value={String(activeCampaigns || 0)} label="Active Campaigns" />
+          <StatCard icon={Eye} value={"—"} label="Total Views" />
         </div>
 
         {/* Tabs */}
