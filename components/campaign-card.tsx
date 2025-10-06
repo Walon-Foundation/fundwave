@@ -267,6 +267,18 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
               <Progress value={progress} className="h-3 bg-gray-100" />
             </div>
 
+            {/* Amounts: Raised vs Goal */}
+            <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+              <div>
+                <p className="text-slate-600">Raised</p>
+                <p className="font-semibold text-slate-900">{formatAmount(campaign.amountReceived)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-slate-600">Goal</p>
+                <p className="font-semibold text-slate-900">{formatAmount(campaign.fundingGoal)}</p>
+              </div>
+            </div>
+
             {/* Creator and Location */}
             <div className="flex items-center justify-between pt-2 border-t border-slate-100">
               <div className="flex items-center gap-2">

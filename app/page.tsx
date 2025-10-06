@@ -20,6 +20,7 @@ import {
 import CampaignCard from "../components/campaign-card"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
+import { StatCard } from "@/components/stat-card"
 import type { Campaign } from "@/types/api"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api/api"
@@ -276,20 +277,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-ocean-100/50 group"
-              >
-                <div className="w-12 h-12 gradient-bg rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                {statsData ? (
-                  <p className="text-3xl lg:text-4xl font-bold gradient-text mb-2">{stat.value}</p>
-                ) : (
-                  <div className="h-8 w-24 mx-auto mb-2 rounded bg-slate-200 animate-pulse" />
-                )}
-                <p className="text-slate-600">{stat.label}</p>
-              </div>
+              <StatCard key={index} icon={stat.icon} value={String(stat.value)} label={stat.label} />
             ))}
           </div>
         </div>
