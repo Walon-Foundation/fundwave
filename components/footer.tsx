@@ -41,7 +41,7 @@ export default function Footer() {
   return (
     <footer className="bg-slate-900 text-white">
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand & Newsletter - spans 2 columns on desktop */}
           <div className="lg:col-span-2 space-y-6">
@@ -61,7 +61,7 @@ export default function Footer() {
             </p>
 
             {/* Newsletter */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               <p className="text-slate-300 font-medium">Stay updated with our latest campaigns</p>
               <form className="flex space-x-2">
                 <Input
@@ -99,7 +99,7 @@ export default function Footer() {
         </div>
 
         {/* Contact & Social */}
-        <div className="border-t border-slate-700 mt-12 pt-8">
+        <div className="border-t border-slate-700 mt-10 pt-6">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0">
             {/* Contact */}
             <div className="text-center lg:text-left">
@@ -131,7 +131,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-slate-700 mt-8 pt-8">
+        <div className="border-t border-slate-700 mt-6 pt-6">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
             <div className="text-slate-400 text-sm text-center lg:text-left">
               © {new Date().getFullYear()} FundWaveSL. All rights reserved.
@@ -148,12 +148,6 @@ export default function Footer() {
                 Cookies
               </Link>
             </div>
-          </div>
-          
-          <div className="text-center mt-4 pt-4 border-t border-slate-700">
-            <p className="text-slate-500 text-sm">
-              Proudly serving Sierra Leone with ❤️
-            </p>
           </div>
         </div>
       </div>

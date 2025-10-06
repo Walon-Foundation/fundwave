@@ -10,6 +10,7 @@ import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/api/api"
+import {toast, Toaster} from "react-hot-toast"
 
 const categories = [
   "Community",
@@ -212,11 +213,11 @@ export default function CreateCampaignPage() {
 
     try {
       await api.createCampaign(submitData)
-      alert("Campaign created successfully")
+      toast.success("Campaign created successfully")
       router.push('/dashboard')
     } catch (error) {
       console.error("Error creating campaign:", error)
-      alert("Failed to create campaign. Please try again.")
+      toast.error("Failed to create campaign. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -933,6 +934,12 @@ export default function CreateCampaignPage() {
           </div>
         </div>
       </div>
+      <Toaster
+      position="top-center"
+      toastOptions={{
+        duration:3000
+      }}
+      />
     </div>
   )
 }
