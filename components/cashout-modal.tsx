@@ -30,7 +30,7 @@ export default function CashoutModal({ isOpen, onClose, campaign }: CashoutModal
   const formatCurrency = (num: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "NLe",
+      currency: "SLE",
       minimumFractionDigits: 0,
     }).format(num)
   }

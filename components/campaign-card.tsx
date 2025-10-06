@@ -37,7 +37,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "NLe",
+      currency: "SLE",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)

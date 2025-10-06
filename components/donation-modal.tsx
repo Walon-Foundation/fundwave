@@ -35,7 +35,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "NLe",
+      currency: "SLE",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -43,11 +43,11 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
   const validateAmount = () => {
     const amount = selectedAmount || Number.parseInt(customAmount)
     if (!amount || amount < 1) {
-      setError("Minimum donation amount is NLe 1")
+      setError("Minimum donation amount is SLE 1")
       return false
     }
     if (amount > 50000) {
-      setError("Maximum donation amount is NLe 50,000")
+      setError("Maximum donation amount is SLE 50,000")
       return false
     }
     setError("")
@@ -206,7 +206,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   <div className="relative">
                     <input
                       type="number"
-                      placeholder="Or enter custom amount (NLe)"
+                      placeholder="Or enter custom amount (SLE)"
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       value={customAmount}
                       onChange={(e) => {
@@ -217,7 +217,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                       min={1}
                       max={50000}
                     />
-                    <p className="text-xs text-slate-500 mt-1">Minimum: NLe 1 • Maximum: NLe 50,000</p>
+                    <p className="text-xs text-slate-500 mt-1">Minimum: SLE 1 • Maximum: SLE 50,000</p>
                   </div>
                 </div>
 
@@ -482,7 +482,7 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                   <div className="relative">
                     <input
                       type="number"
-                      placeholder="Enter amount in NLe"
+                      placeholder="Enter amount in SLE"
                       className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm sm:text-base"
                       value={customAmount}
                       onChange={(e) => {
@@ -494,10 +494,10 @@ export default function DonationModal({ campaign, onClose }: DonationModalProps)
                       max="50000"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span className="text-slate-400 text-sm">NLe</span>
+                      <span className="text-slate-400 text-sm">SLE</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Minimum: NLe 1 • Maximum: NLe 50,000</p>
+                  <p className="text-xs text-slate-500 mt-1">Minimum: SLE 1 • Maximum: SLE 50,000</p>
                 </div>
               </div>
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X, ChevronLeft, ChevronRight, LogIn } from "lucide-react"
+import { Heart, Share2, Flag, Calendar, MapPin, Users, ThumbsUp, Tag, Trash2, Edit, Save, X, ChevronLeft, ChevronRight, LogIn, MessageSquare, Megaphone, UserPlus } from "lucide-react"
 import DonationModal from "@/components/donation-modal"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api/api"
@@ -138,7 +138,7 @@ export default function CampaignDetailPage() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-SL", {
       style: "currency",
-      currency: "NLe",
+      currency: "SLE",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -248,10 +248,12 @@ export default function CampaignDetailPage() {
   }
 
   // Pagination functions for updates
-  const totalUpdatesPages = Math.ceil(updates.length / itemsPerPage)
+  // If any update has an image URL, show one update per page for a cleaner layout
+  const updatesItemsPerPage = updates.some((u: any) => typeof u?.image === "string" && u.image.trim().length > 0) ? 1 : itemsPerPage
+  const totalUpdatesPages = Math.ceil(updates.length / updatesItemsPerPage)
   const currentUpdates = updates.slice(
-    (updatesPage - 1) * itemsPerPage,
-    updatesPage * itemsPerPage
+    (updatesPage - 1) * updatesItemsPerPage,
+    updatesPage * updatesItemsPerPage
   )
 
   const handleUpdatesPageChange = (newPage: number) => {
@@ -395,10 +397,10 @@ export default function CampaignDetailPage() {
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
-                <div className="text-sm text-slate-500">
-                  Goal: {formatCurrency(campaign.fundingGoal)}
-                </div>
-                <div className="mt-2">
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="text-sm text-slate-500">
+                    Goal: {formatCurrency(campaign.fundingGoal)}
+                  </div>
                   <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
                   </span>
@@ -796,27 +798,47 @@ export default function CampaignDetailPage() {
               {activeTab === "team" && (
                 <div className="space-y-4 sm:space-y-6">
                   {teamMembers.length > 0 ? (
-                    teamMembers.map((member) => (
-                      <div key={member.id} className="card">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                          <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mx-auto sm:mx-0">
-                            {member.name.charAt(0)}
-                          </div>
-                          <div className="flex-1 text-center sm:text-left">
-                            <h3 className="text-lg font-semibold text-slate-900">{member.name}</h3>
-                            <p className="text-indigo-600 font-medium mb-2">{member.role}</p>
-                            <p className="text-slate-600 text-sm leading-relaxed">{member.bio}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                      {teamMembers.map((member) => (
+                        <div key={member.id} className="card">
+                          <div className="flex items-start gap-4">
+                            <div className="relative w-14 h-14 flex-shrink-0">
+                              <div className="w-14 h-14 bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                                {member.name.charAt(0)}
+                              </div>
+                              <span className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 text-[10px] text-indigo-600 border border-indigo-100 shadow-sm">
+                                Team
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h3 className="text-lg font-semibold text-slate-900 truncate">{member.name}</h3>
+                                <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full border border-indigo-100">
+                                  {member.role}
+                                </span>
+                              </div>
+                              {member.bio && (
+                                <p className="mt-2 text-slate-600 text-sm leading-relaxed">
+                                  {member.bio}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   ) : (
-                    <div className="text-center py-8 sm:py-12">
-                      <Users className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">No team members yet</h3>
-                      <p className="text-slate-600 text-sm sm:text-base">
-                        Check back later for team information!
+                    <div className="text-center py-10 sm:py-12 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <UserPlus className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-600" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">Team coming soon</h3>
+                      <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
+                        Campaign organizers will add collaborators here. Follow and share to help them build the dream team.
                       </p>
+                      <button onClick={() => setShareModal(true)} className="mt-4 inline-flex items-center text-sm px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                        <Share2 className="w-4 h-4 mr-2" /> Share Campaign
+                      </button>
                     </div>
                   )}
                 </div>
@@ -826,28 +848,38 @@ export default function CampaignDetailPage() {
                 <div className="space-y-4 sm:space-y-6">
                   {currentUpdates.length > 0 ? (
                     <>
-                      {currentUpdates.map((update) => (
-                        <div key={update.id} className="card">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
-                            <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
-                            <span className="text-sm text-slate-500">
-                              {formatDateTime(update?.createdAt)}
-                            </span>
-                          </div>
-                          <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
-                          {update.image && (
-                            <div className="mt-4">
-                              <Image
-                                src={update.image}
-                                alt={`Update ${update.id} image`}
-                                width={600}
-                                height={400}
-                                className="rounded-lg w-full h-auto"
-                              />
+                      <div className="relative">
+                        <div className="absolute left-3 sm:left-4 top-0 bottom-0 w-px bg-slate-200" />
+                        <div className="space-y-4 sm:space-y-6">
+                          {currentUpdates.map((update) => (
+                            <div key={update.id} className="relative pl-8 sm:pl-10">
+                              <span className="absolute left-0 top-2 w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center">
+                                <Megaphone className="w-3.5 h-3.5 text-indigo-600" />
+                              </span>
+                              <div className="card">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                                  <h3 className="text-lg font-semibold text-slate-900">{update.title}</h3>
+                                  <span className="text-xs sm:text-sm text-slate-500">
+                                    {formatDateTime(update?.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{update.message}</p>
+                                {update.image && (
+                                  <div className="mt-4">
+                                    <Image
+                                      src={update.image}
+                                      alt={`Update ${update.id} image`}
+                                      width={600}
+                                      height={400}
+                                      className="rounded-lg w-full h-auto"
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
+                      </div>
                       <Pagination
                         currentPage={updatesPage}
                         totalPages={totalUpdatesPages}
@@ -855,10 +887,15 @@ export default function CampaignDetailPage() {
                       />
                     </>
                   ) : (
-                    <div className="text-center py-8 sm:py-12">
-                      <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">No updates yet</h3>
-                      <p className="text-slate-600 text-sm sm:text-base">Check back later for campaign updates!</p>
+                    <div className="text-center py-10 sm:py-12 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <Megaphone className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">No updates yet</h3>
+                      <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">Campaign updates will appear here. Share this campaign to help it gain traction.</p>
+                      <button onClick={() => setShareModal(true)} className="mt-4 inline-flex items-center text-sm px-3 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700">
+                        <Share2 className="w-4 h-4 mr-2" /> Share Campaign
+                      </button>
                     </div>
                   )}
                 </div>
@@ -868,15 +905,19 @@ export default function CampaignDetailPage() {
                 <div className="space-y-6">
                   {/* Comment Form - Only show if user is logged in */}
                   {currentUser ? (
-                    <form onSubmit={handleCommentSubmit} className="card">
+                    <form onSubmit={handleCommentSubmit} className="card" id="comment-form">
                       <h3 className="text-lg font-semibold text-slate-900 mb-4">Leave a Comment</h3>
                       <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Share your thoughts or ask a question..."
-                        className="input min-h-[100px] mb-4"
+                        className="w-full min-h-[110px] mb-3 p-3 border border-slate-300 rounded-lg resize-y focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base bg-white"
                         required
                       />
+                      <div className="flex items-center justify-between mb-3 text-xs text-slate-500">
+                        <span>Be respectful and constructive.</span>
+                        <span>{newComment.length}/500</span>
+                      </div>
                       <button 
                         type="submit" 
                         className="btn-primary flex items-center justify-center gap-2"
@@ -893,19 +934,9 @@ export default function CampaignDetailPage() {
                       </button>
                     </form>
                   ) : (
-                    <div className="card text-center py-8">
-                      <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <LogIn className="w-8 h-8 text-indigo-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">Sign in to comment</h3>
-                      <p className="text-slate-600 mb-4">You need to be logged in to leave a comment.</p>
-                      <Link 
-                        href="/login" 
-                        className="btn-primary inline-flex items-center"
-                      >
-                        <LogIn className="w-4 h-4 mr-2" />
-                        Sign In
-                      </Link>
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center text-sm text-slate-600">
+                      You need to be logged in to comment. 
+                      <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium ml-1">Sign in</Link>
                     </div>
                   )}
 
@@ -1026,15 +1057,24 @@ export default function CampaignDetailPage() {
                         />
                       </>
                     ) : (
-                    <div className="text-center py-8 sm:py-12">
-                      <ThumbsUp className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">No comments yet</h3>
-                      <p className="text-slate-600 text-sm sm:text-base">
-                        {currentUser 
-                          ? "Be the first to comment and show your support!" 
-                          : "Sign in to be the first to comment!"
+                    <div className="text-center py-10 sm:py-12 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">No comments yet</h3>
+                      <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
+                        {currentUser
+                          ? "Be the first to share feedback, ask a question, or cheer the organizers on."
+                          : "Sign in to start the conversation and support this campaign."
                         }
                       </p>
+                      {currentUser ? (
+                        <a href="#comment-form" className="mt-3 inline-flex items-center text-sm text-blue-600 hover:text-blue-700">Write a comment</a>
+                      ) : (
+                        <Link href="/login" className="mt-3 inline-flex items-center text-sm text-blue-600 hover:text-blue-700">
+                          <LogIn className="w-4 h-4 mr-2" /> Sign in
+                        </Link>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1059,10 +1099,10 @@ export default function CampaignDetailPage() {
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
-                <div className="text-sm text-slate-500">
-                  Goal: {formatCurrency(campaign.fundingGoal)}
-                </div>
-                <div className="mt-2">
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="text-sm text-slate-500">
+                    Goal: {formatCurrency(campaign.fundingGoal)}
+                  </div>
                   <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
                   </span>
