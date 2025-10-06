@@ -26,6 +26,10 @@ export default function CampaignDetailPage() {
   const [currentUser, setCurrentUser] = useState<CombinedUserData | null>(null)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
+  // Loading states for comment operations
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null)
+  const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null)
+
   //share modal 
   const [shareModal, setShareModal] = useState(false)
 
@@ -65,6 +69,19 @@ export default function CampaignDetailPage() {
       fetchCampaignData()
     }
   }, [id])
+
+  // Loading spinner component
+  const LoadingSpinner = ({ size = "small" }: { size?: "small" | "medium" | "large" }) => {
+    const sizeClasses = {
+      small: "h-4 w-4 border-2",
+      medium: "h-6 w-6 border-2",
+      large: "h-8 w-8 border-2"
+    }
+    
+    return (
+      <div className={`animate-spin rounded-full border-t-2 border-b-2 border-indigo-500 ${sizeClasses[size]}`}></div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -147,7 +164,6 @@ export default function CampaignDetailPage() {
     e.preventDefault()
     if (!newComment.trim()) return
     if (!currentUser) {
-      // Redirect to login or show login modal
       toast.success("Please log in to comment")
       return
     }
@@ -166,7 +182,7 @@ export default function CampaignDetailPage() {
       setNewComment("")
       // Reset to first page when adding a new comment
       setCommentsPage(1)
-      toast.success("comment added")
+      toast.success("Comment added successfully")
     } catch (err) {
       console.error("Error posting comment:", err)
       setError("Failed to post comment. Please try again.")
@@ -178,16 +194,20 @@ export default function CampaignDetailPage() {
   const handleDeleteComment = async (commentId: string) => {
     if (!confirm("Are you sure you want to delete this comment?")) return
     
+    setDeletingCommentId(commentId)
+    
     try {
       await api.deleteComment(id, commentId)
       setCampaignInfo(prev => ({
         ...prev!,
         comments: prev!.comments.filter(comment => comment.id !== commentId)
       }))
-      toast.success("comment deleted")
+      toast.success("Comment deleted successfully")
     } catch (err) {
       console.error("Error deleting comment:", err)
       setError("Failed to delete comment. Please try again.")
+    } finally {
+      setDeletingCommentId(null)
     }
   }
 
@@ -204,6 +224,8 @@ export default function CampaignDetailPage() {
   const handleSaveEdit = async (commentId: string) => {
     if (!editCommentText.trim()) return
     
+    setUpdatingCommentId(commentId)
+    
     try {
       const updatedComment = await api.updateComment({comment:editCommentText}, id, commentId)
       setCampaignInfo(prev => ({
@@ -219,6 +241,8 @@ export default function CampaignDetailPage() {
     } catch (err) {
       console.error("Error updating comment:", err)
       setError("Failed to update comment. Please try again.")
+    } finally {
+      setUpdatingCommentId(null)
     }
   }
 
@@ -848,10 +872,17 @@ export default function CampaignDetailPage() {
                       />
                       <button 
                         type="submit" 
-                        className="btn-primary"
+                        className="btn-primary flex items-center justify-center gap-2"
                         disabled={isSubmittingComment}
                       >
-                        {isSubmittingComment ? "Posting..." : "Post Comment"}
+                        {isSubmittingComment ? (
+                          <>
+                            <LoadingSpinner size="small" />
+                            Posting...
+                          </>
+                        ) : (
+                          "Post Comment"
+                        )}
                       </button>
                     </form>
                   ) : (
@@ -908,14 +939,20 @@ export default function CampaignDetailPage() {
                                         <>
                                           <button
                                             onClick={() => handleSaveEdit(comment.id)}
-                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                                            disabled={updatingCommentId === comment.id}
+                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors disabled:opacity-50"
                                             title="Save changes"
                                           >
-                                            <Save className="w-4 h-4" />
+                                            {updatingCommentId === comment.id ? (
+                                              <LoadingSpinner size="small" />
+                                            ) : (
+                                              <Save className="w-4 h-4" />
+                                            )}
                                           </button>
                                           <button
                                             onClick={handleCancelEdit}
-                                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
+                                            disabled={updatingCommentId === comment.id}
+                                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors disabled:opacity-50"
                                             title="Cancel edit"
                                           >
                                             <X className="w-4 h-4" />
@@ -925,17 +962,23 @@ export default function CampaignDetailPage() {
                                         <>
                                           <button
                                             onClick={() => handleStartEditComment(comment.id, comment.message)}
-                                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                            disabled={deletingCommentId === comment.id}
+                                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
                                             title="Edit comment"
                                           >
                                             <Edit className="w-4 h-4" />
                                           </button>
                                           <button
                                             onClick={() => handleDeleteComment(comment.id)}
-                                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                            disabled={deletingCommentId === comment.id}
+                                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
                                             title="Delete comment"
                                           >
-                                            <Trash2 className="w-4 h-4" />
+                                            {deletingCommentId === comment.id ? (
+                                              <LoadingSpinner size="small" />
+                                            ) : (
+                                              <Trash2 className="w-4 h-4" />
+                                            )}
                                           </button>
                                         </>
                                       )}
@@ -951,6 +994,7 @@ export default function CampaignDetailPage() {
                                       onChange={(e) => setEditCommentText(e.target.value)}
                                       className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
                                       rows={3}
+                                      disabled={updatingCommentId === comment.id}
                                     />
                                   </div>
                                 ) : (

@@ -9,7 +9,8 @@ export const kycSchema = z.object({
     nationality:z.string().min(2, "nationality is required"),
     age:z.number().min(2, "age is required"),
     phoneNumber:z.string().min(9, "phone number is required"),
-    bio:z.string().min(2, "bio is required")
+    bio:z.string().min(2, "bio is required"),
+    name:z.string().min(2, "name is required")
 })
 
 export const deleteSchema = z.object({

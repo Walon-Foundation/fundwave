@@ -37,7 +37,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "SLL",
+      currency: "NLe",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)
@@ -138,9 +138,9 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                   <div className="flex items-center gap-2">
                     <Avatar className="w-6 h-6">
-                      <AvatarImage
+                      {/* <AvatarImage
                         src={`/placeholder-icon.png?height=24&width=24&text=${campaign.creatorName.charAt(0)}`}
-                      />
+                      /> */}
                       <AvatarFallback className="text-xs">{campaign.creatorName.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm text-slate-600">{campaign.creatorName}</span>
@@ -271,9 +271,9 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             <div className="flex items-center justify-between pt-2 border-t border-slate-100">
               <div className="flex items-center gap-2">
                 <Avatar className="w-8 h-8 ring-2 ring-gray-100">
-                  <AvatarImage
+                  {/* <AvatarImage
                     src={`/placeholder-icon.png?height=32&width=32&text=${campaign.creatorName.charAt(0)}`}
-                  />
+                  /> */}
                   <AvatarFallback className="text-sm bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                     {campaign.creatorName.charAt(0)}
                   </AvatarFallback>
