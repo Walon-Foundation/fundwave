@@ -398,6 +398,11 @@ export default function CampaignDetailPage() {
                 <div className="text-sm text-slate-500">
                   Goal: {formatCurrency(campaign.fundingGoal)}
                 </div>
+                <div className="mt-2">
+                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1056,6 +1061,11 @@ export default function CampaignDetailPage() {
                 </div>
                 <div className="text-sm text-slate-500">
                   Goal: {formatCurrency(campaign.fundingGoal)}
+                </div>
+                <div className="mt-2">
+                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
+                  </span>
                 </div>
               </div>
 
