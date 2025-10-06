@@ -26,6 +26,12 @@ import { api } from "@/lib/api/api"
 
 export default function HomePage() {
   const [data, setData] = useState<Campaign[]>([])
+  const [statsData, setStatsData] = useState<{
+    successfulCampaigns: number
+    raised: number
+    happyDonors: number
+    successRate: number
+  } | null>(null)
 
   useEffect(() => {
     const getCampaign = async () => {
@@ -34,6 +40,19 @@ export default function HomePage() {
     }
 
     getCampaign()
+  }, [])
+
+  useEffect(() => {
+    const getStats = async () => {
+      try {
+        const res = await fetch("/api/stats", { cache: "no-store" })
+        const json = await res.json()
+        if (json?.ok) setStatsData(json.data)
+      } catch (e) {
+        // leave stats as null on failure
+      }
+    }
+    getStats()
   }, [])
 
   const howItWorksSteps = [
@@ -63,11 +82,31 @@ export default function HomePage() {
     },
   ]
 
+  const numberFmt = new Intl.NumberFormat(undefined)
+  const currencyFmt = new Intl.NumberFormat(undefined, { style: "currency", currency: "SLE", maximumFractionDigits: 0 })
+  const percentFmt = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 0 })
+
   const stats = [
-    { value: "500+", label: "Successful Campaigns", icon: Award },
-    { value: "NLe 2.5B+", label: "Raised for Communities", icon: TrendingUp },
-    { value: "50K+", label: "Happy Donors", icon: Users },
-    { value: "98%", label: "Success Rate", icon: Star },
+    {
+      value: statsData ? numberFmt.format(statsData.successfulCampaigns) : "—",
+      label: "Successful Campaigns",
+      icon: Award,
+    },
+    {
+      value: statsData ? `${currencyFmt.format(statsData.raised)}` : "—",
+      label: "Raised for Communities",
+      icon: TrendingUp,
+    },
+    {
+      value: statsData ? `${numberFmt.format(statsData.happyDonors)}` : "—",
+      label: "Happy Donors",
+      icon: Users,
+    },
+    {
+      value: statsData ? `${percentFmt.format(statsData.successRate / 100)}` : "—",
+      label: "Success Rate",
+      icon: Star,
+    },
   ]
 
   const features = [
@@ -244,7 +283,11 @@ export default function HomePage() {
                 <div className="w-12 h-12 gradient-bg rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-3xl lg:text-4xl font-bold gradient-text mb-2">{stat.value}</p>
+                {statsData ? (
+                  <p className="text-3xl lg:text-4xl font-bold gradient-text mb-2">{stat.value}</p>
+                ) : (
+                  <div className="h-8 w-24 mx-auto mb-2 rounded bg-slate-200 animate-pulse" />
+                )}
                 <p className="text-slate-600">{stat.label}</p>
               </div>
             ))}
