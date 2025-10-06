@@ -8,6 +8,8 @@ import Image from "next/image"
 import { useParams } from "next/navigation"
 import { Updates } from "@/types/api"
 import { api } from "@/lib/api/api"
+import { toast, Toaster } from "react-hot-toast"
+
 
 export default function CampaignUpdatesPage() {
   const param = useParams<{id:string}>()
@@ -38,7 +40,7 @@ export default function CampaignUpdatesPage() {
         setUpdates(response as Updates[])
       } catch (error) {
         console.error("Failed to fetch updates:", error)
-        alert("Failed to load updates. Please try again.")
+        toast.error("Failed to load updates. Please try again.")
       } finally {
         setIsFetching(false)
       }
@@ -69,11 +71,12 @@ export default function CampaignUpdatesPage() {
         setUpdates([response, ...updates])
       }
       
+      toast.success("updated created")
       setNewUpdate({ title: "", message: "", image: null, imagePreview: null })
       setShowCreateForm(false)
     } catch (error) {
       console.error("Failed to create update:", error)
-      alert("Failed to create update. Please try again.")
+      toast.error("Failed to create update. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -85,9 +88,10 @@ export default function CampaignUpdatesPage() {
     try{
       await api.deleteUpdate(param.id, updateId)
       setUpdates(updates.filter((u) => u.id !== updateId))
-      alert("update deleted")
+      toast.success("update deleted")
     }catch(err){
       console.log(err)
+      toast.error("failed to delete update")
     }
   }
 
@@ -165,10 +169,10 @@ export default function CampaignUpdatesPage() {
         imagePreview: null,
         existingImage: null
       })
-      alert("Update edited successfully")
+      toast.success("Update edited successfully")
     } catch (error) {
       console.error("Failed to edit update:", error)
-      alert("Failed to edit update. Please try again.")
+      toast.error("Failed to edit update. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -439,6 +443,12 @@ export default function CampaignUpdatesPage() {
           )}
         </div>
       </div>
+      <Toaster
+      position="top-center"
+      toastOptions={{
+        duration:3000
+      }}
+      />
     </div>
   )
 }

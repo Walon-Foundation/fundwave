@@ -9,6 +9,7 @@ import { api } from "@/lib/api/api"
 import type { CampaignDetails, CombinedUserData } from "@/types/api"
 import Link from "next/link"
 import { ShareModal } from "@/components/share-modal"
+import { toast, Toaster } from "react-hot-toast"
 
 export default function CampaignDetailPage() {
   const params = useParams()
@@ -147,7 +148,7 @@ export default function CampaignDetailPage() {
     if (!newComment.trim()) return
     if (!currentUser) {
       // Redirect to login or show login modal
-      alert("Please log in to comment")
+      toast.success("Please log in to comment")
       return
     }
 
@@ -182,7 +183,7 @@ export default function CampaignDetailPage() {
         ...prev!,
         comments: prev!.comments.filter(comment => comment.id !== commentId)
       }))
-      alert("comment deleted")
+      toast.success("comment deleted")
     } catch (err) {
       console.error("Error deleting comment:", err)
       setError("Failed to delete comment. Please try again.")
@@ -213,7 +214,7 @@ export default function CampaignDetailPage() {
       
       setEditingCommentId(null)
       setEditCommentText("")
-      alert("Comment updated successfully")
+      toast.success("Comment updated successfully")
     } catch (err) {
       console.error("Error updating comment:", err)
       setError("Failed to update comment. Please try again.")
@@ -1126,5 +1127,11 @@ export default function CampaignDetailPage() {
 
       {shareModal && <ShareModal onClose={() => setShareModal(!shareModal)}/>}
     </div>
+    <Toaster
+    position="top-center"
+    toastOptions={{
+      duration:3000
+    }}
+    />
   </div>  
 )} 
