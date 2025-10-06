@@ -398,7 +398,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-ocean-50/30">
+      {/* <section className="py-20 bg-gradient-to-br from-slate-50 to-ocean-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-green-100 text-green-700 hover:bg-green-200">💬 Success Stories</Badge>
@@ -435,7 +435,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 gradient-bg text-white relative overflow-hidden">

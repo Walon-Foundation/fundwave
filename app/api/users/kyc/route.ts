@@ -16,7 +16,6 @@ export async function PATCH(req:NextRequest){
     const userExist = (await db.select().from(userTable).where(eq(userTable.clerkId, userId!)).limit(1).execute())[0]
     
     if(!userId || !userExist){
-      console.log("user nor dea")
       return NextResponse.json({
         error:"user auth token is invalid",
       }, { status:401 })
@@ -40,6 +39,7 @@ export async function PATCH(req:NextRequest){
     const age =  body.get("age")
     const phoneNumber = body.get("phoneNumber")
     const bio = body.get("bio")
+    const name = body.get("name")
     const profilePicture =  body.get("profilePicture") as File
     const documentPhoto =  body.get("documentPhoto") as File
 
@@ -58,7 +58,8 @@ export async function PATCH(req:NextRequest){
       nationality,
       phoneNumber,
       age:Number(age),
-      bio
+      bio,
+      name
     })
 
     if(!success){
@@ -111,6 +112,7 @@ export async function PATCH(req:NextRequest){
 
     const newUser = (await db.update(userTable).set({
       isKyc:true,
+      name:data.name,
       isVerified:true,
       occupation:data.occupation,
       address:data.address,
