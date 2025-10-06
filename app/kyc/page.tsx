@@ -217,12 +217,11 @@ export default function KYCPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Fullname</label>
                 <input
-                  name="bio"
+                  name="name"
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="John Doe"
-
                 />
               </div>
 
