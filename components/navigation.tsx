@@ -214,12 +214,12 @@ export default function Navigation() {
                           Profile
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
+                      {/* <DropdownMenuItem asChild>
                         <Link href="/settings" className="flex items-center">
                           <Settings className="w-4 h-4 mr-2" />
                           Settings
                         </Link>
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
