@@ -18,13 +18,11 @@ import {
   Heart,
 } from "lucide-react"
 import CampaignCard from "../components/campaign-card"
-import ChatSystem from "../components/chat-system"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
 import type { Campaign } from "@/types/api"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api/api"
-import Image from "next/image"
 
 export default function HomePage() {
   const [data, setData] = useState<Campaign[]>([])
@@ -67,7 +65,7 @@ export default function HomePage() {
 
   const stats = [
     { value: "500+", label: "Successful Campaigns", icon: Award },
-    { value: "Le 2.5B+", label: "Raised for Communities", icon: TrendingUp },
+    { value: "NLe 2.5B+", label: "Raised for Communities", icon: TrendingUp },
     { value: "50K+", label: "Happy Donors", icon: Users },
     { value: "98%", label: "Success Rate", icon: Star },
   ]
@@ -223,7 +221,7 @@ export default function HomePage() {
                   style={{ animationDelay: "0.5s" }}
                 >
                   <div className="text-sm text-slate-600">
-                    <div className="font-bold text-ocean-600">Le 2.5M</div>
+                    <div className="font-bold text-ocean-600">NLe 2.5M</div>
                     <div>Raised Today</div>
                   </div>
                 </div>

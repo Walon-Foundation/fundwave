@@ -59,7 +59,7 @@ export default function AboutPage() {
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <TrendingUp className="w-8 h-8 text-purple-600" />
                   </div>
-                  <div className="text-3xl font-bold text-slate-900">₦2.5B</div>
+                  <div className="text-3xl font-bold text-slate-900">NLe2.5B</div>
                   <div className="text-sm text-slate-600">Funds Raised</div>
                 </div>
                 <div className="text-center">
