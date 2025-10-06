@@ -199,7 +199,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             </div>
           </div>
 
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          <div className="hidden sm:block absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -322,7 +322,8 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             </Button>
           ) : (
             <Button
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
+              variant="primary"
+              className="w-full shadow-lg hover:shadow-xl transition-all"
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
