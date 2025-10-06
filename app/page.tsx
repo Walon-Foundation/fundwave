@@ -261,7 +261,7 @@ export default function HomePage() {
                   style={{ animationDelay: "0.5s" }}
                 >
                   <div className="text-sm text-slate-600">
-                    <div className="font-bold text-ocean-600">NLe 2.5M</div>
+                    <div className="font-bold text-ocean-600">SLE 2.5M</div>
                     <div>Raised Today</div>
                   </div>
                 </div>

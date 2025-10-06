@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Heart } from "lucide-react"
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Heart, Github } from "lucide-react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -35,6 +35,7 @@ const socialLinks = [
   { icon: Twitter, href: "https://twitter.com/fundwavesl", label: "Twitter" },
   { icon: Instagram, href: "https://instagram.com/fundwavesl", label: "Instagram" },
   { icon: Linkedin, href: "https://linkedin.com/company/fundwavesl", label: "LinkedIn" },
+  { icon: Github, href: "https://github.com/Walon-Foundation/fundwave", label: "GitHub" },
 ]
 
 export default function Footer() {
@@ -126,6 +127,33 @@ export default function Footer() {
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
+            </div>
+          </div>
+          {/* Contribute CTA */}
+          <div className="mt-6">
+            <div className="flex flex-col lg:flex-row items-center justify-between bg-white/5 rounded-lg p-4">
+              <p className="text-slate-300 text-sm">
+                This project is open source. Star us and contribute on GitHub.
+              </p>
+              <div className="mt-3 lg:mt-0 flex items-center gap-3">
+                <a
+                  href="https://github.com/Walon-Foundation/fundwave"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white"
+                >
+                  <Github className="w-4 h-4 mr-2" />
+                  Star on GitHub
+                </a>
+                <a
+                  href="https://github.com/Walon-Foundation/fundwave#contributing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-300 hover:text-white text-sm"
+                >
+                  Contributing Guide
+                </a>
+              </div>
             </div>
           </div>
         </div>

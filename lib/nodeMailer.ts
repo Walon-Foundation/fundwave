@@ -243,7 +243,7 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
         <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Campaign Summary:</h3>
         <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px;">
           <span style="font-weight: 500;">Total Funds Raised:</span>
-          <span style="font-size: 18px; font-weight: bold; color: #ea580c;">NLe${total}</span>
+          <span style="font-size: 18px; font-weight: bold; color: #ea580c;">SLE${total}</span>
         </div>
         <p style="margin: 0; color: #9a3412;">Every contribution, no matter the size, has made a meaningful impact.</p>
       </div>
@@ -278,14 +278,14 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
       
       <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
       
-      <p style="font-size: 16px; line-height: 1.6;">Your donation of <strong style="color: #16a34a;">NLe${amount}</strong> to <strong style="color: #2563eb;">${campaign}</strong> has been successfully processed and is now on its way to making a difference.</p>
+      <p style="font-size: 16px; line-height: 1.6;">Your donation of <strong style="color: #16a34a;">SLE${amount}</strong> to <strong style="color: #2563eb;">${campaign}</strong> has been successfully processed and is now on its way to making a difference.</p>
       
       <div style="background-color: #f0fdf4; padding: 18px; border-radius: 8px; margin: 25px 0;">
         <h3 style="color: #374151; margin-top: 0; margin-bottom: 12px;">Donation Details:</h3>
         <div style="background-color: white; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="font-weight: 500;">Amount:</span>
-            <span style="font-weight: bold; color: #16a34a;">NLe${amount}</span>
+            <span style="font-weight: bold; color: #16a34a;">SLE${amount}</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="font-weight: 500;">Campaign:</span>

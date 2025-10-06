@@ -345,7 +345,7 @@ export default function CreateCampaignPage() {
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
                         errors.fundingGoal ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
                       }`}
-                      placeholder="e.g., NLe 5000"
+                      placeholder="e.g., SLE 5000"
                       value={formData.fundingGoal}
                       onChange={(e) => {
                         setFormData({ ...formData, fundingGoal: e.target.value })
