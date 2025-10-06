@@ -9,6 +9,7 @@ import { Badge } from "../../components/ui/badge"
 import { Card, CardContent } from "../../components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { api } from "@/lib/api/api"
+import { EmptyState } from "@/components/empty-state"
 import { Campaign } from "@/types/api"
 
 const categories = [
@@ -388,16 +389,11 @@ export default function CampaignsPage() {
 
         {/* Regular Campaigns */}
         {displayedCampaigns.length === 0 ? (
-          <div className="text-center py-12 sm:py-16">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-              <Search className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">No campaigns found</h3>
-            <p className="text-slate-600 mb-6">Try adjusting your search terms or filters</p>
-            <Button onClick={clearAllFilters} className="bg-blue-600 hover:bg-blue-700">
-              Clear All Filters
-            </Button>
-          </div>
+          <EmptyState
+            title="No campaigns found"
+            description="Try adjusting your search terms or filters"
+            action={<Button onClick={clearAllFilters} className="bg-blue-600 hover:bg-blue-700">Clear All Filters</Button>}
+          />
         ) : (
           <div>
             {featuredCampaigns.length > 0 && (

@@ -24,6 +24,7 @@ import { useUser } from "@clerk/nextjs"
 import type { Dashboard } from "@/types/api"
 import { api } from "@/lib/api/api"
 import CashoutModal from "@/components/cashout-modal"
+import { EmptyState } from "@/components/empty-state"
 
 export default function CreatorDashboard() {
   const [data, setData] = useState<Dashboard>()
@@ -229,15 +230,17 @@ export default function CreatorDashboard() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4">No Data Available</h1>
-          <p className="text-lg sm:text-xl text-slate-600">We couldn&apos;t load your dashboard data</p>
-          <Link href="/create-campaign" className="btn-primary mt-4 inline-flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Your First Campaign
-          </Link>
-        </div>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <EmptyState
+          title="No data available"
+          description="We couldn't load your dashboard data. You can start by creating your first campaign."
+          action={
+            <Link href="/create-campaign" className="btn-primary mt-2 inline-flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Campaign
+            </Link>
+          }
+        />
       </div>
     )
   }
@@ -409,9 +412,10 @@ export default function CreatorDashboard() {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-8">
-                    <p className="text-slate-500">No recent activity</p>
-                  </div>
+                  <EmptyState
+                    title="No recent activity"
+                    description="When there are donations, comments, or updates, they'll appear here."
+                  />
                 )}
               </div>
             </div>

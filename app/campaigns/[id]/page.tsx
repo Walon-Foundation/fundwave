@@ -9,6 +9,7 @@ import { api } from "@/lib/api/api"
 import type { CampaignDetails, CombinedUserData } from "@/types/api"
 import Link from "next/link"
 import { ShareModal } from "@/components/share-modal"
+import { EmptyState } from "@/components/empty-state"
 import { toast, Toaster } from "react-hot-toast"
 
 export default function CampaignDetailPage() {
@@ -483,9 +484,10 @@ export default function CampaignDetailPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4">
-                    <div className="text-sm text-slate-500">No recent donors yet</div>
-                  </div>
+                  <EmptyState
+                    title="No recent donors yet"
+                    description="Be the first to support this campaign."
+                  />
                 )}
               </div>
             </div>
@@ -1111,9 +1113,10 @@ export default function CampaignDetailPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4">
-                    <div className="text-sm text-slate-500">No recent donors yet</div>
-                  </div>
+                  <EmptyState
+                    title="No recent donors yet"
+                    description="Share this campaign to help it gain traction."
+                  />
                 )}
               </div>
 
