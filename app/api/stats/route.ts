@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db/drizzle";
-import { campaignTable, paymentTable } from "@/db/schema";
+import { db } from "../../../db/drizzle"
+import { campaignTable, paymentTable } from "../../../db/schema";
 import { and, eq, sql, count, sum } from "drizzle-orm";
 
 export async function GET() {

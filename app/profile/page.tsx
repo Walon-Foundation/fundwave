@@ -27,6 +27,7 @@ import {
 import { CombinedUserData } from "@/types/api"
 import { api } from "@/lib/api/api"
 import { useRouter } from "next/navigation"
+import { StatCard } from "@/components/stat-card"
 
 export default function ProfilePage() {
   const [data, setData] = useState<CombinedUserData | null>(null)
@@ -442,47 +443,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Rest of the component remains the same */}
-        {/* ... (Quick Stats Cards, My Campaigns Section, My Donations Section, Danger Zone) ... */}
+        {/* Quick Stats using StatCard */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="group bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 text-center hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 sm:mb-2">
-                {data.stats.campaignsStarted}
-              </div>
-              <div className="text-slate-600 font-medium text-sm sm:text-base">Campaigns Started</div>
-            </div>
-          </div>
-
-          <div className="group bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 text-center hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1 sm:mb-2">
-                {data.stats.donationsMade}
-              </div>
-              <div className="text-slate-600 font-medium text-sm sm:text-base">Donations Made</div>
-            </div>
-          </div>
-
-          <div className="group bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 text-center hover:shadow-2xl transition-all duration-300 hover:scale-105 relative overflow-hidden sm:col-span-2 lg:col-span-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-              </div>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1 sm:mb-2 leading-tight">
-                {formatCurrency(data.stats.totalRaised)}
-              </div>
-              <div className="text-slate-600 font-medium text-sm sm:text-base">Total Raised</div>
-            </div>
-          </div>
+          <StatCard icon={Target} value={String(data.stats.campaignsStarted)} label="Campaigns Started" />
+          <StatCard icon={Heart} value={String(data.stats.donationsMade)} label="Donations Made" />
+          <StatCard icon={TrendingUp} value={formatCurrency(data.stats.totalRaised)} label="Total Raised" />
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
