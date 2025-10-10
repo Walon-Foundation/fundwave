@@ -38,16 +38,6 @@ export default clerkMiddleware(async (auth, req) => {
   const isAdminHost = host === adminHost || (!isProd && host === devAdminHost);
 
   // Debug logging (only in development)
-  if (!isProd) {
-    console.log('🔍 Middleware Debug:', {
-      host,
-      adminHost,
-      devAdminHost,
-      isProd,
-      isAdminHost,
-      pathname: url.pathname
-    });
-  }
   const isAdminPath = url.pathname.startsWith('/admin');
   const isSignInPath = url.pathname.startsWith('/sign-in');
 

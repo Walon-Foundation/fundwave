@@ -404,9 +404,9 @@ export default function CampaignDetailPage() {
                   <div className="text-sm text-slate-500">
                     Goal: {formatCurrency(campaign.fundingGoal)}
                   </div>
-                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                  {/* <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
-                  </span>
+                  </span> */}
                 </div>
               </div>
 
@@ -509,32 +509,7 @@ export default function CampaignDetailPage() {
               </nav>
           </div>
 
-          {/* Right rail sticky donate panel */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">
-              <div className="border rounded-xl p-4 bg-white shadow-sm">
-                <div className="text-sm text-slate-600 mb-2">Raised</div>
-                <div className="text-2xl font-bold text-slate-900 mb-2">
-                  {new Intl.NumberFormat("en-SL", { style: "currency", currency: "SLE", minimumFractionDigits: 0 }).format(campaign.amountReceived)}
-                </div>
-                <div className="text-sm text-slate-600 mb-4">of {new Intl.NumberFormat("en-SL", { style: "currency", currency: "SLE", minimumFractionDigits: 0 }).format(campaign.fundingGoal)}</div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 mb-3">
-                  <div className="bg-gradient-to-r from-blue-600 to-sky-500 h-2 rounded-full" style={{ width: `${Math.min(progress, 100)}%` }} />
-                </div>
-                <div className="flex items-center justify-between text-sm text-slate-600 mb-4">
-                  <span>{Math.round(progress)}% funded</span>
-                  <span>{isCampaignEnded ? 'Ended' : `${daysLeft} days left`}</span>
-                </div>
-                <button
-                  onClick={() => setShowDonationModal(true)}
-                  disabled={isCampaignCompleted}
-                  className={`w-full py-2.5 rounded-lg text-white font-semibold shadow ${isCampaignCompleted ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-                >
-                  {isCampaignCompleted ? (isGoalReached ? 'Goal Achieved' : 'Campaign Ended') : 'Donate Now'}
-                </button>
-              </div>
-            </div>
-          </aside>
+      
 
           {/* Main Content */}
             <div className="mb-6 sm:mb-8">
@@ -996,9 +971,9 @@ export default function CampaignDetailPage() {
                   <div className="text-sm text-slate-500">
                     Goal: {formatCurrency(campaign.fundingGoal)}
                   </div>
-                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                  {/* <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
-                  </span>
+                  </span> */}
                 </div>
               </div>
 
