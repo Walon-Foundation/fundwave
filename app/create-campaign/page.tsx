@@ -11,6 +11,7 @@ import { Progress } from "../../components/ui/progress"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/api/api"
 import {toast, Toaster} from "react-hot-toast"
+import { useEffect } from "react"
 
 const categories = [
   "Community",
@@ -25,13 +26,6 @@ const categories = [
   "Business",
 ]
 
-const campaignTypes = [
-  { value: "personal", label: "Personal", description: "Individual fundraising for personal needs" },
-  { value: "business", label: "Business", description: "Business ventures and startups" },
-  { value: "project", label: "Project", description: "Specific projects and initiatives" },
-  { value: "community", label: "Community", description: "Community-driven causes and events" },
-] as const
-
 const steps = [
   { id: 1, title: "Basic Info", icon: FileText, description: "Campaign details" },
   { id: 2, title: "Media", icon: Camera, description: "Images & videos" },
@@ -40,11 +34,9 @@ const steps = [
   { id: 5, title: "Review", icon: Eye, description: "Final review" },
 ]
 
-type CampaignType = "personal" | "business" | "project" | "community"
-
 export default function CreateCampaignPage() {
   const [currentStep, setCurrentStep] = useState(1)
-  const [campaignType, setCampaignType] = useState<CampaignType>("personal")
+  const [limits, setLimits] = useState<{ minGoal: number; maxGoal: number; maxDays: number }>({ minGoal: 100000, maxGoal: 10000000, maxDays: 365 })
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -55,22 +47,29 @@ export default function CreateCampaignPage() {
     image: null as File | null,
     imagePreview: "",
     tags: [] as string[],
-    problem: "",
-    solution: "",
-    impact: "",
   })
-  const [teamMembers, setTeamMembers] = useState<
-    Array<{
-      name: string
-      role: string
-      bio: string
-    }>
-  >([])
   const [currentTag, setCurrentTag] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/settings')
+        const data = await res.json()
+        if (data?.ok && data?.data?.config?.limits) {
+          setLimits({
+            minGoal: Number(data.data.config.limits.minCampaignGoal ?? 100000),
+            maxGoal: Number(data.data.config.limits.maxCampaignGoal ?? 10000000),
+            maxDays: Number(data.data.config.limits.campaignDurationLimit ?? 365),
+          })
+        }
+      } catch {}
+    }
+    loadSettings()
+  }, [])
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {}
@@ -79,22 +78,24 @@ export default function CreateCampaignPage() {
       case 1:
         if (!formData.title.trim()) newErrors.title = "Campaign title is required"
         if (!formData.category) newErrors.category = "Please select a category"
-        if (!formData.fundingGoal || Number(formData.fundingGoal) < 10) {
-          newErrors.fundingGoal = "Funding goal must be at least 100,000 SLL"
+        if (!formData.fundingGoal || Number(formData.fundingGoal) < limits.minGoal) {
+          newErrors.fundingGoal = `Funding goal must be at least ${new Intl.NumberFormat('en-SL', { style: 'currency', currency: 'SLE', maximumFractionDigits: 0 }).format(limits.minGoal)}`
+        }
+        if (Number(formData.fundingGoal) > limits.maxGoal) {
+          newErrors.fundingGoal = `Funding goal must not exceed ${new Intl.NumberFormat('en-SL', { style: 'currency', currency: 'SLE', maximumFractionDigits: 0 }).format(limits.maxGoal)}`
+        }
+        // duration limit
+        if (formData.campaignEndDate) {
+          const now = new Date()
+          const end = new Date(formData.campaignEndDate)
+          const diffDays = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          if (diffDays < 1) newErrors.campaignEndDate = "End date must be at least 1 day from today"
+          if (diffDays > limits.maxDays) newErrors.campaignEndDate = `End date must be within ${limits.maxDays} days`
         }
         if (!formData.location.trim()) newErrors.location = "Location is required"
         if (!formData.campaignEndDate) newErrors.campaignEndDate = "End date is required"
 
-        if (["business", "community", "project"].includes(campaignType)) {
-          teamMembers.forEach((member, index) => {
-            if (!member.name.trim()) {
-              newErrors[`teamMemberName_${index}`] = `Team member #${index + 1} name is required`
-            }
-            if (!member.role.trim()) {
-              newErrors[`teamMemberRole_${index}`] = `Team member #${index + 1} role is required`
-            }
-          })
-        }
+        // Team members validation removed per simplified form
         break
       case 2:
         if (!formData.image) {
@@ -103,9 +104,6 @@ export default function CreateCampaignPage() {
         break
       case 3:
         if (!formData.shortDescription.trim()) newErrors.shortDescription = "Short description is required"
-        if (!formData.problem.trim()) newErrors.problem = "Problem description is required"
-        if (!formData.solution.trim()) newErrors.solution = "Solution description is required"
-        if (!formData.impact.trim()) newErrors.impact = "Impact description is required"
         if (formData.shortDescription.length > 200)
           newErrors.shortDescription = "Description must be under 200 characters"
         break
@@ -129,7 +127,7 @@ export default function CreateCampaignPage() {
     const file = e.target.files?.[0]
     if (file) {
       const validTypes = ["image/jpeg", "image/png", "image/gif"]
-      const maxSize = 50 * 1024 * 1024 // 50MB
+      const maxSize = 5 * 1024 * 1024 // 5MB
 
       if (!validTypes.includes(file.type)) {
         setErrors((prev) => ({ ...prev, image: "Only JPG, PNG, and GIF files are allowed" }))
@@ -195,17 +193,10 @@ export default function CreateCampaignPage() {
     submitData.append("category", formData.category)
     submitData.append("fundingGoal", formData.fundingGoal)
     submitData.append("shortDescription", formData.shortDescription)
-    submitData.append("problem", formData.problem)
-    submitData.append("solution", formData.solution)
-    submitData.append("impact", formData.impact)
     submitData.append("location", formData.location)
     submitData.append("campaignEndDate", formData.campaignEndDate)
     submitData.append("tags", JSON.stringify(formData.tags))
-    submitData.append("campaignType", campaignType)
 
-    if (["business", "community", "project"].includes(campaignType)) {
-      submitData.append("teamMembers", JSON.stringify(teamMembers))
-    }
 
     if (formData.image) {
       submitData.append("image", formData.image)
@@ -215,9 +206,27 @@ export default function CreateCampaignPage() {
       await api.createCampaign(submitData)
       toast.success("Campaign created successfully")
       router.push('/dashboard')
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating campaign:", error)
-      toast.error("Failed to create campaign. Please try again.")
+      const msg = (error && error.message) || 'Failed to create campaign'
+      toast.error(msg)
+      // Try to surface field errors if provided
+      const details = error?.details || error?.error || null
+      if (details && typeof details === 'object') {
+        const newErrors: Record<string, string> = {}
+        // Map common zod error paths to fields
+        const possible = ['title','category','fundingGoal','shortDescription','location','campaignEndDate','image']
+        try {
+          // If details is a zod format tree, pick first-level keys
+          for (const key of possible) {
+            const node = details[key]
+            if (node && node._errors && node._errors.length) {
+              newErrors[key] = node._errors[0]
+            }
+          }
+        } catch {}
+        if (Object.keys(newErrors).length > 0) setErrors(prev => ({...prev, ...newErrors}))
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -262,7 +271,7 @@ export default function CreateCampaignPage() {
                       isCompleted
                         ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
                         : isCurrent
-                          ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
+                          ? "bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-lg"
                           : "bg-white text-slate-400 border-2 border-slate-200"
                     }`}
                   >
@@ -287,23 +296,35 @@ export default function CreateCampaignPage() {
         {/* Form Steps */}
         <Card className="mb-6 sm:mb-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-4 sm:p-6 lg:p-8">
+            {/* Error Summary */}
+            {Object.keys(errors).length > 0 && (
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+                <p className="font-semibold mb-1">Please fix the following:</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  {Array.from(new Set(Object.values(errors))).map((msg, idx) => (
+                    <li key={idx}>{msg}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Step 1: Basic Information */}
             {currentStep === 1 && (
               <div className="space-y-6">
                 <CardHeader className="px-0 pt-0">
-                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                     Basic Information
                   </CardTitle>
                   <p className="text-slate-600">Let&apos;s start with the essential details of your campaign</p>
                 </CardHeader>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">Campaign Title *</label>
                     <input
                       type="text"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.title ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        errors.title ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-blue-300"
                       }`}
                       placeholder="Give your campaign a clear, compelling title"
                       value={formData.title}
@@ -318,8 +339,8 @@ export default function CreateCampaignPage() {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                     <select
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.category ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        errors.category ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-blue-300"
                       }`}
                       value={formData.category}
                       onChange={(e) => {
@@ -341,11 +362,11 @@ export default function CreateCampaignPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Funding Goal (SLL) *</label>
                     <input
                       type="number"
-                      min="10"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.fundingGoal ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
+                      min={limits.minGoal}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        errors.fundingGoal ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-blue-300"
                       }`}
-                      placeholder="e.g., SLE 5000"
+                      placeholder={`e.g., ${new Intl.NumberFormat('en-SL', { style: 'currency', currency: 'SLE', maximumFractionDigits: 0 }).format(limits.minGoal * 5)}` }
                       value={formData.fundingGoal}
                       onChange={(e) => {
                         setFormData({ ...formData, fundingGoal: e.target.value })
@@ -359,8 +380,8 @@ export default function CreateCampaignPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Location *</label>
                     <input
                       type="text"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.location ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        errors.location ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-blue-300"
                       }`}
                       placeholder="e.g., Freetown, Western Area"
                       value={formData.location}
@@ -376,10 +397,10 @@ export default function CreateCampaignPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Campaign End Date *</label>
                     <input
                       type="date"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.campaignEndDate ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        errors.campaignEndDate ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-blue-300"
                       }`}
-                      min={new Date().toISOString().split("T")[0]}
+                      min={new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0]}
                       value={formData.campaignEndDate}
                       onChange={(e) => {
                         setFormData({ ...formData, campaignEndDate: e.target.value })
@@ -389,144 +410,7 @@ export default function CreateCampaignPage() {
                     {errors.campaignEndDate && <p className="text-red-500 text-sm mt-1">{errors.campaignEndDate}</p>}
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Campaign Type *</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {campaignTypes.map((type) => (
-                        <label
-                          key={type.value}
-                          className={`flex items-start space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                            campaignType === type.value
-                              ? "border-indigo-500 bg-indigo-50 shadow-md"
-                              : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="campaignType"
-                            value={type.value}
-                            checked={campaignType === type.value}
-                            onChange={() => setCampaignType(type.value)}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mt-1"
-                          />
-                          <div>
-                            <span className="font-medium text-slate-900">{type.label}</span>
-                            <p className="text-sm text-slate-600">{type.description}</p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
 
-                  {["business", "community", "project"].includes(campaignType) && (
-                    <div className="md:col-span-2 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <label className="block text-sm font-medium text-slate-700">Team Members</label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setTeamMembers([...teamMembers, { name: "", role: "", bio: "" }])}
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 hover:from-indigo-600 hover:to-purple-600"
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add Member
-                        </Button>
-                      </div>
-
-                      {teamMembers.map((member, index) => (
-                        <div key={index} className="space-y-3 p-4 border-2 border-slate-200 rounded-xl bg-slate-50">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-medium text-slate-900">Team Member #{index + 1}</h4>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setTeamMembers(teamMembers.filter((_, i) => i !== index))}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
-                              <input
-                                type="text"
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                                  errors[`teamMemberName_${index}`] ? "border-red-500 bg-red-50" : "border-slate-300"
-                                }`}
-                                value={member.name}
-                                onChange={(e) => {
-                                  const updated = [...teamMembers]
-                                  updated[index].name = e.target.value
-                                  setTeamMembers(updated)
-                                  if (errors[`teamMemberName_${index}`]) {
-                                    setErrors((prev) => {
-                                      const newErrors = { ...prev }
-                                      delete newErrors[`teamMemberName_${index}`]
-                                      return newErrors
-                                    })
-                                  }
-                                }}
-                                placeholder="Full name"
-                              />
-                              {errors[`teamMemberName_${index}`] && (
-                                <p className="text-red-500 text-sm mt-1">{errors[`teamMemberName_${index}`]}</p>
-                              )}
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
-                              <input
-                                type="text"
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                                  errors[`teamMemberRole_${index}`] ? "border-red-500 bg-red-50" : "border-slate-300"
-                                }`}
-                                value={member.role}
-                                onChange={(e) => {
-                                  const updated = [...teamMembers]
-                                  updated[index].role = e.target.value
-                                  setTeamMembers(updated)
-                                  if (errors[`teamMemberRole_${index}`]) {
-                                    setErrors((prev) => {
-                                      const newErrors = { ...prev }
-                                      delete newErrors[`teamMemberRole_${index}`]
-                                      return newErrors
-                                    })
-                                  }
-                                }}
-                                placeholder="e.g., Founder, Developer"
-                              />
-                              {errors[`teamMemberRole_${index}`] && (
-                                <p className="text-red-500 text-sm mt-1">{errors[`teamMemberRole_${index}`]}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
-                            <textarea
-                              rows={2}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                              value={member.bio}
-                              onChange={(e) => {
-                                const updated = [...teamMembers]
-                                updated[index].bio = e.target.value
-                                setTeamMembers(updated)
-                              }}
-                              placeholder="Brief background (optional)"
-                            />
-                          </div>
-                        </div>
-                      ))}
-
-                      {teamMembers.length === 0 && (
-                        <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
-                          <p>No team members added yet</p>
-                          <p className="text-sm">Add team members to showcase your collaborative effort</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -547,7 +431,7 @@ export default function CreateCampaignPage() {
                     className={`border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-all duration-200 ${
                       errors.image
                         ? "border-red-300 bg-red-50"
-                        : "border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/30"
+                        : "border-slate-300 hover:border-blue-400 hover:bg-blue-50/30"
                     }`}
                   >
                     {formData.imagePreview ? (
@@ -584,7 +468,7 @@ export default function CreateCampaignPage() {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white rounded-xl hover:from-blue-700 hover:to-emerald-700 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
                     >
                       {formData.imagePreview ? "Change Image" : "Choose Image"}
                     </label>
@@ -609,10 +493,10 @@ export default function CreateCampaignPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Short Description *</label>
                     <textarea
                       rows={3}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
                         errors.shortDescription
                           ? "border-red-500 bg-red-50"
-                          : "border-slate-300 hover:border-indigo-300"
+                          : "border-slate-300 hover:border-blue-300"
                       }`}
                       placeholder="Write a brief, compelling summary of your campaign (max 200 characters)"
                       maxLength={200}
@@ -630,56 +514,7 @@ export default function CreateCampaignPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Problem Statement *</label>
-                    <textarea
-                      rows={4}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.problem ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
-                      }`}
-                      placeholder="Describe the problem you're trying to solve. What challenge or need does your campaign address?"
-                      value={formData.problem}
-                      onChange={(e) => {
-                        setFormData({ ...formData, problem: e.target.value })
-                        if (errors.problem) setErrors((prev) => ({ ...prev, problem: "" }))
-                      }}
-                    />
-                    {errors.problem && <p className="text-red-500 text-sm mt-1">{errors.problem}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Your Solution *</label>
-                    <textarea
-                      rows={4}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.solution ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
-                      }`}
-                      placeholder="Explain your approach to solving this problem. What is your plan or strategy?"
-                      value={formData.solution}
-                      onChange={(e) => {
-                        setFormData({ ...formData, solution: e.target.value })
-                        if (errors.solution) setErrors((prev) => ({ ...prev, solution: "" }))
-                      }}
-                    />
-                    {errors.solution && <p className="text-red-500 text-sm mt-1">{errors.solution}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Expected Impact *</label>
-                    <textarea
-                      rows={4}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${
-                        errors.impact ? "border-red-500 bg-red-50" : "border-slate-300 hover:border-indigo-300"
-                      }`}
-                      placeholder="Describe the positive impact your campaign will have. Who will benefit and how?"
-                      value={formData.impact}
-                      onChange={(e) => {
-                        setFormData({ ...formData, impact: e.target.value })
-                        if (errors.impact) setErrors((prev) => ({ ...prev, impact: "" }))
-                      }}
-                    />
-                    {errors.impact && <p className="text-red-500 text-sm mt-1">{errors.impact}</p>}
-                  </div>
+                  {/* Removed Problem, Solution, Impact fields as requested */}
                 </div>
               </div>
             )}
@@ -688,7 +523,7 @@ export default function CreateCampaignPage() {
             {currentStep === 4 && (
               <div className="space-y-6">
                 <CardHeader className="px-0 pt-0">
-                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                     Tags & Keywords
                   </CardTitle>
                   <p className="text-slate-600">Add tags to help people discover your campaign</p>
@@ -699,7 +534,7 @@ export default function CreateCampaignPage() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      className="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-300"
+                      className="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                       placeholder="Add a relevant tag (e.g., education, health, community)"
                       value={currentTag}
                       onChange={(e) => setCurrentTag(e.target.value)}
@@ -708,7 +543,7 @@ export default function CreateCampaignPage() {
                     <Button
                       type="button"
                       onClick={addTag}
-                      className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 hover:from-indigo-600 hover:to-purple-600 px-6"
+                      className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white border-0 hover:from-blue-700 hover:to-emerald-700 px-6"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Add
@@ -726,13 +561,13 @@ export default function CreateCampaignPage() {
                       {formData.tags.map((tag, index) => (
                         <Badge
                           key={index}
-                          className="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1 text-sm flex items-center border border-indigo-200"
+                          className="bg-gradient-to-r from-blue-100 to-emerald-100 text-blue-800 px-3 py-1 text-sm flex items-center border border-blue-200"
                         >
                           {tag}
                           <button
                             type="button"
                             onClick={() => removeTag(tag)}
-                            className="ml-2 text-indigo-600 hover:text-indigo-800"
+                            className="ml-2 text-blue-600 hover:text-blue-800"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -755,7 +590,7 @@ export default function CreateCampaignPage() {
             {currentStep === 5 && (
               <div className="space-y-6">
                 <CardHeader className="px-0 pt-0">
-                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                     Review Your Campaign
                   </CardTitle>
                   <p className="text-slate-600">Please review all details before submitting</p>
@@ -764,8 +599,8 @@ export default function CreateCampaignPage() {
                 <div className="space-y-6">
                   {/* Basic Info Review */}
                   <Card className="border-2 border-slate-200 shadow-sm">
-                    <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                      <CardTitle className="text-lg text-indigo-900">Basic Information</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-emerald-50">
+                      <CardTitle className="text-lg text-blue-900">Basic Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 p-6">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -775,7 +610,7 @@ export default function CreateCampaignPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-slate-700">Category</p>
-                          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">{formData.category}</Badge>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">{formData.category}</Badge>
                         </div>
                         <div>
                           <p className="text-sm font-medium text-slate-700">Funding Goal</p>
@@ -791,38 +626,15 @@ export default function CreateCampaignPage() {
                           <p className="text-sm font-medium text-slate-700">End Date</p>
                           <p className="text-slate-900">{new Date(formData.campaignEndDate).toLocaleDateString()}</p>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-slate-700">Campaign Type</p>
-                          <p className="text-slate-900 capitalize font-medium">{campaignType}</p>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Team Members Review */}
-                  {["business", "community", "project"].includes(campaignType) && teamMembers.length > 0 && (
-                    <Card className="border-2 border-slate-200 shadow-sm">
-                      <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                        <CardTitle className="text-lg text-indigo-900">Team Members</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          {teamMembers.map((member, index) => (
-                            <div key={index} className="border-b pb-4 last:border-b-0">
-                              <h4 className="font-medium text-slate-900">{member.name}</h4>
-                              <p className="text-sm text-indigo-600 font-medium">{member.role}</p>
-                              {member.bio && <p className="text-sm text-slate-500 mt-1">{member.bio}</p>}
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
 
                   {/* Image Review */}
                   <Card className="border-2 border-slate-200 shadow-sm">
-                    <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                      <CardTitle className="text-lg text-indigo-900">Campaign Image</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-emerald-50">
+                      <CardTitle className="text-lg text-blue-900">Campaign Image</CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
                       {formData.imagePreview ? (
@@ -843,31 +655,13 @@ export default function CreateCampaignPage() {
 
                   {/* Story Review */}
                   <Card className="border-2 border-slate-200 shadow-sm">
-                    <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                      <CardTitle className="text-lg text-indigo-900">Campaign Story</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-emerald-50">
+                      <CardTitle className="text-lg text-blue-900">Campaign Story</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 p-6">
                       <div>
                         <p className="text-sm font-medium text-slate-700 mb-1">Short Description</p>
                         <p className="text-slate-900 bg-slate-50 p-3 rounded-lg">{formData.shortDescription}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-700 mb-1">Problem Statement</p>
-                        <div className="bg-slate-50 p-4 rounded-lg max-h-32 overflow-y-auto">
-                          <p className="text-slate-900 whitespace-pre-wrap">{formData.problem}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-700 mb-1">Solution</p>
-                        <div className="bg-slate-50 p-4 rounded-lg max-h-32 overflow-y-auto">
-                          <p className="text-slate-900 whitespace-pre-wrap">{formData.solution}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-700 mb-1">Expected Impact</p>
-                        <div className="bg-slate-50 p-4 rounded-lg max-h-32 overflow-y-auto">
-                          <p className="text-slate-900 whitespace-pre-wrap">{formData.impact}</p>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -875,13 +669,13 @@ export default function CreateCampaignPage() {
                   {/* Tags Review */}
                   {formData.tags.length > 0 && (
                     <Card className="border-2 border-slate-200 shadow-sm">
-                      <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                        <CardTitle className="text-lg text-indigo-900">Tags</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-emerald-50">
+                      <CardTitle className="text-lg text-blue-900">Tags</CardTitle>
                       </CardHeader>
                       <CardContent className="p-6">
                         <div className="flex flex-wrap gap-2">
                           {formData.tags.map((tag, index) => (
-                            <Badge key={index} className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                            <Badge key={index} className="bg-blue-100 text-blue-800 border-blue-200">
                               {tag}
                             </Badge>
                           ))}
@@ -916,7 +710,7 @@ export default function CreateCampaignPage() {
             {currentStep < steps.length ? (
               <Button
                 onClick={nextStep}
-                className="flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 w-full sm:w-auto"
+                className="flex items-center justify-center bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 w-full sm:w-auto"
               >
                 Next
                 <ArrowRight className="w-4 h-4 ml-2" />

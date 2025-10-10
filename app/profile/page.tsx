@@ -206,7 +206,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-emerald-50">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
       </div>
     )
@@ -214,7 +214,7 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-emerald-50">
         <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <X className="w-8 h-8 text-red-600" />
@@ -234,7 +234,7 @@ export default function ProfilePage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-emerald-50">
         <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <X className="w-8 h-8 text-blue-600" />
@@ -253,7 +253,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-emerald-50 py-4 sm:py-8">
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Success/Error Messages */}
         {updateSuccess && (
@@ -269,7 +269,7 @@ export default function ProfilePage() {
 
         {/* Profile Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-emerald-600/5 pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-4 sm:gap-6">
             {/* Profile Picture and Basic Info */}
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                 ) : (
                   <>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-2">
-                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent text-center">
                         {data.profile.firstName} {data.profile.lastName}
                       </h1>
                       {data.profile.isVerified && (
@@ -454,12 +454,12 @@ export default function ProfilePage() {
           {/* My Campaigns Section */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                 My Campaigns
               </h2>
               <Link
                 href="/create-campaign"
-                className="text-blue-600 hover:text-purple-600 font-medium text-sm flex items-center transition-colors hover:scale-105 self-start sm:self-auto"
+                className="text-blue-600 hover:text-emerald-600 font-medium text-sm flex items-center transition-colors hover:scale-105 self-start sm:self-auto"
               >
                 <span className="hidden sm:inline">Create New</span>
                 <span className="sm:hidden">+ New</span>
@@ -469,7 +469,7 @@ export default function ProfilePage() {
 
             {data.campaigns.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-100 to-emerald-100 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
                   <Target className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-700 mb-2">No campaigns yet</h3>
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                 </p>
                 <Link
                   href="/create-campaign"
-                  className="inline-flex items-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:scale-105 min-h-[44px]"
+                  className="inline-flex items-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-600 to-emerald-600 text-white rounded-xl hover:from-blue-700 hover:to-emerald-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:scale-105 min-h-[44px]"
                 >
                   <Target className="w-4 h-4 mr-2" />
                   Create Your First Campaign
@@ -511,7 +511,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                           <div
-                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                            className="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-500 shadow-sm"
                             style={{ width: `${Math.round((campaign.amountRaised / campaign.targetAmount) * 100)}%` }}
                           />
                         </div>
@@ -520,7 +520,7 @@ export default function ProfilePage() {
 
                       <Link
                         href={`/campaigns/${campaign.id}`}
-                        className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+                        className="text-blue-600 hover:text-emerald-600 text-sm font-medium transition-colors"
                       >
                         View Campaign →
                       </Link>
@@ -561,7 +561,7 @@ export default function ProfilePage() {
           {/* My Donations Section */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
                 My Donations
               </h2>
               <span className="text-xs sm:text-sm text-slate-600 bg-slate-100 px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
@@ -606,7 +606,7 @@ export default function ProfilePage() {
 
                       <Link
                         href={`/campaigns/${donation.campaignId}`}
-                        className="text-blue-600 hover:text-purple-600 text-sm font-medium transition-colors"
+                        className="text-blue-600 hover:text-emerald-600 text-sm font-medium transition-colors"
                       >
                         View Campaign →
                       </Link>

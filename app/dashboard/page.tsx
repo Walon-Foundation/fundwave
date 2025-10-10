@@ -177,7 +177,7 @@ export default function CreatorDashboard() {
           <>
             <button
               onClick={() => paginate(1)}
-              className={`px-3 py-1 rounded-lg ${1 === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+className={`px-3 py-1 rounded-lg ${1 === currentPage ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
             >
               1
             </button>
@@ -189,7 +189,7 @@ export default function CreatorDashboard() {
           <button
             key={number}
             onClick={() => paginate(number)}
-            className={`px-3 py-1 rounded-lg ${number === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+className={`px-3 py-1 rounded-lg ${number === currentPage ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
           >
             {number}
           </button>
@@ -200,7 +200,7 @@ export default function CreatorDashboard() {
             {endPage < totalPages - 1 && <span className="px-1 text-slate-400">...</span>}
             <button
               onClick={() => paginate(totalPages)}
-              className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
             >
               {totalPages}
             </button>
@@ -297,7 +297,7 @@ export default function CreatorDashboard() {
                 onClick={() => setActiveTab(tab)}
                 className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                   activeTab === tab
-                    ? "border-indigo-600 text-indigo-600"
+? "border-blue-600 text-blue-600"
                     : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                 }`}
               >

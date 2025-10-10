@@ -190,7 +190,7 @@ export default function CampaignUpdatesPage() {
   if (isFetching) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         <span className="ml-2 text-slate-700">Loading updates...</span>
       </div>
     )
@@ -203,7 +203,7 @@ export default function CampaignUpdatesPage() {
         <div className="mb-8">
           <Link
             href={`/campaigns/${param.id}`}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Campaign
