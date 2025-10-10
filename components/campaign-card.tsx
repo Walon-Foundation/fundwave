@@ -58,20 +58,6 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
     }
   }
 
-  const getCampaignTypeColor = (type: string) => {
-    switch (type) {
-      case "business":
-        return "bg-purple-100 text-purple-700"
-      case "project":
-        return "bg-blue-100 text-blue-700"
-      case "personal":
-        return "bg-pink-100 text-pink-700"
-      case "community":
-        return "bg-green-100 text-green-700"
-      default:
-        return "bg-gray-100 text-gray-700"
-    }
-  }
 
   if (viewMode === "list") {
     return (
@@ -88,10 +74,11 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
                 alt={campaign.title}
                 height={300}
                 width={200}
+                sizes="(max-width: 640px) 100vw, 320px"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               {featured && (
-                <Badge className="absolute top-3 left-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-lg">
+                <Badge className="absolute top-3 left-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white border-0 shadow-lg">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Featured
                 </Badge>
@@ -105,9 +92,6 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Badge variant="secondary" className="text-xs">
                   {campaign.category}
-                </Badge>
-                <Badge className={`text-xs ${getCampaignTypeColor(campaign.campaignType)}`}>
-                  {campaign.campaignType}
                 </Badge>
               </div>
 
@@ -173,7 +157,8 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             src={campaign.image}
             alt={campaign.title}
             height={300}
-            width={200}
+            width={800}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-300"
           />
 
@@ -181,7 +166,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
             <div className="flex flex-col gap-2">
               {featured && (
-                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 w-fit shadow-lg">
+                <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white border-0 w-fit shadow-lg">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Featured
                 </Badge>
@@ -193,9 +178,6 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
 
             <div className="flex flex-col gap-2 items-end">
               <Badge className={`${getStatusColor(campaign.status)} w-fit shadow-sm`}>{campaign.status}</Badge>
-              <Badge className={`${getCampaignTypeColor(campaign.campaignType)} w-fit shadow-sm`}>
-                {campaign.campaignType}
-              </Badge>
             </div>
           </div>
 

@@ -105,11 +105,11 @@ export default function Footer() {
             {/* Contact */}
             <div className="text-center lg:text-left">
               <a
-                href="mailto:fundwavesl@gmail.com"
+                href="mailto:hello@fundwavesl.org"
                 className="flex items-center justify-center lg:justify-start space-x-2 text-slate-300 hover:text-cyan-300 transition-colors"
               >
                 <Mail className="w-5 h-5" />
-                <span>fundwavesl@gmail.com</span>
+                <span>hello@fundwavesl.org</span>
               </a>
             </div>
 
