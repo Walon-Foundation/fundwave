@@ -26,45 +26,132 @@ const isPublicRoute = createRouteMatcher([
   "/careers",
   "/success-stories",
   '/blog',
-  '/press',
   "/pricing"
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
+  const host = req.headers.get('host') || '';
+  const adminHost = process.env.ADMIN_HOST || 'admin.fundwavesl.org';
+  const devAdminHost = process.env.DEV_ADMIN_HOST || 'admin.localhost:3000';
+  const isProd = process.env.NODE_ENV === 'production';
+  const isAdminHost = host === adminHost || (!isProd && host === devAdminHost);
 
-  // Skip auth checks for public routes and API routes
-  if (isPublicRoute(req) || url.pathname.startsWith('/api')) {
+  // Debug logging (only in development)
+  if (!isProd) {
+    console.log('🔍 Middleware Debug:', {
+      host,
+      adminHost,
+      devAdminHost,
+      isProd,
+      isAdminHost,
+      pathname: url.pathname
+    });
+  }
+  const isAdminPath = url.pathname.startsWith('/admin');
+  const isSignInPath = url.pathname.startsWith('/sign-in');
+
+  // If accessing the admin host root, redirect to the admin overview page
+  if (isAdminHost && url.pathname === '/') {
+    url.pathname = '/admin/overview'
+    return NextResponse.redirect(url)
+  }
+
+  // On non-admin hosts, skip auth for public and API routes
+  if (!isAdminHost && (isPublicRoute(req) || url.pathname.startsWith('/api'))) {
     return NextResponse.next();
   }
 
+  // Prevent accessing /admin routes on non-admin hosts
+  if (!isAdminHost && isAdminPath) {
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
+
   try {
-    // Authenticate the user
+    // Authenticate when required:
+    // - On admin host only for /admin paths
+    // - Otherwise only for protected routes
     const { userId } = await auth();
-    
-    if (!userId) {
-      // Redirect to sign-in with return URL
-      const signInUrl = new URL("/sign-in", req.url);
-      signInUrl.searchParams.set("redirect_url", url.toString());
-      return NextResponse.redirect(signInUrl);
+
+    // Platform settings enforcement (non-admin host only)
+    if (!isAdminHost) {
+      try {
+        const [settings] = await db
+          .select()
+          .from(require('./db/schema').platformSettingsTable)
+          .limit(1);
+        const config: any = settings?.config || {};
+
+        // Maintenance mode: redirect everything (except /maintenance and API) to /maintenance
+        if (config.maintenanceMode && !url.pathname.startsWith('/maintenance') && !url.pathname.startsWith('/api')) {
+          url.pathname = '/maintenance';
+          return NextResponse.redirect(url);
+        }
+
+        // Disable new registrations
+        if (config.newRegistrations === false && url.pathname.startsWith('/sign-up')) {
+          url.pathname = '/sign-in';
+          return NextResponse.redirect(url);
+        }
+
+        // Disable campaign creation
+        if (config.campaignCreation === false && url.pathname.startsWith('/create-campaign')) {
+          url.pathname = '/';
+          return NextResponse.redirect(url);
+        }
+      } catch (e) {
+        // fail open
+      }
     }
 
-    // Get user data (only for protected routes)
-    const dbUser = (await db
-      .select()
-      .from(userTable)
-      .where(eq(userTable.clerkId, userId))
-    )[0];
+    // If on admin host, enforce auth and super-admin allowlist for ALL paths (except sign-in)
+    if (isAdminHost && !isSignInPath) {
+      if (!userId) {
+        const signInUrl = new URL("/sign-in", req.url);
+        const compactRedirect = url.pathname + (url.search || "");
+        signInUrl.searchParams.set("redirect_url", compactRedirect);
+        return NextResponse.redirect(signInUrl);
+      }
 
-    // KYC checks
-    if (url.pathname.startsWith("/kyc") && dbUser?.isKyc) {
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+      const adminClerkId = process.env.ADMIN_CLERK_ID;
+      if (adminClerkId && userId !== adminClerkId) {
+        // Not the super admin: redirect to main site
+        const mainSiteUrl = new URL("/", req.url);
+        mainSiteUrl.host = mainSiteUrl.host.replace('admin.', '');
+        return NextResponse.redirect(mainSiteUrl);
+      }
+    } else {
+      // Non-admin host: if route is protected and user not logged in, redirect to sign-in
+      if (!userId && !isPublicRoute(req) && !url.pathname.startsWith('/api')) {
+        const signInUrl = new URL("/sign-in", req.url);
+        const compactRedirect = url.pathname + (url.search || "");
+        signInUrl.searchParams.set("redirect_url", compactRedirect);
+        return NextResponse.redirect(signInUrl);
+      }
     }
 
-    if (url.pathname.startsWith("/create-campaign") && !dbUser?.isKyc) {
-      url.pathname = "/kyc";
-      return NextResponse.redirect(url);
+    // Get user data (only for protected routes on non-admin host)
+    let dbUser: any = null;
+    if (!isAdminHost && userId) {
+      dbUser = (await db
+        .select()
+        .from(userTable)
+        .where(eq(userTable.clerkId, userId))
+      )[0];
+    }
+
+    // KYC checks (skip on admin host or when not logged in)
+    if (!isAdminHost && userId) {
+      if (url.pathname.startsWith("/kyc") && dbUser?.isKyc) {
+        url.pathname = "/dashboard";
+        return NextResponse.redirect(url);
+      }
+
+      if (url.pathname.startsWith("/create-campaign") && !dbUser?.isKyc) {
+        url.pathname = "/kyc";
+        return NextResponse.redirect(url);
+      }
     }
 
     return NextResponse.next();

@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Allow admin subdomain cross-origin requests in development
+  ...(process.env.NODE_ENV === 'development' && {
+    allowedDevOrigins: ['admin.localhost:3000'],
+  }),
   images: {
     remotePatterns: [
       //development
