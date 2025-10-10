@@ -97,35 +97,39 @@ export default function Navigation() {
     <header className="sticky top-0 z-50">
       <nav
         className={`transition-all duration-300 ${
-          isScrolled ? "bg-white/95 shadow-lg border-b border-gray-100/50" : "bg-white/98"
+          isScrolled 
+            ? "bg-white/95 shadow-xl border-b border-gray-100/50" 
+            : "bg-white/98 border-b border-transparent"
         } backdrop-blur-md`}
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 lg:h-18">
+          <div className="flex justify-between items-center h-16">
             <Link
               href="/"
-              className="flex items-center space-x-2 sm:space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-lg p-1 transition-all hover:scale-105 group"
+              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 rounded-lg p-2 transition-all hover:scale-[1.02] group"
               aria-label="FundWave homepage"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
-                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-ocean-500 via-azure-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <Heart className="w-6 h-6 text-white" />
               </div>
-              <div className="hidden xs:block">
-                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  FundWave
-                </span>
-                <div className="text-xs text-gray-500 -mt-1 hidden sm:block">Sierra Leone</div>
+              <div>
+                <div className="text-2xl font-bold bg-gradient-to-r from-ocean-600 via-azure-600 to-teal-600 bg-clip-text text-transparent">
+                  FundWave<span className="text-ocean-400 text-lg ml-0.5">SL</span>
+                </div>
+                <div className="text-xs text-gray-500 -mt-1 font-medium">Sierra Leone&apos;s Platform</div>
               </div>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+            <div className="hidden md:flex items-center space-x-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm lg:text-base font-medium transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 ${
-                    pathname === link.href ? "text-blue-600 bg-blue-50 shadow-sm" : "text-gray-700 hover:text-blue-600"
+                  className={`text-sm font-medium transition-all duration-200 flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-ocean-50/80 border-2 border-transparent ${
+                    pathname === link.href 
+                      ? "text-ocean-700 bg-ocean-50 border-ocean-200 shadow-sm" 
+                      : "text-gray-600 hover:text-ocean-600 hover:border-ocean-100"
                   }`}
                 >
                   {link.icon}
@@ -134,14 +138,15 @@ export default function Navigation() {
               ))}
             </div>
 
-            <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
+            <div className="hidden md:flex items-center space-x-3">
               {isAuthenticated && user ? (
                 <>
                   <Button
                     asChild
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                    className="bg-gradient-to-r from-ocean-600 to-teal-600 hover:from-ocean-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all duration-300 text-sm"
+                    size="sm"
                   >
-                    <Link href="/create-campaign" className="text-sm lg:text-base">
+                    <Link href="/create-campaign">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Campaign
                     </Link>
@@ -192,7 +197,7 @@ export default function Navigation() {
                       >
                         <Avatar className="w-8 h-8 ring-2 ring-gray-200">
                           <AvatarImage src={user?.profile.profilePicture || ""} alt={user.profile.firstName} />
-                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
+                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white font-semibold">
                             {user.profile.firstName
                               ?.split(" ")
                               .map((n) => n[0])
@@ -233,16 +238,17 @@ export default function Navigation() {
                 </>
               ) : (
                 <>
-                  <Button asChild variant="ghost" className="hover:bg-gray-100">
-                    <Link href="/sign-in" className="text-sm lg:text-base">
+                  <Button asChild variant="ghost" className="hover:bg-ocean-50 text-gray-600 hover:text-ocean-600 text-sm">
+                    <Link href="/sign-in">
                       Login
                     </Link>
                   </Button>
                   <Button
                     asChild
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                    className="bg-gradient-to-r from-ocean-600 to-teal-600 hover:from-ocean-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all duration-300 text-sm"
+                    size="sm"
                   >
-                    <Link href="/sign-up" className="text-sm lg:text-base">
+                    <Link href="/sign-up">
                       Get Started
                     </Link>
                   </Button>
@@ -274,7 +280,7 @@ export default function Navigation() {
                   onClick={() => setIsOpen(false)}
                   className={`px-4 py-3 rounded-xl text-base font-medium transition-all flex items-center gap-3 mx-2 ${
                     pathname === link.href
-                      ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 border-l-4 border-blue-500 shadow-sm"
+                      ? "bg-gradient-to-r from-blue-50 to-emerald-50 text-blue-600 border-l-4 border-blue-500 shadow-sm"
                       : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   }`}
                 >
@@ -289,7 +295,7 @@ export default function Navigation() {
                     <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                       <Avatar className="w-10 h-10 ring-2 ring-gray-200">
                         <AvatarImage src={user.profile.profilePicture ||"/placeholder.svg"} alt={user.profile.firstName} />
-                        <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-to-r from-blue-500 to-emerald-500 text-white font-semibold">
                           {user.profile.firstName
                             ?.split(" ")
                             .map((n) => n[0])
@@ -303,7 +309,7 @@ export default function Navigation() {
                     </div>
                     <Button
                       asChild
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md"
+                      className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 shadow-md"
                       onClick={() => setIsOpen(false)}
                     >
                       <Link href="/create-campaign" className="flex items-center justify-center">
@@ -340,7 +346,7 @@ export default function Navigation() {
                     </Button>
                     <Button
                       asChild
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md"
+                      className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 shadow-md"
                       onClick={() => setIsOpen(false)}
                     >
                       <Link href="/sign-up">Get Started</Link>

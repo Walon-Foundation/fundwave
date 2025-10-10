@@ -12,11 +12,15 @@ export class API {
 
         this.client.interceptors.response.use(
             (response:AxiosResponse) => response,
-            (error:AxiosError) => {
+            (error:AxiosError | any) => {
+                const resp = (error as AxiosError)?.response;
+                const data = resp?.data as any | undefined;
                 const err:ApiError = {
-                    status: error.status! || 500,
-                    message:(error.response?.data as any).message || error.message || "unknown api error",
-                    details:(error.response?.data as any).detials
+                    status: resp?.status ?? (error?.status as number | undefined) ?? 500,
+                    message: (data && typeof data === 'object' && data?.message)
+                             || (error?.message as string | undefined)
+                             || "unknown api error",
+                    details: (data && typeof data === 'object' && (data?.details ?? data))
                 }
                 return Promise.reject(err)
             },

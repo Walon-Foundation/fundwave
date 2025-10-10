@@ -10,10 +10,6 @@ export interface Campaign {
     category: string;
     image: string;
     shortDescription: string;
-    problemStatement:string;
-    solution:string;
-    impact:string;
-    campaignType:"business"| "project" |"personal"| "community";
     tags: string[];
     status: "active" | "pending" | "rejected" | "completed";
     createdAt: Date;
@@ -108,11 +104,7 @@ export interface CampaignDetails {
         category: string;
         image: string;
         shortDescription: string;
-        problemStatement:string;
         financialAccountId:string;
-        solution:string;
-        impact:string;
-        campaignType:"business"| "project" |"personal"| "community";
         tags: string[];
         status: "active" | "pending" | "rejected" | "completed";
         createdAt: Date;
@@ -135,13 +127,6 @@ export interface CampaignDetails {
         userId: string;
         createdAt: Date;
         updatedAt: Date;
-    }[];
-    teamMembers: {
-        id:string
-        role:string,
-        name:string,
-        bio:string,
-        campaignId:string
     }[];
     recentDonors: {
         name:string | null,

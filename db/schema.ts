@@ -22,6 +22,7 @@ export const userStatusEnum = pgEnum("user_status", [
   "banned",
 ]);
 export const campaignStatusEnum = pgEnum("campaign_status", [
+  "pending",
   "active",
   "rejected",
   "completed",
@@ -114,10 +115,10 @@ export const campaignTable = pgTable("campaigns", {
   category: text("category").notNull(),
   image: text("image").notNull(),
   shortDescription: text("short_description").notNull(),
-  problem: text("problem").notNull(),
+  problem: text("problem"),
   financialAccountId:text("financial_account_id"),
-  solution: text("solution").notNull(),
-  impact: text("impact").notNull(),
+  solution: text("solution"),
+  impact: text("impact"),
   tags: text("tags").array().notNull(),
   campaignType: campaignTypeEnum("campaign_type").notNull(),
   status: campaignStatusEnum("status").default("active").notNull(),
@@ -177,6 +178,7 @@ export const paymentTable = pgTable("payments", {
   monimeId: text("monimeId").notNull(),
   username: text("username"),
   isCompleted: boolean("isCompleted").notNull().default(false),
+  isBlocked: boolean("isBlocked").notNull().default(false),
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -296,4 +298,22 @@ export const notificationTable = pgTable("notification", {
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+// Platform settings for feature flags and limits
+export const platformSettingsTable = pgTable("platform_settings", {
+  id: text("id").primaryKey().notNull(),
+  config: jsonb("config").notNull().default({
+    maintenanceMode: false,
+    newRegistrations: true,
+    campaignCreation: true,
+    chatEnabled: true,
+    notificationsEnabled: true,
+    kycRequired: true,
+    limits: {
+      maxCampaignGoal: 10000000,
+      minCampaignGoal: 50000,
+      campaignDurationLimit: 365,
+    },
+  }),
 });
