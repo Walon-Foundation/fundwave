@@ -3,7 +3,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { createCampaign } from "@/validations/campaign";
 import { supabase } from "@/lib/supabase";
 import { db } from "@/db/drizzle";
-import { campaignTable, teamMemberTable, userTable } from "@/db/schema";
+import { campaignTable, teamMemberTable, userTable, platformSettingsTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
@@ -30,29 +30,30 @@ export async function POST(req:NextRequest){
         const fundingGoal = body.get("fundingGoal")
         const shortDescription = body.get("shortDescription")
         const location = body.get("location")
-        const problem = body.get("problem")
-        const solution = body.get("solution")
-        const impact = body.get("impact")
+        // removed deprecated fields: problem, solution, impact
         const endDate = body.get("campaignEndDate") as string
         const tag = body.get("tags") as string
-        const campaignType = body.get("campaignType")
+        // removed campaignType from payload; default will be applied
         const image = body.get("image") as File
-        const teamMember = body.get("teamMembers") as string
+        // removed team members from payload
 
         const { success,error,data} = createCampaign.safeParse({
             title,
-            campaignType,
             category,
             tag: JSON.parse(tag),
             fundingGoal: Number(fundingGoal),
             shortDescription,
             location,
-            problem,
-            impact,
-            solution,
             endDate: new Date(endDate),
-            teamMembers: JSON.parse(teamMember) || []
         })
+
+        // Ensure campaignEndDate is strictly in the future
+        const now = new Date();
+        if (new Date(endDate) <= now) {
+            return NextResponse.json({
+                message: "campaignEndDate must be later than the current time",
+            }, { status: 400 })
+        }
 
         if(!success){
             return NextResponse.json({
@@ -98,6 +99,13 @@ export async function POST(req:NextRequest){
             },{ status:500 })
         }
     
+        // Determine initial status from platform settings
+        let initialStatus: any = 'active'
+        try {
+            const [settings] = await db.select().from(platformSettingsTable).where(eq(platformSettingsTable.id, 'default')).limit(1)
+            if ((settings as any)?.config?.requireApproval) initialStatus = 'pending'
+        } catch {}
+
         const [newCampaign] = await db.insert(campaignTable).values({
             id:nanoid(16),
             title:data.title,
@@ -105,26 +113,17 @@ export async function POST(req:NextRequest){
             location:data.location,
             campaignEndDate:data.endDate,
             tags:data.tag,
-            problem:data.problem,
-            solution:data.solution,
-            impact:data.impact,
             fundingGoal:data.fundingGoal,
             image:signedUrlData.signedUrl,
             financialAccountId:response.result.id,
             category:data.category,
             creatorId: userId,
-            campaignType:data.campaignType,
+            // DB requires campaignType; set a default value to satisfy constraint
+            campaignType: 'personal' as any,
             creatorName: userExist.name,
+            status: initialStatus,
         }).returning()
 
-        if((data?.teamMembers ?? []).length > 0){
-            const membersWithCampaignId = (data.teamMembers ?? []).map(teamMember =>({
-                id:nanoid(16),
-                ...teamMember,
-                campaignId:newCampaign.id,
-            }))
-            await db.insert(teamMemberTable).values(membersWithCampaignId)
-        }
 
         //send email to confirm campaign creation
         await sendEmail("campaign-created", userExist.email, "Campaign has been created", { name: userExist.name, campaign:newCampaign.title })

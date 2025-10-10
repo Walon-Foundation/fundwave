@@ -80,14 +80,14 @@ export default function CampaignDetailPage() {
     }
     
     return (
-      <div className={`animate-spin rounded-full border-t-2 border-b-2 border-indigo-500 ${sizeClasses[size]}`}></div>
+      <div className={`animate-spin rounded-full border-t-2 border-b-2 border-blue-500 ${sizeClasses[size]}`}></div>
     )
   }
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     )
   }
@@ -121,7 +121,6 @@ export default function CampaignDetailPage() {
   const {
     campaign,
     creator,
-    teamMembers = [],
     updates = [],
     comments = [],
     recentDonors = []
@@ -329,9 +328,13 @@ export default function CampaignDetailPage() {
           <div className="lg:col-span-2">
             {/* Campaign Header - Now includes share button on mobile */}
             <div className="mb-6">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2 leading-tight">
                 {campaign.title}
               </h1>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-700">{campaign.category}</span>
+                <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700">{new Date(campaign.createdAt).toLocaleDateString()}</span>
+              </div>
 
               {/* Campaign Meta */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-slate-600 mb-4">
@@ -351,7 +354,7 @@ export default function CampaignDetailPage() {
                 </div>
               </div>
 
-              {/* Action Buttons - Now visible on all screens */}
+          {/* Action Buttons - Now visible on all screens */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 {/* <button className="btn-outline flex items-center justify-center py-2 px-4">
                   <Heart className="w-4 h-4 mr-2" />
@@ -383,8 +386,8 @@ export default function CampaignDetailPage() {
               )}
             </div>
 
-            {/* Mobile Campaign Stats - Only shown on mobile */}
-            <div className="lg:hidden card mb-4">
+          {/* Mobile Campaign Stats - Only shown on mobile */}
+          <div className="lg:hidden card mb-4">
               {/* Progress Bar */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-slate-600 mb-2">
@@ -393,7 +396,7 @@ export default function CampaignDetailPage() {
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
                   <div
-                    className="bg-gradient-to-r from-indigo-600 to-sky-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-blue-600 to-sky-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
@@ -401,7 +404,7 @@ export default function CampaignDetailPage() {
                   <div className="text-sm text-slate-500">
                     Goal: {formatCurrency(campaign.fundingGoal)}
                   </div>
-                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
                   </span>
                 </div>
@@ -418,20 +421,6 @@ export default function CampaignDetailPage() {
                 </div>
               </div>
 
-              {/* Donation Button */}
-              <button
-                onClick={() => setShowDonationModal(true)}
-                className="btn-primary w-full py-3 text-base mb-3"
-                disabled={isCampaignCompleted}
-              >
-                {isCampaignCompleted 
-                  ? isGoalReached 
-                    ? "Goal Reached" 
-                    : "Campaign Ended"
-                  : "Donate Now"
-                }
-              </button>
-
               <div className="text-center text-sm text-slate-600">
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Campaign ends on {formatDate(campaign.campaignEndDate)}
@@ -442,7 +431,7 @@ export default function CampaignDetailPage() {
             <div className="lg:hidden card mb-4">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Campaign Creator</h3>
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold">
+                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
                   {creator.name.charAt(0)}
                 </div>
                 <div className="flex-1">
@@ -474,8 +463,8 @@ export default function CampaignDetailPage() {
                 {recentDonors.length > 0 ? (
                   recentDonors.slice(0, 3).map((donor, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4 text-indigo-600" />
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="w-4 h-4 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-slate-900 truncate">
@@ -485,7 +474,7 @@ export default function CampaignDetailPage() {
                           {donor.time ? formatDateTime(donor.time) : "Recently"}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-indigo-600 flex-shrink-0">
+                      <div className="text-sm font-semibold text-blue-600 flex-shrink-0">
                         {formatCurrency(donor.amount)}
                       </div>
                     </div>
@@ -502,111 +491,63 @@ export default function CampaignDetailPage() {
             {/* Tabs */}
             <div className="border-b border-slate-200 mb-4 sm:mb-6">
               <nav className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide">
-                {["story", "team", "updates", "comments"].map((tab) => (
+                {["story", "updates", "comments"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                       activeTab === tab
-                        ? "border-indigo-600 text-indigo-600"
+                        ? "border-blue-600 text-blue-600"
                         : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                     }`}
                   >
                     {tab}
-                    {tab === "team" && ` (${teamMembers.length})`}
                     {tab === "updates" && ` (${updates.length})`}
                     {tab === "comments" && ` (${comments.length})`}
                   </button>
                 ))}
               </nav>
-            </div>
+          </div>
 
-            {/* Tab Content */}
+          {/* Right rail sticky donate panel */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <div className="border rounded-xl p-4 bg-white shadow-sm">
+                <div className="text-sm text-slate-600 mb-2">Raised</div>
+                <div className="text-2xl font-bold text-slate-900 mb-2">
+                  {new Intl.NumberFormat("en-SL", { style: "currency", currency: "SLE", minimumFractionDigits: 0 }).format(campaign.amountReceived)}
+                </div>
+                <div className="text-sm text-slate-600 mb-4">of {new Intl.NumberFormat("en-SL", { style: "currency", currency: "SLE", minimumFractionDigits: 0 }).format(campaign.fundingGoal)}</div>
+                  <div className="w-full bg-slate-200 rounded-full h-2 mb-3">
+                  <div className="bg-gradient-to-r from-blue-600 to-sky-500 h-2 rounded-full" style={{ width: `${Math.min(progress, 100)}%` }} />
+                </div>
+                <div className="flex items-center justify-between text-sm text-slate-600 mb-4">
+                  <span>{Math.round(progress)}% funded</span>
+                  <span>{isCampaignEnded ? 'Ended' : `${daysLeft} days left`}</span>
+                </div>
+                <button
+                  onClick={() => setShowDonationModal(true)}
+                  disabled={isCampaignCompleted}
+                  className={`w-full py-2.5 rounded-lg text-white font-semibold shadow ${isCampaignCompleted ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
+                  {isCampaignCompleted ? (isGoalReached ? 'Goal Achieved' : 'Campaign Ended') : 'Donate Now'}
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content */}
             <div className="mb-6 sm:mb-8">
               {activeTab === "story" && (
                 <div className="space-y-6 sm:space-y-8">
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-6 sm:p-8">
                       <div className="space-y-8">
-                        {/* Problem Statement Section */}
-                        <div>
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                              <svg
-                                className="w-5 h-5 text-red-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900">The Problem</h3>
-                          </div>
-                          <div className="prose prose-slate max-w-none">
-                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign.problemStatement}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Solution Section */}
-                        <div>
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <svg
-                                className="w-5 h-5 text-blue-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900">Our Solution</h3>
-                          </div>
-                          <div className="prose prose-slate max-w-none">
-                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign.solution}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Impact Section */}
-                        <div>
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                              <svg
-                                className="w-5 h-5 text-green-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900">Expected Impact</h3>
-                          </div>
-                          <div className="prose prose-slate max-w-none">
-                            <p className="text-base sm:text-lg leading-relaxed text-slate-700">
-                              {campaign.impact}
-                            </p>
-                          </div>
+                        {/* Story sections removed (Problem, Solution, Impact) per streamlined schema */}
+                        <div className="prose prose-slate max-w-none">
+                          <p className="text-base sm:text-lg leading-relaxed text-slate-700">
+                            {campaign.shortDescription}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -615,9 +556,9 @@ export default function CampaignDetailPage() {
                   <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 overflow-hidden">
                     <div className="p-6 sm:p-8">
                       <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                           <svg
-                                className="w-5 h-5 text-indigo-600"
+                                className="w-5 h-5 text-blue-600"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -684,9 +625,9 @@ export default function CampaignDetailPage() {
 
                         <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-sm">
                           <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                               <svg
-                                className="w-4 h-4 text-purple-600"
+                                className="w-4 h-4 text-emerald-600"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -795,54 +736,6 @@ export default function CampaignDetailPage() {
                 </div>
               )}
 
-              {activeTab === "team" && (
-                <div className="space-y-4 sm:space-y-6">
-                  {teamMembers.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      {teamMembers.map((member) => (
-                        <div key={member.id} className="card">
-                          <div className="flex items-start gap-4">
-                            <div className="relative w-14 h-14 flex-shrink-0">
-                              <div className="w-14 h-14 bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                                {member.name.charAt(0)}
-                              </div>
-                              <span className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 text-[10px] text-indigo-600 border border-indigo-100 shadow-sm">
-                                Team
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h3 className="text-lg font-semibold text-slate-900 truncate">{member.name}</h3>
-                                <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full border border-indigo-100">
-                                  {member.role}
-                                </span>
-                              </div>
-                              {member.bio && (
-                                <p className="mt-2 text-slate-600 text-sm leading-relaxed">
-                                  {member.bio}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-10 sm:py-12 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                        <UserPlus className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-600" />
-                      </div>
-                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">Team coming soon</h3>
-                      <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
-                        Campaign organizers will add collaborators here. Follow and share to help them build the dream team.
-                      </p>
-                      <button onClick={() => setShareModal(true)} className="mt-4 inline-flex items-center text-sm px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-                        <Share2 className="w-4 h-4 mr-2" /> Share Campaign
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {activeTab === "updates" && (
                 <div className="space-y-4 sm:space-y-6">
@@ -853,8 +746,8 @@ export default function CampaignDetailPage() {
                         <div className="space-y-4 sm:space-y-6">
                           {currentUpdates.map((update) => (
                             <div key={update.id} className="relative pl-8 sm:pl-10">
-                              <span className="absolute left-0 top-2 w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center">
-                                <Megaphone className="w-3.5 h-3.5 text-indigo-600" />
+                              <span className="absolute left-0 top-2 w-6 h-6 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center">
+                                <Megaphone className="w-3.5 h-3.5 text-blue-600" />
                               </span>
                               <div className="card">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
@@ -911,7 +804,7 @@ export default function CampaignDetailPage() {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Share your thoughts or ask a question..."
-                        className="w-full min-h-[110px] mb-3 p-3 border border-slate-300 rounded-lg resize-y focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base bg-white"
+                        className="w-full min-h-[110px] mb-3 p-3 border border-slate-300 rounded-lg resize-y focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base bg-white"
                         required
                       />
                       <div className="flex items-center justify-between mb-3 text-xs text-slate-500">
@@ -936,7 +829,7 @@ export default function CampaignDetailPage() {
                   ) : (
                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center text-sm text-slate-600">
                       You need to be logged in to comment. 
-                      <Link href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium ml-1">Sign in</Link>
+                      <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium ml-1">Sign in</Link>
                     </div>
                   )}
 
@@ -947,7 +840,7 @@ export default function CampaignDetailPage() {
                         {currentComments.map((comment) => (
                           <div key={comment.id} className="card group relative">
                             <div className="flex items-start space-x-3">
-                              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium flex-shrink-0">
                                 {comment?.username?.charAt(0)}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1030,7 +923,7 @@ export default function CampaignDetailPage() {
                                     <textarea
                                       value={editCommentText}
                                       onChange={(e) => setEditCommentText(e.target.value)}
-                                      className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
+                                      className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                                       rows={3}
                                       disabled={updatingCommentId === comment.id}
                                     />
@@ -1042,7 +935,7 @@ export default function CampaignDetailPage() {
                                 )}
 
                                 {/* Like button */}
-                                <button className="text-xs text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
+                                <button className="text-xs text-slate-500 hover:text-blue-600 flex items-center transition-colors">
                                   <ThumbsUp className="w-3 h-3 mr-1" />
                                   Like
                                 </button>
@@ -1095,7 +988,7 @@ export default function CampaignDetailPage() {
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
                   <div
-                    className="bg-gradient-to-r from-indigo-600 to-sky-500 h-3 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-blue-600 to-sky-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
@@ -1103,7 +996,7 @@ export default function CampaignDetailPage() {
                   <div className="text-sm text-slate-500">
                     Goal: {formatCurrency(campaign.fundingGoal)}
                   </div>
-                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     Remaining: {formatCurrency(Math.max(0, campaign.fundingGoal - campaign.amountReceived))}
                   </span>
                 </div>
@@ -1146,8 +1039,8 @@ export default function CampaignDetailPage() {
                 {recentDonors.length > 0 ? (
                   recentDonors.slice(0, 5).map((donor, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4 text-indigo-600" />
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="w-4 h-4 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-slate-900 truncate">
@@ -1157,7 +1050,7 @@ export default function CampaignDetailPage() {
                           {donor.time ? formatDateTime(donor.time) : "Recently"}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-indigo-600 flex-shrink-0">
+                      <div className="text-sm font-semibold text-blue-600 flex-shrink-0">
                         {formatCurrency(donor.amount)}
                       </div>
                     </div>
@@ -1172,7 +1065,7 @@ export default function CampaignDetailPage() {
 
               {recentDonors.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-200">
-                  <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                     View all donors →
                   </button>
                 </div>
@@ -1183,7 +1076,7 @@ export default function CampaignDetailPage() {
             <div className="card mt-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Campaign Creator</h3>
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold">
+                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
                   {creator.name.charAt(0)}
                 </div>
                 <div className="flex-1">

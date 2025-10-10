@@ -73,7 +73,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Getting all related data
-    const [updates, comments, teamMembers, payments, creator, creatorCampaigns] = await Promise.all([
+    const [updates, comments, payments, creator, creatorCampaigns] = await Promise.all([
       db.select({
         id: updateTable.id,
         title: updateTable.title,
@@ -93,14 +93,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         createdAt: commentTable.createdAt,
         updatedAt: commentTable.updatedAt,
       }).from(commentTable).where(eq(commentTable.campaignId, campaign.id)).execute(),
-      
-      db.select({
-        id: teamMemberTable.id,
-        role: teamMemberTable.role,
-        name: teamMemberTable.name,
-        bio: teamMemberTable.bio,
-        campaignId: teamMemberTable.campaignId,
-      }).from(teamMemberTable).where(eq(teamMemberTable.campaignId, campaign.id)).execute(),
       
       db.select({
         name: paymentTable.username,
@@ -145,10 +137,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         category: campaign.category,
         image: campaign.image,
         shortDescription: campaign.shortDescription,
-        problemStatement: campaign.problem,
-        solution: campaign.solution,
-        impact: campaign.impact,
-        campaignType: campaign.campaignType,
         tags: campaign.tags,
         status: campaign.status,
         createdAt: campaign.createdAt,
@@ -159,7 +147,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         image: update.image || null,
       })),
       comments,
-      teamMembers,
       recentDonors: payments.map(payment => ({
         name: payment.name || null,
         amount: payment.amount,

@@ -10,6 +10,7 @@ import { Card, CardContent } from "../../components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { api } from "@/lib/api/api"
 import { EmptyState } from "@/components/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Campaign } from "@/types/api"
 
 const categories = [
@@ -25,13 +26,6 @@ const categories = [
   "Business",
 ]
 
-const campaignTypes = [
-  { value: "all", label: "All Types" },
-  { value: "personal", label: "Personal" },
-  { value: "business", label: "Business" },
-  { value: "project", label: "Project" },
-  { value: "community", label: "Community" },
-]
 
 const statusOptions = [
   { value: "all", label: "All Status" },
@@ -58,7 +52,6 @@ export default function CampaignsPage() {
   const [displayCount, setDisplayCount] = useState(CAMPAIGNS_PER_PAGE)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState("recent")
@@ -90,10 +83,6 @@ export default function CampaignsPage() {
       filtered = filtered.filter((campaign) => campaign?.category === selectedCategory)
     }
 
-    // Filter by campaign type
-    if (selectedType !== "all") {
-      filtered = filtered.filter((campaign) => campaign?.campaignType === selectedType)
-    }
 
     // Filter by status
     if (selectedStatus !== "all") {
@@ -109,9 +98,7 @@ export default function CampaignsPage() {
           campaign?.shortDescription?.toLowerCase()?.includes(searchLower) ||
           campaign?.creatorName?.toLowerCase()?.includes(searchLower) ||
           campaign?.location?.toLowerCase()?.includes(searchLower) ||
-          campaign?.category?.toLowerCase()?.includes(searchLower) ||
-          campaign?.problemStatement?.toLowerCase()?.includes(searchLower) ||
-          campaign?.solution?.toLowerCase()?.includes(searchLower)
+          campaign?.category?.toLowerCase()?.includes(searchLower)
       )
     }
 
@@ -147,7 +134,7 @@ export default function CampaignsPage() {
     setFilteredCampaigns(filtered)
     // Reset display count when filters change
     setDisplayCount(CAMPAIGNS_PER_PAGE)
-  }, [campaigns, selectedCategory, selectedType, selectedStatus, searchTerm, sortBy])
+  }, [campaigns, selectedCategory, selectedStatus, searchTerm, sortBy])
 
   // Update displayed campaigns whenever filtered campaigns or display count changes
   useEffect(() => {
@@ -184,7 +171,6 @@ export default function CampaignsPage() {
   const clearAllFilters = () => {
     setSearchTerm("")
     setSelectedCategory("All")
-    setSelectedType("all")
     setSelectedStatus("all")
   }
 
@@ -192,12 +178,12 @@ export default function CampaignsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-slate-200 rounded-lg w-1/3"></div>
-            <div className="h-32 bg-slate-200 rounded-xl"></div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-8">
+            <Skeleton className="h-12 w-1/3 rounded-lg" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-80 bg-slate-200 rounded-xl"></div>
+                <Skeleton key={i} className="h-80 w-full rounded-xl" />
               ))}
             </div>
           </div>
@@ -210,11 +196,11 @@ export default function CampaignsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 text-center">
+        <div className="mb-6 sm:mb-8 text-center px-2">
           <Badge className="mb-4 bg-blue-100 text-blue-700 hover:bg-blue-200">🌟 Discover Amazing Causes</Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
             Explore{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
               Campaigns
             </span>
           </h1>
@@ -246,12 +232,10 @@ export default function CampaignsPage() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filters
                 {(selectedCategory !== "All" ||
-                  selectedType !== "all" ||
                   selectedStatus !== "all") && (
                   <Badge className="ml-2 bg-blue-100 text-blue-700">
                     {[
                       selectedCategory !== "All" ? 1 : 0,
-                      selectedType !== "all" ? 1 : 0,
                       selectedStatus !== "all" ? 1 : 0,
                     ].reduce((a, b) => a + b, 0)}
                   </Badge>
@@ -264,7 +248,7 @@ export default function CampaignsPage() {
               {/* Category Filters */}
               <div>
                 <h3 className="text-sm font-medium text-slate-700 mb-3">Categories</h3>
-                <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
                   {categories.map((category) => (
                     <Button
                       key={category}
@@ -281,21 +265,6 @@ export default function CampaignsPage() {
 
               {/* Campaign Type and Status Filters */}
               <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-slate-700 mb-3">Campaign Type</h3>
-                  <Select value={selectedType} onValueChange={setSelectedType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {campaignTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div>
                   <h3 className="text-sm font-medium text-slate-700 mb-3">Status</h3>
@@ -336,7 +305,6 @@ export default function CampaignsPage() {
                     </Badge>
 
                     {(selectedCategory !== "All" ||
-                      selectedType !== "all" ||
                       selectedStatus !== "all" ||
                       searchTerm) && (
                       <Button variant="ghost" size="sm" onClick={clearAllFilters}>
