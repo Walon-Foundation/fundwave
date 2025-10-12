@@ -249,6 +249,11 @@ export default function AdminCampaignsPage() {
                                 View
                               </Button>
                             </Link>
+                            <Link href={`/admin/campaigns/${campaign.id}`}>
+                              <Button size="sm" variant="outline" className="text-blue-700 border-blue-200 hover:bg-blue-50">
+                                Admin
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                         

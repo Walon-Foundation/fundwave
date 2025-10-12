@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
+import { logEvent } from "@/lib/logging";
 
 
 function calculateThreePercentForServer(value:number) {
@@ -78,7 +79,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             }, { status:500 })
         }
 
-        await db.insert(withdrawalTable).values({
+        const insertRes = await db.insert(withdrawalTable).values({
             id:nanoid(16),
             campaignId:campaign.id,
             userId:user.id,
@@ -86,6 +87,18 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
             amount:campaign.amountReceived,
             status: "pending",
             paymentDetails: {}
+        }).returning()
+
+        const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+        const ua = req.headers.get('user-agent') || ''
+        await logEvent({
+          level: "info",
+          category: "withdrawal:create",
+          user: (clerkId as string) || user.id,
+          details: `Withdrawal requested for campaign ${campaign.id} amount ${data.amount}`,
+          ipAddress: ip,
+          userAgent: ua,
+          metaData: { campaignId: campaign.id, amount: data.amount, userId: user.id, withdrawalId: insertRes?.[0]?.id }
         })
 
         return NextResponse.json({

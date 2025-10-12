@@ -6,6 +6,7 @@ import { userTable, paymentTable, campaignTable } from "@/db/schema";
 import createPaymentCode from "@/lib/monime";
 import { createCode } from "@/validations/payment";
 import { auth } from "@clerk/nextjs/server";
+import { logEvent } from "@/lib/logging";
 
 export async function POST(req: NextRequest, {params}:{params:Promise<{id:string}>}) {
     try {
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
             }, { status: 500 });
         }
 
+        const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+        const ua = req.headers.get('user-agent') || ''
+
         if(!user){
             await db.insert(paymentTable).values({
                 id: nanoid(16),
@@ -55,6 +59,15 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
                 isCompleted: false,
                 email:data.email
             }).execute();
+            await logEvent({
+              level: "info",
+              category: "payment:create",
+              user: clerkId || "anonymous",
+              details: `Payment initiated for campaign ${id} amount ${data.amount}`,
+              ipAddress: ip,
+              userAgent: ua,
+              metaData: { campaignId: id, amount: data.amount, anonymous: true }
+            })
         }else {
             await db.insert(paymentTable).values({
                 id: nanoid(16),
@@ -66,6 +79,15 @@ export async function POST(req: NextRequest, {params}:{params:Promise<{id:string
                 isCompleted: false,
                 email:data.email
             }).execute();
+            await logEvent({
+              level: "info",
+              category: "payment:create",
+              user: clerkId || user.id,
+              details: `Payment initiated for campaign ${id} amount ${data.amount}`,
+              ipAddress: ip,
+              userAgent: ua,
+              metaData: { campaignId: id, amount: data.amount, userId: user.id }
+            })
         }    
 
 

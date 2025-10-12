@@ -3,6 +3,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
 import { userTable } from "@/db/schema";
 import { eq, desc, ilike, or, count, and, type SQL } from "drizzle-orm";
+import { logEvent } from "@/lib/logging";
 
 export async function GET(request: NextRequest) {
   try {
@@ -119,6 +120,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const ua = request.headers.get('user-agent') || '';
     const { userIdToUpdate, status, action, approve } = body as { userIdToUpdate?: string; status?: string; action?: string; approve?: boolean };
 
     if (!userIdToUpdate) {
@@ -137,6 +140,16 @@ export async function PATCH(request: NextRequest) {
         .set({ isKyc: approve, updatedAt: new Date() })
         .where(eq(userTable.id, userIdToUpdate))
         .returning();
+      // Log KYC change
+      await logEvent({
+        level: "info",
+        category: "admin:user:kyc",
+        user: userId,
+        details: `${approve ? "Approved" : "Revoked"} KYC for user ${userIdToUpdate}`,
+        metaData: { targetUserId: userIdToUpdate, approve },
+        ipAddress: ip,
+        userAgent: ua,
+      });
       return NextResponse.json({ ok: true, data: { message: approve ? "KYC approved" : "KYC revoked", user: { ...updated[0], clerkId: undefined } } });
     }
 
@@ -159,6 +172,15 @@ export async function PATCH(request: NextRequest) {
         .set({ isDeleted: true, status: 'banned' as any, updatedAt: new Date() })
         .where(eq(userTable.id, userIdToUpdate))
         .returning();
+      await logEvent({
+        level: "warning",
+        category: "admin:user:delete",
+        user: userId,
+        details: `Soft-deleted user ${userIdToUpdate}`,
+        metaData: { targetUserId: userIdToUpdate },
+        ipAddress: ip,
+        userAgent: ua,
+      });
 
       return NextResponse.json({ ok: true, data: { message: "User deleted", user: { ...updated[0], clerkId: undefined } } });
     }
@@ -199,6 +221,15 @@ export async function PATCH(request: NextRequest) {
       console.warn("Clerk update (suspend/ban) not applied:", e);
     }
 
+    await logEvent({
+      level: "info",
+      category: "admin:user:status",
+      user: userId,
+      details: `Changed user ${userIdToUpdate} status to ${status}`,
+      metaData: { targetUserId: userIdToUpdate, status },
+      ipAddress: ip,
+      userAgent: ua,
+    });
     return NextResponse.json({
       ok: true,
       data: {

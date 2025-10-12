@@ -6,6 +6,8 @@ import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
+import { logEvent } from "@/lib/logging";
+import { rateLimit } from "@/lib/rateLimit";
 
 
 export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}>}){
@@ -20,6 +22,14 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
       }, { status:401 })
     }
     
+    // basic rate limit: 10 comments per 60s per IP per-campaign
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+    const limitKey = `cmt:${(await params).id}:${ip}`
+    const lim = rateLimit({ key: limitKey, windowMs: 60_000, max: 10 })
+    if (!lim.ok) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 })
+    }
+
     const body = await req.json()
 
     const { error, success, data} = createComment.safeParse(body)
@@ -44,6 +54,19 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 
       //sending the notification about the new comment created
     await sendNotification("New comment", "comment", userExist[0].id, id)
+
+    // log event
+    // ip already obtained above
+    const ua = req.headers.get('user-agent') || ''
+    await logEvent({
+      level: "info",
+      category: "comment:create",
+      user: userId!,
+      details: `Comment created on campaign ${id}`,
+      ipAddress: ip,
+      userAgent: ua,
+      metaData: { campaignId: id, commentId: newComment.id, userId: userExist[0].id }
+    })
 
     return NextResponse.json({
       message:"comment created successfully",

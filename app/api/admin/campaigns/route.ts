@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
 import { campaignTable, userTable } from "@/db/schema";
 import { eq, desc, ilike, or, count, and, type SQL } from "drizzle-orm";
+import { logEvent } from "@/lib/logging";
 
 export async function GET(request: NextRequest) {
   try {
@@ -112,6 +113,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const ua = request.headers.get('user-agent') || '';
     const { campaignIdToUpdate, status, action } = body as { campaignIdToUpdate?: string; status?: string; action?: string };
 
     if (!campaignIdToUpdate) {
@@ -123,6 +126,15 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'delete') {
       await db.delete(campaignTable).where(eq(campaignTable.id, campaignIdToUpdate));
+      await logEvent({
+        level: "warning",
+        category: "admin:campaign:delete",
+        user: userId,
+        details: `Deleted campaign ${campaignIdToUpdate}`,
+        metaData: { campaignId: campaignIdToUpdate },
+        ipAddress: ip,
+        userAgent: ua,
+      });
       return NextResponse.json({ ok: true, data: { message: 'Campaign deleted' } });
     }
 
@@ -149,6 +161,15 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    await logEvent({
+      level: "info",
+      category: "admin:campaign:status",
+      user: userId,
+      details: `Changed campaign ${campaignIdToUpdate} status to ${status}`,
+      metaData: { campaignId: campaignIdToUpdate, status },
+      ipAddress: ip,
+      userAgent: ua,
+    });
     return NextResponse.json({
       ok: true,
       data: {

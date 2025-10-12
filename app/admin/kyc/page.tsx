@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +21,7 @@ export default function AdminKycPage() {
   const [loading, setLoading] = useState(true);
   const [kycFilter, setKycFilter] = useState("pending"); // pending|verified|all
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: "1", limit: "50", kyc: kycFilter });
@@ -31,9 +31,9 @@ export default function AdminKycPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [kycFilter]);
 
-  useEffect(() => { fetchUsers(); }, [kycFilter]);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
   const setUserKyc = async (userId: string, approve: boolean) => {
     await fetch("/api/admin/users", {
