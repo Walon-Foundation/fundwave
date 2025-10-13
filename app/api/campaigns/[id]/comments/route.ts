@@ -3,7 +3,7 @@ import { createComment } from "../../../../../validations/comment";
 import { commentTable, userTable } from "../../../../../db/schema";
 import { db } from "../../../../../db/drizzle";
 import { nanoid } from "nanoid";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
 import { logEvent } from "@/lib/logging";
@@ -84,7 +84,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>}){
   try{
     const id = (await params).id
-    const allComments = await db.select().from(commentTable).where(eq(commentTable.campaignId, id))
+const allComments = await db.select().from(commentTable).where(and(eq(commentTable.campaignId, id), eq(commentTable.isDeleted, false)))
 
     if(allComments.length === 0){
       return NextResponse.json({

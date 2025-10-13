@@ -1,5 +1,5 @@
 import { db } from "@/db/drizzle"
-import { campaignTable, commentTable, notificationTable, paymentTable, userTable } from "@/db/schema"
+import { campaignTable, commentTable, notificationTable, paymentTable, userTable, campaignViewTable } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
 import { eq, inArray, sum, countDistinct, desc } from "drizzle-orm"
 import { NextResponse } from "next/server"
@@ -59,7 +59,7 @@ export async function GET() {
     const campaignIds = campaigns.map(c => c.id)
 
     // Fetch aggregated data
-    const [commentsPerCampaign, donorsPerCampaign, totalDonors, totalRaised, notifications] =
+    const [commentsPerCampaign, donorsPerCampaign, viewsPerCampaign, totalDonors, totalRaised, notifications] =
       await Promise.all([
         // Total comments per campaign
         db
@@ -80,6 +80,13 @@ export async function GET() {
           .from(paymentTable)
           .where(inArray(paymentTable.campaignId, campaignIds))
           .groupBy(paymentTable.campaignId),
+
+        // Total views per campaign
+        db
+          .select({ campaignId: campaignViewTable.campaignId, totalViews: countDistinct(campaignViewTable.id) })
+          .from(campaignViewTable)
+          .where(inArray(campaignViewTable.campaignId, campaignIds))
+          .groupBy(campaignViewTable.campaignId),
 
         // Total donors for all campaigns (unique donors)
         db
@@ -110,12 +117,16 @@ export async function GET() {
     const campaignsWithStats = campaigns.map(campaign => {
       const comments = commentsPerCampaign.find(cc => cc.campaignId === campaign.id)?.totalComments || 0
       const donors = donorsPerCampaign.find(dc => dc.campaignId === campaign.id)?.totalDonors || 0
+      const views = viewsPerCampaign.find(vc => vc.campaignId === campaign.id)?.totalViews || 0
       return {
         ...campaign,
         totalComments: comments,
         totalDonors: donors,
+        totalViews: views,
       }
     })
+
+    const overallViews = viewsPerCampaign.reduce((s, v) => s + Number(v.totalViews || 0), 0)
 
     return NextResponse.json(
       {
@@ -125,6 +136,7 @@ export async function GET() {
           campaigns: campaignsWithStats,
           totalDonors: totalDonors[0]?.totalDonors || 0,
           totalRaised: totalRaised[0]?.totalRaised || 0,
+          totalViews: overallViews,
           notifications,
         },
       },
