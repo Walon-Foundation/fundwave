@@ -62,6 +62,7 @@ export interface Dashboard {
     campaigns: {
         totalComments: number;
         totalDonors: number;
+        totalViews?: number;
         id: string;
         name: string;
         status: "active" | "pending" | "rejected" | "completed";
@@ -72,6 +73,7 @@ export interface Dashboard {
     }[];
     totalDonors: number;
     totalRaised: string | number;
+    totalViews?: number;
     notifications: {
         id: string;
         title: string;

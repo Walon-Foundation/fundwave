@@ -7,6 +7,7 @@ import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 import { sendEmail } from "@/lib/nodeMailer";
 import { deleteSchema } from "@/validations/user";
 import { supabase } from "@/lib/supabase";
+import { logEvent } from "@/lib/logging";
 
 export async function GET() {
   try {
@@ -227,6 +228,19 @@ export async function DELETE() {
       ),
     ])
 
+    // audit log
+    try {
+      await logEvent({
+        level: "warning",
+        category: "profile:delete",
+        user: clerkId!,
+        details: `User ${user.id} deleted their profile`,
+        ipAddress: '',
+        userAgent: '',
+        metaData: { userId: user.id, email: user.email }
+      })
+    } catch {}
+
     return NextResponse.json(
       { ok: true, message: "user deleted" },
       { status: 200 }
@@ -271,6 +285,21 @@ export async function PATCH(req:NextRequest){
       }).where(eq(userTable.clerkId, clerkId as string)),
       await sendEmail("account-updated", user.email, "Your Fundwave account has being updated", { name:user.name, changes:'Bio, name, location and phone where update', timestamp:Date.now()})
     ])
+
+    // audit log
+    try {
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+      const ua = req.headers.get('user-agent') || ''
+      await logEvent({
+        level: "info",
+        category: "profile:update",
+        user: clerkId!,
+        details: `User ${user.id} updated their profile`,
+        ipAddress: ip,
+        userAgent: ua,
+        metaData: { userId: user.id, fields: ['name','bio','district','phone'] }
+      })
+    } catch {}
 
     return NextResponse.json({
       ok:true,

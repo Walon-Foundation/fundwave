@@ -27,6 +27,7 @@ import { toast, Toaster } from "react-hot-toast"
 import CashoutModal from "@/components/cashout-modal"
 import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts"
 
 export default function CreatorDashboard() {
   const [data, setData] = useState<Dashboard>()
@@ -294,6 +295,15 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
   const activeCampaigns = data.campaigns?.filter((c) => c.status === "active")?.length
   const totalCampaigns = data.campaigns?.length
 
+  // Prepare chart data for Analytics tab
+  const chartData = (data?.campaigns || []).map((c: any) => ({
+    name: c.name,
+    views: Number(c.totalViews || 0),
+    donors: Number(c.totalDonors || 0),
+    comments: Number(c.totalComments || 0),
+    raised: Number(c.donated || 0),
+  }))
+
   return (
     <div className="min-h-screen py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -329,7 +339,7 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
           />
           <StatCard icon={Users} value={String(data.totalDonors || 0)} label="Total Donors" />
           <StatCard icon={TrendingUp} value={String(activeCampaigns || 0)} label="Active Campaigns" />
-          <StatCard icon={Eye} value={"—"} label="Total Views" />
+          <StatCard icon={Eye} value={String((data as any).totalViews || 0)} label="Total Views" />
         </div>
 
         {/* Tabs */}
@@ -465,6 +475,72 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
               </div>
             </div>
           </div>
+        )}
+
+{activeTab === "analytics" && (
+          <>
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Analytics by Campaign</h2>
+              <span className="text-sm text-slate-500">Overview</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Campaign</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Donors</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Comments</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Views</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Raised</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Progress</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.campaigns?.map((c:any) => {
+                    const progress = (c.donated / c.amountNeeded) * 100
+                    return (
+                      <tr key={c.id} className="border-b border-slate-100">
+                        <td className="py-3 px-4 text-slate-900">{c.name}</td>
+                        <td className="py-3 px-4">{c.totalDonors ?? 0}</td>
+                        <td className="py-3 px-4">{c.totalComments ?? 0}</td>
+                        <td className="py-3 px-4">{c.totalViews ?? 0}</td>
+                        <td className="py-3 px-4">{formatCurrency(c.donated)}</td>
+                        <td className="py-3 px-4">
+                          <div className="w-32 bg-slate-200 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${Math.min(progress,100)}%` }} />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Charts */}
+          <div className="card mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Campaign Performance</h2>
+              <span className="text-sm text-slate-500">Views, donors and comments</span>
+            </div>
+            <div className="w-full h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} hide={chartData.length > 8} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="views" name="Views" fill="#0ea5e9" />
+                  <Bar dataKey="donors" name="Donors" fill="#14b8a6" />
+                  <Bar dataKey="comments" name="Comments" fill="#0284c7" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          </>
         )}
 
         {activeTab === "campaigns" && (

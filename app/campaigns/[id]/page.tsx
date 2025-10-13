@@ -68,6 +68,8 @@ export default function CampaignDetailPage() {
 
     if (id) {
       fetchCampaignData()
+      // record a view (best-effort)
+      try { fetch(`/api/campaigns/${id}/views`, { method: 'POST' }) } catch {}
     }
   }, [id])
 
@@ -246,6 +248,28 @@ export default function CampaignDetailPage() {
     }
   }
 
+  const handleReportCampaign = async () => {
+    const reason = prompt('Why are you reporting this campaign? (e.g., Fraud, Harmful content, Policy violation)') || ''
+    if (!reason.trim()) return
+    const description = prompt('Optional: add more details about the issue') || ''
+    try {
+      const res = await fetch(`/api/campaigns/${id}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason, description }) })
+      const j = await res.json()
+      if (j?.ok) {
+        toast.success('Report submitted. We will review it.')
+      } else {
+        toast.error('Failed to submit report')
+      }
+    } catch {
+      toast.error('Failed to submit report')
+    }
+  }
+
+  // Report modal state
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDescription, setReportDescription] = useState('')
+
   // Pagination functions for updates
   // If any update has an image URL, show one update per page for a cleaner layout
   const updatesItemsPerPage = updates.some((u: any) => typeof u?.image === "string" && u.image.trim().length > 0) ? 1 : itemsPerPage
@@ -364,10 +388,10 @@ export default function CampaignDetailPage() {
                   <Share2 className="w-4 h-4 mr-2" />
                   <span className="text-sm sm:text-base">Share</span>
                 </button>
-                {/* <button className="btn-outline flex items-center justify-center py-2 px-4">
+                <button className="btn-outline flex items-center justify-center py-2 px-4" onClick={() => setReportOpen(true)}>
                   <Flag className="w-4 h-4 mr-2" />
                   <span className="text-sm sm:text-base">Report</span>
-                </button> */}
+                </button>
               </div>
 
               {/* Tags */}
@@ -1153,6 +1177,46 @@ export default function CampaignDetailPage() {
       )}
 
       {shareModal && <ShareModal onClose={() => setShareModal(!shareModal)}/>}
+
+      {reportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Report this campaign</h3>
+              <button onClick={() => setReportOpen(false)} className="p-2 rounded-md hover:bg-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Reason</label>
+            <select value={reportReason} onChange={(e)=>setReportReason(e.target.value)} className="w-full border rounded-md px-3 py-2 mb-3">
+              <option value="">Select a reason</option>
+              <option value="Fraud">Fraud</option>
+              <option value="Harmful content">Harmful content</option>
+              <option value="Policy violation">Policy violation</option>
+              <option value="Spam">Spam</option>
+              <option value="Other">Other</option>
+            </select>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Details (optional)</label>
+            <textarea value={reportDescription} onChange={(e)=>setReportDescription(e.target.value)} className="w-full border rounded-md px-3 py-2 h-28 mb-4" placeholder="Provide more information to help our team review this." />
+            <div className="flex justify-end gap-2">
+              <button onClick={()=>setReportOpen(false)} className="btn-outline px-4 py-2">Cancel</button>
+              <button
+                onClick={async ()=>{
+                  if (!reportReason.trim()) { toast.error('Please select a reason'); return }
+                  try {
+                    const res = await fetch(`/api/campaigns/${id}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reportReason, description: reportDescription }) })
+                    const j = await res.json()
+                    if (j?.ok) { toast.success('Report submitted'); setReportOpen(false); setReportReason(''); setReportDescription('') } else { toast.error('Failed to submit report') }
+                  } catch { toast.error('Failed to submit report') }
+                }}
+                className="btn-primary px-4 py-2"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     <Toaster
     position="top-center"
