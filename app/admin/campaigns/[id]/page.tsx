@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import Link from "next/link";
 
-interface Campaign { id: string; title: string; image: string; status: string; amountReceived: number; fundingGoal: number; createdAt: string; category: string; location: string; campaignEndDate: string; creatorId: string; creatorName: string; shortDescription: string; }
+interface Campaign { id: string; title: string; image: string; status: string; amountReceived: number; fundingGoal: number; createdAt: string; category: string; location: string; campaignEndDate: string; creatorId: string; creatorName: string; shortDescription: string; isDeleted: boolean; }
 interface Payment { id: string; amount: number; email: string; createdAt: string; userId: string | null; }
 interface Comment { id: string; message: string; username: string; createdAt: string; }
 interface Update { id: string; title: string; message: string; createdAt: string; }
@@ -17,6 +17,7 @@ export default function AdminCampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any | null>(null);
+  const [mutating, setMutating] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +31,32 @@ export default function AdminCampaignDetailPage() {
     };
     load();
   }, [params?.id]);
+
+  const reload = async () => {
+    if (!params?.id) return;
+    const res = await fetch(`/api/admin/campaigns/${params.id}`);
+    const j = await res.json();
+    if (j.ok) setData(j.data);
+  };
+
+  const restoreCampaign = async () => {
+    if (!params?.id) return;
+    setMutating(true);
+    try {
+      const r = await fetch('/api/admin/campaigns', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campaignIdToUpdate: params.id, action: 'restore' }) });
+      if (r.ok) await reload();
+    } finally { setMutating(false); }
+  };
+
+  const deleteCampaign = async () => {
+    if (!params?.id) return;
+    if (!confirm('Delete this campaign? This can be undone by recovery.')) return;
+    setMutating(true);
+    try {
+      const r = await fetch('/api/admin/campaigns', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campaignIdToUpdate: params.id, action: 'delete' }) });
+      if (r.ok) await reload();
+    } finally { setMutating(false); }
+  };
 
   const fmtCurrency = (n: number) => new Intl.NumberFormat('en-SL', { style: 'currency', currency: 'SLE', maximumFractionDigits: 0 }).format(n || 0);
   const progress = (received: number, goal: number) => Math.min(Math.round((received / Math.max(goal, 1)) * 100), 100);
@@ -50,10 +77,24 @@ export default function AdminCampaignDetailPage() {
       </nav>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">{c.title}</h2>
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            {c.title}
+            {c.isDeleted && (<span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700">Deleted</span>)}
+          </h2>
           <p className="text-neutral-600">Creator: {data.creator?.name || c.creatorName} • Status: <span className="capitalize">{c.status}</span></p>
         </div>
-        <Link href={`/campaigns/${c.id}`} className="text-sm text-blue-600 underline">View public page</Link>
+        <div className="flex items-center gap-3">
+          {c.isDeleted ? (
+            <button className="text-sm text-neutral-400 cursor-not-allowed" disabled>View public page</button>
+          ) : (
+            <Link href={`/campaigns/${c.id}`} className="text-sm text-blue-600 underline">View public page</Link>
+          )}
+          {c.isDeleted ? (
+            <button onClick={restoreCampaign} disabled={mutating} className="text-sm px-3 py-1 rounded border border-green-300 text-green-700 hover:bg-green-50">Recover</button>
+          ) : (
+            <button onClick={deleteCampaign} disabled={mutating} className="text-sm px-3 py-1 rounded border border-red-300 text-red-700 hover:bg-red-50">Delete</button>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="overview">

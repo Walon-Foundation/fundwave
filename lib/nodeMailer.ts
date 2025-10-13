@@ -228,6 +228,37 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
     </div>
   `,
 
+  "campaign-deleted-by-admin": ({ name, campaign }) => `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e7ff; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #f0f9ff);">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #2563eb; margin-bottom: 12px; font-size: 22px;">Campaign Removed by Administrator</h2>
+        <div style="background-color: #dbeafe; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb;">
+          <p style="margin: 0; color: #1e40af;">A campaign${campaign ? ` (\"<strong>${campaign}</strong>\")` : ''} associated with your account was removed by our moderation team.</p>
+        </div>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
+      <p style="font-size: 15px; line-height: 1.6;">For safety and policy compliance, this campaign is no longer visible to the public and cannot receive new donations.</p>
+
+      <div style="background-color: #ecfeff; padding: 16px; border-radius: 8px; border: 1px solid #bae6fd; margin: 18px 0;">
+        <h3 style="color: #0ea5e9; margin: 0 0 10px;">What you can do</h3>
+        <ul style="margin: 0; padding-left: 20px;">
+          <li style="margin-bottom: 8px;">Review our community guidelines and content policies.</li>
+          <li style="margin-bottom: 8px;">Reply to this email if you believe this was a mistake.</li>
+          <li>Contact support for guidance on adjusting your campaign for reinstatement.</li>
+        </ul>
+      </div>
+
+      <p style="font-size: 14px; color: #475569;">We’re here to help. Please reach out if you need clarification.</p>
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+        <p style="font-size: 14px; color: #64748b; margin: 0;">The FundWave Team</p>
+      </div>
+    </div>
+  `,
+
+  "campaign-restored": ({ name, campaign }) => `
+    <div style=\"font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #bbf7d0; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #f0fdf4);\">\n      <div style=\"text-align: center; margin-bottom: 20px;\">\n        <h2 style=\"color: #16a34a; margin-bottom: 12px; font-size: 22px;\">Campaign Restored</h2>\n        <div style=\"background-color: #dcfce7; padding: 12px; border-radius: 8px; border-left: 4px solid #16a34a;\">\n          <p style=\"margin: 0; color: #166534;\">Your campaign${campaign ? ` (\"<strong>${campaign}</strong>\")` : ''} has been restored by our team.</p>\n        </div>\n      </div>\n\n      <p style=\"font-size: 16px; line-height: 1.6;\">Hello <strong>${name}</strong>,</p>\n      <p style=\"font-size: 15px; line-height: 1.6;\">It is once again visible to the public and eligible to receive donations.</p>\n\n      <div style=\"background-color: #f0fdf4; padding: 16px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 18px 0;\">\n        <h3 style=\"color: #16a34a; margin: 0 0 10px;\">Recommendations</h3>\n        <ul style=\"margin: 0; padding-left: 20px;\">\n          <li style=\"margin-bottom: 8px;\">Consider posting an update to inform supporters.</li>\n          <li style=\"margin-bottom: 8px;\">Review content to ensure continued compliance with our guidelines.</li>\n        </ul>\n      </div>\n\n      <p style=\"font-size: 14px; color: #475569;\">Thank you for working with us to keep the platform safe.</p>\n      <div style=\"margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0;\">\n        <p style=\"font-size: 14px; color: #64748b; margin: 0;\">The FundWave Team</p>\n      </div>\n    </div>\n  `,
+
   "comment-deleted": ({ name, campaign }) => `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #fecaca; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #fef2f2);">
       <h2 style="color: #dc2626; margin-bottom: 15px; font-size: 20px;">Your Comment Was Removed</h2>

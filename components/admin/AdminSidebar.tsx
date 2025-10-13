@@ -33,6 +33,7 @@ const navItems = [
   { label: "Overview", href: "/admin/overview", icon: LayoutDashboard },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Campaigns", href: "/admin/campaigns", icon: Target },
+  { label: "Moderation", href: "/admin/moderation", icon: Flag },
   { label: "Payments", href: "/admin/payments", icon: CreditCard },
   { label: "Reports", href: "/admin/reports", icon: Flag },
   { label: "Settings", href: "/admin/settings", icon: Settings },
