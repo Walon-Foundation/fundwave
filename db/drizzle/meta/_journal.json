@@ -169,6 +169,20 @@
       "when": 1760384252733,
       "tag": "0023_sweet_zeigeist",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1760386818291,
+      "tag": "0024_keen_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1760387268704,
+      "tag": "0025_curvy_bastion",
+      "breakpoints": true
     }
   ]
 }

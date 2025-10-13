@@ -123,6 +123,7 @@ export const campaignTable = pgTable("campaigns", {
   campaignType: campaignTypeEnum("campaign_type").notNull(),
   moderationNotes: text("moderation_notes"),
   status: campaignStatusEnum("status").default("active").notNull(),
+  isDeleted: boolean("isDeleted").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -143,6 +144,7 @@ export const commentTable = pgTable("comments", {
   userId: text("userId")
     .references(() => userTable.id, { onDelete: "cascade" })
     .notNull(),
+  isDeleted: boolean("isDeleted").default(false).notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -159,6 +161,7 @@ export const updateTable = pgTable("updates", {
     .notNull()
     .references(() => campaignTable.id, { onDelete: "cascade" }),
   image: text("image"),
+  isDeleted: boolean("isDeleted").default(false).notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -283,6 +286,15 @@ export const chatMessageTable = pgTable("chat_messages", {
   createdAt: timestamp("createdAt", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+export const campaignViewTable = pgTable("campaign_views", {
+  id: text("id").primaryKey().notNull(),
+  campaignId: text("campaignId").references(() => campaignTable.id, { onDelete: "cascade" }).notNull(),
+  userId: text("userId").references(() => userTable.id, { onDelete: "set null" }),
+  ip: text("ip"),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const notificationTable = pgTable("notification", {
