@@ -144,7 +144,31 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === 'delete') {
-      await db.delete(campaignTable).where(eq(campaignTable.id, campaignIdToUpdate));
+      // Fetch creator email before deletion
+      const [cam] = await db.select({ creatorId: campaignTable.creatorId, title: campaignTable.title }).from(campaignTable).where(eq(campaignTable.id, campaignIdToUpdate)).limit(1);
+      let creatorEmail: string | undefined; let creatorName: string | undefined;
+      if (cam?.creatorId) {
+        const [u] = await db.select({ email: userTable.email, name: userTable.name }).from(userTable).where(eq(userTable.id, cam.creatorId)).limit(1);
+        creatorEmail = u?.email; creatorName = u?.name;
+      }
+
+await db.update(campaignTable).set({ isDeleted: true, updatedAt: new Date() }).where(eq(campaignTable.id, campaignIdToUpdate));
+
+      // In-app notification to creator
+      try {
+        if (cam?.creatorId) {
+          await (await import('@/lib/notification')).sendNotification('Campaign deleted by admin', 'campaignStuff' as any, cam.creatorId, campaignIdToUpdate);
+        }
+      } catch {}
+
+      // Send deletion email (best-effort)
+      try {
+        if (creatorEmail) {
+          const { sendEmail } = await import('@/lib/nodeMailer');
+          await sendEmail('campaign-deleted' as any, creatorEmail, 'Your campaign was deleted by an administrator', { name: creatorName || 'User' } as any);
+        }
+      } catch {}
+
       await logEvent({
         level: "warning",
         category: "admin:campaign:delete",
@@ -162,6 +186,13 @@ export async function PATCH(request: NextRequest) {
         { error: "Invalid status" },
         { status: 400 }
       );
+    }
+
+if (action === 'restore') {
+      const restored = await db.update(campaignTable).set({ isDeleted: false, updatedAt: new Date() }).where(eq(campaignTable.id, campaignIdToUpdate)).returning();
+      if (!restored.length) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      await logEvent({ level: 'info', category: 'admin:campaign:restore', user: userId, details: `Restored campaign ${campaignIdToUpdate}` , ipAddress: ip, userAgent: ua, metaData: { campaignId: campaignIdToUpdate }});
+      return NextResponse.json({ ok: true, data: { message: 'Campaign restored', campaign: restored[0] } });
     }
 
     const updatedCampaign = await db

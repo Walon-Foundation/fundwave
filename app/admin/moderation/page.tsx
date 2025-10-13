@@ -11,6 +11,7 @@ export default function AdminModerationPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeletedOnly, setShowDeletedOnly] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -41,6 +42,12 @@ export default function AdminModerationPage() {
   return (
     <section className="space-y-6">
       <h2 className="text-xl font-semibold">Content Moderation</h2>
+      <div className="flex items-center gap-3 text-sm text-neutral-700">
+        <label className="inline-flex items-center gap-2">
+          <input type="checkbox" checked={showDeletedOnly} onChange={(e)=>setShowDeletedOnly(e.currentTarget.checked)} />
+          Show deleted only
+        </label>
+      </div>
       <Tabs defaultValue="comments">
         <TabsList>
           <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -67,13 +74,17 @@ export default function AdminModerationPage() {
                 <EmptyState title="No comments found" description="There are no comments to moderate right now." />
               ) : (
                 <div className="space-y-3">
-                  {comments.map((c) => (
-                    <div key={c.id} className="border rounded-lg p-4 bg-white flex items-start justify-between gap-4">
+              {(showDeletedOnly ? comments.filter(c=>c.isDeleted) : comments.filter(c=>!c.isDeleted || showDeletedOnly)).map((c) => (
+                    <div key={c.id} className={`border rounded-lg p-4 bg-white flex items-start justify-between gap-4 ${c.isDeleted ? 'opacity-60' : ''}`}>
                       <div>
                         <div className="font-medium">{c.username}</div>
                         <div className="text-sm text-neutral-600">{c.message}</div>
                       </div>
-                      <Button variant="outline" className="text-red-600 border-red-200" onClick={() => deleteComment(c.id)}>Delete</Button>
+                      {c.isDeleted ? (
+                        <Button variant="outline" className="text-green-700 border-green-200" onClick={async()=>{ await fetch('/api/admin/comments', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, action: 'restore' }) }); load(); }}>Restore</Button>
+                      ) : (
+                        <Button variant="outline" className="text-red-600 border-red-200" onClick={() => deleteComment(c.id)}>Delete</Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -102,13 +113,17 @@ export default function AdminModerationPage() {
                 <EmptyState title="No updates found" description="There are no updates to moderate right now." />
               ) : (
                 <div className="space-y-3">
-                  {updates.map((u) => (
-                    <div key={u.id} className="border rounded-lg p-4 bg-white flex items-start justify-between gap-4">
+              {(showDeletedOnly ? updates.filter(u=>u.isDeleted) : updates.filter(u=>!u.isDeleted || showDeletedOnly)).map((u) => (
+                    <div key={u.id} className={`border rounded-lg p-4 bg-white flex items-start justify-between gap-4 ${u.isDeleted ? 'opacity-60' : ''}`}>
                       <div>
                         <div className="font-medium">{u.title}</div>
                         <div className="text-sm text-neutral-600 line-clamp-2">{u.message}</div>
                       </div>
-                      <Button variant="outline" className="text-red-600 border-red-200" onClick={() => deleteUpdate(u.id)}>Delete</Button>
+                      {u.isDeleted ? (
+                        <Button variant="outline" className="text-green-700 border-green-200" onClick={async()=>{ await fetch('/api/admin/updates', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, action: 'restore' }) }); load(); }}>Restore</Button>
+                      ) : (
+                        <Button variant="outline" className="text-red-600 border-red-200" onClick={() => deleteUpdate(u.id)}>Delete</Button>
+                      )}
                     </div>
                   ))}
                 </div>

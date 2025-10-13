@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { sendNotification } from "@/lib/notification";
 import { createComment } from "@/validations/comment";
+import { logEvent } from "@/lib/logging";
 
 
 export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentId:string}>}){
@@ -26,11 +27,26 @@ export async function DELETE(req:NextRequest, {params}:{params:Promise<{commentI
         const campaignId = (await db.select({ campaignId:commentTable.campaignId}).from(commentTable).where(eq(commentTable.id, commentId)).execute())[0]
 
 
-        //deleting and sending notification
+//soft-delete and send notification
         await Promise.all([
-            db.delete(commentTable).where(and(eq(commentTable.id, commentId), eq(commentTable.userId, userExist[0].id))).execute(),
+            db.update(commentTable).set({ isDeleted: true, updatedAt: new Date() }).where(and(eq(commentTable.id, commentId), eq(commentTable.userId, userExist[0].id))).execute(),
             sendNotification("Comment delete", "comment", userExist[0].id, campaignId.campaignId )
         ])
+
+        // log event
+        try {
+          const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+          const ua = req.headers.get('user-agent') || ''
+          await logEvent({
+            level: "warning",
+            category: "comment:delete",
+            user: userId!,
+            details: `Deleted own comment ${commentId}`,
+            ipAddress: ip,
+            userAgent: ua,
+            metaData: { commentId, campaignId: campaignId.campaignId }
+          })
+        } catch {}
 
         //sending a 204 response
         return NextResponse.json({
@@ -75,6 +91,21 @@ export async function PATCH(req:NextRequest, {params}:{params:Promise<{commentId
         const updateComment = (await db.update(commentTable).set({ message:data.comment, updatedAt:new Date()}).where(eq(commentTable.id, commentId)).returning().execute())[0]
 
         await sendNotification("Comment updated", "comment", user.id, updateComment.campaignId)
+
+        // log event
+        try {
+          const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || ''
+          const ua = req.headers.get('user-agent') || ''
+          await logEvent({
+            level: "info",
+            category: "comment:update",
+            user: clerkId!,
+            details: `Updated comment ${commentId}`,
+            ipAddress: ip,
+            userAgent: ua,
+            metaData: { commentId, campaignId: updateComment.campaignId }
+          })
+        } catch {}
 
         return NextResponse.json({
             ok:true,

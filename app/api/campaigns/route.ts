@@ -8,6 +8,7 @@ import { and, eq, lt, ne } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
 import { createAccount } from "@/lib/monime";
+import { logEvent } from "@/lib/logging";
 
 
 export async function POST(req:NextRequest){
@@ -128,6 +129,21 @@ export async function POST(req:NextRequest){
         //send email to confirm campaign creation
         await sendEmail("campaign-created", userExist.email, "Campaign has been created", { name: userExist.name, campaign:newCampaign.title })
 
+        // log event for campaign creation
+        try {
+            const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+            const ua = req.headers.get('user-agent') || '';
+            await logEvent({
+                level: 'success',
+                category: 'campaign:create',
+                user: clerkId!,
+                details: `Created campaign ${newCampaign.title}`,
+                ipAddress: ip,
+                userAgent: ua,
+                metaData: { campaignId: newCampaign.id, userId, title: newCampaign.title }
+            });
+        } catch {}
+
         //sending the response to client
         return NextResponse.json({
             message:"campaign created",
@@ -141,7 +157,7 @@ export async function POST(req:NextRequest){
     }
 }
 
-export async function GET(){
+export async function GET(req: NextRequest){
     try{
         // First, auto-complete campaigns whose end date has passed
         try {
@@ -153,13 +169,40 @@ export async function GET(){
               ));
         } catch {}
 
-        const allCampaign = await db.select().from(campaignTable)
+const allCampaign = await db.select().from(campaignTable).where(eq(campaignTable.isDeleted, false))
+        // log campaign list retrieval
+        try {
+            const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+            const ua = req.headers.get('user-agent') || '';
+            await logEvent({
+                level: 'info',
+                category: 'campaign:list',
+                user: 'anonymous',
+                details: `Fetched ${allCampaign.length} campaigns`,
+                ipAddress: ip,
+                userAgent: ua,
+                metaData: { count: allCampaign.length }
+            });
+        } catch {}
         if(allCampaign.length === 0){
             return NextResponse.json({
                 message:"No campaigns created at yet",
             }, {status:200})
         }
         
+        try {
+            // Best-effort logging with minimal headers via Response not available; use dummy ip/ua
+            await logEvent({
+                level: 'info',
+                category: 'campaign:list',
+                user: 'anonymous',
+                details: `Fetched ${allCampaign.length} campaigns`,
+                ipAddress: '',
+                userAgent: '',
+                metaData: { count: allCampaign.length }
+            });
+        } catch {}
+
         return NextResponse.json({
             message:"all campaigns",
             data:allCampaign,
