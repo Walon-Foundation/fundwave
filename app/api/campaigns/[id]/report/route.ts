@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { logEvent } from "@/lib/logging"
 import { sendNotification } from "@/lib/notification"
+import { rateLimit } from "@/lib/rateLimit"
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,6 +14,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!reason || typeof reason !== 'string' || reason.trim() === '') {
       return NextResponse.json({ error: 'Reason is required' }, { status: 400 })
+    }
+
+    // basic rate limit: 5 reports per 10 minutes per IP per campaign
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || ''
+    const limitKey = `report:${(await params).id}:${ip}`
+    const lim = rateLimit({ key: limitKey, windowMs: 10 * 60_000, max: 5 })
+    if (!lim.ok) {
+      return NextResponse.json({ error: 'Too many reports, please try later' }, { status: 429 })
     }
 
     const campaignId = (await params).id

@@ -2,8 +2,9 @@ import axios from "axios"
 import { nanoid } from "nanoid";
 import { GenerateCode,  GenerateAccount, Cashout, GetFinancialAccount, MainResponse } from "../types/monimeTypes";
 
-const spaceId = process.env.MONIME_SPACE_ID || "enter monime_space_id"
-const token = process.env.MONIME_ACCESS_TOKEN || "enter access token from monime";
+import { env } from "./env"
+const spaceId = env.MONIME_SPACE_ID
+const token = env.MONIME_ACCESS_TOKEN
 
 
 export default async function createPaymentCode(paymentName:string, name:string, amount:number, phoneNumber:string, financialAccountId:string):Promise<GenerateCode | undefined> {
@@ -46,7 +47,7 @@ export default async function createPaymentCode(paymentName:string, name:string,
     })
     return response.data as GenerateCode
   } catch (err) {
-    console.log(err)
+    if (process.env.NODE_ENV === 'development') console.log(err)
   }
   // if (axios.isAxiosError(err)) {
   //   console.error("❌ Axios request failed");
@@ -85,7 +86,7 @@ export async function createAccount( name:string ):Promise<GenerateAccount | und
     })
     return res.data as GenerateAccount
   }catch(err){
-    console.log(err)
+    if (process.env.NODE_ENV === 'development') console.log(err)
   }
 }
 
@@ -120,15 +121,12 @@ export async function campaignCashout(amount:number, financialAccountId:string, 
     })
 
     return res.data as Cashout
- }catch(err){
-  if (axios.isAxiosError(err)) {
+  }catch(err){
+  if (process.env.NODE_ENV === 'development' && axios.isAxiosError(err)) {
     console.error("❌ Axios request failed");
-    console.error("real error: ", err.response?.data)
     console.error("Status:", err.response?.status);
     console.error("Message:", err.response?.statusText);
-    console.error("Data:", err.response?.data); // <-- API error details
-	console.error("Error: ", err.response?.data.error.details)
-  } else {
+  } else if (process.env.NODE_ENV === 'development') {
     console.error("❌ Unexpected error:", err);
   }}
 }
@@ -152,7 +150,6 @@ export async function FinancialAccount(id:string):Promise<GetFinancialAccount | 
   }
 }
 
-// fac-k6GeJjHSLjvobTqzhgEiWF8RjYE
 export async function TransferToMainAccount(financialAccountId:string, amount:number):Promise<MainResponse | undefined>{
   try{
     const url = "https://api.monime.io/v1/internal-transfers"

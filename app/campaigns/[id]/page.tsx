@@ -33,6 +33,10 @@ export default function CampaignDetailPage() {
 
   //share modal 
   const [shareModal, setShareModal] = useState(false)
+  // Report modal state (must be declared before any early returns)
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDescription, setReportDescription] = useState('')
 
   // Pagination states for updates
   const [updatesPage, setUpdatesPage] = useState(1)
@@ -264,11 +268,6 @@ export default function CampaignDetailPage() {
       toast.error('Failed to submit report')
     }
   }
-
-  // Report modal state
-  const [reportOpen, setReportOpen] = useState(false)
-  const [reportReason, setReportReason] = useState('')
-  const [reportDescription, setReportDescription] = useState('')
 
   // Pagination functions for updates
   // If any update has an image URL, show one update per page for a cleaner layout

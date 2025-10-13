@@ -68,10 +68,11 @@ export default function Navigation() {
       if(isAuthenticated){
         try{
           const res = await api.getProfile()
-          console.log(res)
           setUser(res)
         }catch(err){
-          console.log(err)
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('getProfile error', err)
+          }
         }
       }
     }
