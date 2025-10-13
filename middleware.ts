@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { db } from "./db/drizzle";
 import { userTable } from "./db/schema";
 import { eq } from "drizzle-orm";
+import { logEvent } from "./lib/logging";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -36,6 +37,23 @@ export default clerkMiddleware(async (auth, req) => {
   const devAdminHost = process.env.DEV_ADMIN_HOST || 'admin.localhost:3000';
   const isProd = process.env.NODE_ENV === 'production';
   const isAdminHost = host === adminHost || (!isProd && host === devAdminHost);
+
+  // Lightweight API request logging (pre-auth)
+  try {
+    if (url.pathname.startsWith('/api')) {
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+      const ua = req.headers.get('user-agent') || '';
+      await logEvent({
+        level: 'info',
+        category: 'api:request',
+        user: 'anonymous',
+        details: `${req.method} ${url.pathname}`,
+        ipAddress: ip,
+        userAgent: ua,
+        metaData: { host, search: url.search || '', isAdminHost }
+      });
+    }
+  } catch {}
 
   // Debug logging (only in development)
   const isAdminPath = url.pathname.startsWith('/admin');

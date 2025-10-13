@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/complete-ended",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/purge-deleted",
+      "schedule": "0 9 * * *"
     }
   ]
 }
