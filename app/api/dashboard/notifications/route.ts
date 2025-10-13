@@ -13,7 +13,7 @@ export async function POST(_req: NextRequest) {
     const user = (await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1).execute())[0];
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 400 });
 
-    const campaigns = await db.select({ id: campaignTable.id }).from(campaignTable).where(eq(campaignTable.creatorId, user.id));
+    const campaigns = await db.select({ id: campaignTable.id }).from(campaignTable).where(and(eq(campaignTable.creatorId, user.id), eq(campaignTable.isDeleted, false)));
     const campaignIds = campaigns.map(c => c.id);
     if (campaignIds.length === 0) return NextResponse.json({ ok: true, data: { updatedCount: 0 } });
 
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
     const user = (await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.clerkId, clerkId)).limit(1).execute())[0];
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 400 });
 
-    const campaigns = await db.select({ id: campaignTable.id }).from(campaignTable).where(eq(campaignTable.creatorId, user.id));
+    const campaigns = await db.select({ id: campaignTable.id }).from(campaignTable).where(and(eq(campaignTable.creatorId, user.id), eq(campaignTable.isDeleted, false)));
     const campaignIds = campaigns.map(c => c.id);
     if (campaignIds.length === 0) return NextResponse.json({ ok: true, data: { updated: false } });
 

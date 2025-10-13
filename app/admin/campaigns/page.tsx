@@ -27,6 +27,7 @@ interface Campaign {
   status: "pending" | "active" | "rejected" | "completed";
   createdAt: string;
   updatedAt: string;
+  isDeleted: boolean;
 }
 
 interface CampaignsResponse {
@@ -52,6 +53,8 @@ export default function AdminCampaignsPage() {
   const [minProgress, setMinProgress] = useState<number>(0);
   const [sortKey, setSortKey] = useState<"createdAt"|"endDate"|"raised"|"progress">("createdAt");
   const [sortDir, setSortDir] = useState<"asc"|"desc">("desc");
+  const [showDeletedOnly, setShowDeletedOnly] = useState(false);
+  const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<CampaignsResponse['pagination'] | null>(null);
   const [runningJob, setRunningJob] = useState(false);
@@ -112,7 +115,7 @@ export default function AdminCampaignsPage() {
   };
 
   const deleteCampaign = async (campaignId: string) => {
-    if (!confirm("Delete this campaign? This cannot be undone.")) return;
+    if (!confirm("Delete this campaign? This can be undone by recovery.")) return;
     try {
       const response = await fetch("/api/admin/campaigns", {
         method: "PATCH",
@@ -129,6 +132,26 @@ export default function AdminCampaignsPage() {
     } catch (error) {
       console.error("Error deleting campaign:", error);
       toast.error("Delete failed");
+    }
+  };
+
+  const restoreCampaign = async (campaignId: string) => {
+    try {
+      const response = await fetch("/api/admin/campaigns", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ campaignIdToUpdate: campaignId, action: "restore" }),
+      });
+      const data = await response.json();
+      if (data.ok) {
+        toast.success("Campaign restored");
+        fetchCampaigns();
+      } else {
+        toast.error("Restore failed");
+      }
+    } catch (error) {
+      console.error("Error restoring campaign:", error);
+      toast.error("Restore failed");
     }
   };
 
@@ -182,6 +205,8 @@ export default function AdminCampaignsPage() {
       list = list.filter(c => new Date(c.campaignEndDate).getTime() <= soon);
     }
     if (minProgress > 0) list = list.filter(c => getProgressPercentage(c.amountReceived, c.fundingGoal) >= minProgress);
+    if (showDeletedOnly) list = list.filter(c => c.isDeleted);
+    else if (showActiveOnly) list = list.filter(c => !c.isDeleted);
     // Sort
     list.sort((a,b) => {
       const dir = sortDir === 'asc' ? 1 : -1;
@@ -372,6 +397,16 @@ export default function AdminCampaignsPage() {
               <Input type="date" value={createdTo} onChange={(e)=>setCreatedTo(e.target.value)} />
             </div>
           </div>
+          <div className="flex items-center gap-4 mt-3">
+            <div className="flex items-center gap-2">
+              <input id="activeOnly" type="checkbox" checked={showActiveOnly} onChange={(e)=>{ const v = e.currentTarget.checked; setShowActiveOnly(v); if (v) setShowDeletedOnly(false); }} />
+              <label htmlFor="activeOnly" className="text-sm text-neutral-700">Show active only</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input id="deletedOnly" type="checkbox" checked={showDeletedOnly} onChange={(e)=>{ const v = e.currentTarget.checked; setShowDeletedOnly(v); if (v) setShowActiveOnly(false); }} />
+              <label htmlFor="deletedOnly" className="text-sm text-neutral-700">Show deleted only</label>
+            </div>
+          </div>
 
           <div className="flex items-center gap-3 mt-4">
             <Select value={sortKey} onValueChange={(v:any)=>setSortKey(v)}>
@@ -417,7 +452,7 @@ export default function AdminCampaignsPage() {
                 const isEndingSoon = new Date(campaign.campaignEndDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                 
                 return (
-                  <div key={campaign.id} className="border rounded-lg p-4 hover:bg-neutral-50">
+                  <div key={campaign.id} className={`border rounded-lg p-4 hover:bg-neutral-50 ${campaign.isDeleted ? 'opacity-60' : ''}`}>
                     <div className="flex gap-4">
                       <div className="w-24 h-24 flex-shrink-0">
                         <Image
@@ -437,6 +472,9 @@ export default function AdminCampaignsPage() {
                               <Badge className={getTypeColor(campaign.campaignType)}>
                                 {campaign.campaignType}
                               </Badge>
+                              {campaign.isDeleted && (
+                                <Badge className="bg-red-100 text-red-800">Deleted</Badge>
+                              )}
                               {isEndingSoon && campaign.status === 'active' && (
                                 <Badge className="bg-yellow-100 text-yellow-800">
                                   Ending Soon
@@ -446,7 +484,7 @@ export default function AdminCampaignsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Link href={`/campaigns/${campaign.id}`}>
-                              <Button size="sm" variant="outline">
+                              <Button size="sm" variant="outline" disabled={campaign.isDeleted}>
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
@@ -555,15 +593,26 @@ export default function AdminCampaignsPage() {
                               Reopen
                             </Button>
                           )}
-                          {/* Delete always available */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deleteCampaign(campaign.id)}
-                            className="text-red-700 border-red-300 hover:bg-red-50"
-                          >
-                            Delete
-                          </Button>
+                          {/* Delete / Recover actions */}
+                          {campaign.isDeleted ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => restoreCampaign(campaign.id)}
+                              className="text-green-700 border-green-300 hover:bg-green-50"
+                            >
+                              Recover
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteCampaign(campaign.id)}
+                              className="text-red-700 border-red-300 hover:bg-red-50"
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>

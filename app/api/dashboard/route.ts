@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle"
 import { campaignTable, commentTable, notificationTable, paymentTable, userTable, campaignViewTable } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
-import { eq, inArray, sum, countDistinct, desc } from "drizzle-orm"
+import { and, eq, inArray, sum, countDistinct, desc } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -46,7 +46,7 @@ export async function GET() {
         endDate: campaignTable.campaignEndDate,
       })
       .from(campaignTable)
-      .where(eq(campaignTable.creatorId, userId))
+      .where(and(eq(campaignTable.creatorId, userId), eq(campaignTable.isDeleted, false)))
       .execute()
 
     if (campaigns.length === 0) {

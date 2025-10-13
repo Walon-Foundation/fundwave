@@ -63,7 +63,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const id = (await params).id;
 
     // Getting the campaign with that id
-    const campaign = (await db.select().from(campaignTable).where(eq(campaignTable.id, id)).limit(1).execute())[0];
+    const campaign = (await db.select().from(campaignTable).where(and(eq(campaignTable.id, id), eq(campaignTable.isDeleted, false))).limit(1).execute())[0];
 
     if (!campaign) {
       return NextResponse.json({
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         image: updateTable.image,
         createdAt: updateTable.createdAt,
         updatedAt: updateTable.updatedAt,
-      }).from(updateTable).where(eq(updateTable.campaignId, campaign.id)).execute(),
+      }).from(updateTable).where(and(eq(updateTable.campaignId, campaign.id), eq(updateTable.isDeleted, false))).execute(),
       
       db.select({
         id: commentTable.id,
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         userId: commentTable.userId,
         createdAt: commentTable.createdAt,
         updatedAt: commentTable.updatedAt,
-      }).from(commentTable).where(eq(commentTable.campaignId, campaign.id)).execute(),
+      }).from(commentTable).where(and(eq(commentTable.campaignId, campaign.id), eq(commentTable.isDeleted, false))).execute(),
       
       db.select({
         name: paymentTable.username,

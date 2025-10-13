@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/drizzle";
 import { platformSettingsTable, campaignTable } from "@/db/schema";
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 const DEFAULT_ID = "default";
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       let items = await db
         .select()
         .from(campaignTable)
-        .where(inArray(campaignTable.id, feat.ids))
+        .where(and(inArray(campaignTable.id, feat.ids), eq(campaignTable.isDeleted, false)))
         .limit(limit);
       items = await completeIfEnded(items)
       // preserve manual order
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     // Mode: tag (filter by a tag)
     if (feat.mode === "tag" && typeof feat.tag === "string" && feat.tag.trim()) {
       // Simple approach: fetch recent campaigns and filter by tag in app layer
-      let recent = await db.select().from(campaignTable).orderBy(desc(campaignTable.createdAt)).limit(100);
+      let recent = await db.select().from(campaignTable).where(eq(campaignTable.isDeleted, false)).orderBy(desc(campaignTable.createdAt)).limit(100);
       recent = await completeIfEnded(recent)
       const tag = String(feat.tag).toLowerCase();
       const filtered = recent.filter((c: any) => Array.isArray(c.tags) && c.tags.some((t: string) => String(t).toLowerCase() === tag));
@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
     let items = await db
       .select()
       .from(campaignTable)
+      .where(eq(campaignTable.isDeleted, false))
       .orderBy(desc(campaignTable.createdAt))
       .limit(limit);
     items = await completeIfEnded(items)
