@@ -123,7 +123,7 @@ export async function POST(req:NextRequest, {params}:{params:Promise<{id:string}
 export async function GET(req:NextRequest, {params}:{params:Promise<{id:string}>}){
   try{
     const id = (await params).id
-    const allUpdates = await db.select().from(updateTable).where(eq(updateTable.campaignId, id))
+const allUpdates = await db.select().from(updateTable).where(and(eq(updateTable.campaignId, id), eq(updateTable.isDeleted, false)))
 
     if(allUpdates.length === 0 ){
       return NextResponse.json({

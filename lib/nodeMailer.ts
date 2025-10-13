@@ -226,6 +226,24 @@ const templates: Record<string, (data: Record<string, string | number>) => strin
     </div>
   `,
 
+  "comment-deleted": ({ name, campaign }) => `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #fecaca; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #fef2f2);">
+      <h2 style="color: #dc2626; margin-bottom: 15px; font-size: 20px;">Your Comment Was Removed</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
+      <p style="font-size: 16px; line-height: 1.6;">We removed one of your comments ${campaign ? `on <strong>${campaign}</strong>` : ''} for violating our community guidelines or at the campaign owner's request.</p>
+      <p style="font-size: 14px; color: #6b7280;">If you believe this was a mistake, please reply to this email for review.</p>
+    </div>
+  `,
+
+  "update-deleted": ({ name, campaign, update }) => `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #fecaca; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #fef2f2);">
+      <h2 style="color: #dc2626; margin-bottom: 15px; font-size: 20px;">An Update Was Removed</h2>
+      <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
+      <p style="font-size: 16px; line-height: 1.6;">An update${update ? ` (<strong>${update}</strong>)` : ''} on your campaign${campaign ? ` <strong>${campaign}</strong>` : ''} was removed by an administrator.</p>
+      <p style="font-size: 14px; color: #6b7280;">If this needs further discussion, please reply to this email.</p>
+    </div>
+  `,
+
   "campaign-ended": ({ name, campaign, total }) => `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #fed7aa; border-radius: 12px; background: linear-gradient(to bottom, #ffffff, #fff7ed);">
       <div style="text-align: center; margin-bottom: 25px;">
