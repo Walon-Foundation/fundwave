@@ -4,6 +4,7 @@ import { db } from "@/db/drizzle";
 import { campaignTable, userTable } from "@/db/schema";
 import { eq, desc, asc, ilike, or, count, and, gte, lte, lt, type SQL, sql } from "drizzle-orm";
 import { logEvent } from "@/lib/logging";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
@@ -152,7 +153,7 @@ export async function PATCH(request: NextRequest) {
         creatorEmail = u?.email; creatorName = u?.name;
       }
 
-await db.update(campaignTable).set({ isDeleted: true, updatedAt: new Date() }).where(eq(campaignTable.id, campaignIdToUpdate));
+      await db.update(campaignTable).set({ isDeleted: true, updatedAt: new Date() }).where(eq(campaignTable.id, campaignIdToUpdate));
 
       // In-app notification to creator
       try {
