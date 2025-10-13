@@ -1,0 +1,1 @@
+ALTER TABLE "campaigns" ADD COLUMN "moderation_notes" text;
