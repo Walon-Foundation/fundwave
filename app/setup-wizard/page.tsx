@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
@@ -656,11 +657,11 @@ export default function SetupWizard() {
           </Button>
 
           {currentStep === wizardSteps.length - 1 ? (
-            <Button asChild className="flex items-center space-x-2">
-              <a href="/dashboard">
+<Button asChild className="flex items-center space-x-2">
+              <Link href="/dashboard">
                 <Play className="w-4 h-4" />
                 <span>Start Using FundWaveSL</span>
-              </a>
+              </Link>
             </Button>
           ) : (
             <Button onClick={handleNext} className="flex items-center space-x-2">

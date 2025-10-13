@@ -39,6 +39,22 @@ export default function AdminSettingsPage() {
     // System
     backupFrequency: 'daily',
     logRetentionDays: '90',
+
+    // Theme / Footer / SEO
+    theme: {
+      primaryColor: '#006C67',
+      accentColor: '#F9A826',
+      mode: 'light' as 'light'|'dark',
+    },
+    footer: {
+      contactEmail: 'info@fundwavesl.org',
+      socialLinks: { facebook: '', twitter: '', instagram: '' },
+    },
+    seo: {
+      metaTitle: 'FundWaveSL',
+      metaDescription: 'Crowdfunding for Sierra Leone',
+      keywords: 'fundraising,Sierra Leone,crowdfunding',
+    },
   });
 
   const [saving, setSaving] = useState(false);
@@ -65,6 +81,24 @@ export default function AdminSettingsPage() {
             requireApproval: !!data.data.config.requireApproval,
             backupFrequency: String(data.data.config.backupFrequency ?? 'daily'),
             logRetentionDays: String(data.data.config.logRetentionDays ?? '90'),
+            theme: {
+              primaryColor: data.data.config?.theme?.primaryColor ?? '#006C67',
+              accentColor: data.data.config?.theme?.accentColor ?? '#F9A826',
+              mode: (data.data.config?.theme?.mode ?? 'light'),
+            },
+            footer: {
+              contactEmail: data.data.config?.footer?.contactEmail ?? 'info@fundwavesl.org',
+              socialLinks: {
+                facebook: data.data.config?.footer?.socialLinks?.facebook ?? '',
+                twitter: data.data.config?.footer?.socialLinks?.twitter ?? '',
+                instagram: data.data.config?.footer?.socialLinks?.instagram ?? '',
+              }
+            },
+            seo: {
+              metaTitle: data.data.config?.seo?.metaTitle ?? 'FundWaveSL',
+              metaDescription: data.data.config?.seo?.metaDescription ?? 'Crowdfunding for Sierra Leone',
+              keywords: (Array.isArray(data.data.config?.seo?.keywords) ? data.data.config.seo.keywords.join(',') : (data.data.config?.seo?.keywords ?? 'fundraising,Sierra Leone,crowdfunding')),
+            },
           });
         }
       } catch {}
@@ -97,6 +131,13 @@ export default function AdminSettingsPage() {
         requireApproval: settings.requireApproval,
         backupFrequency: settings.backupFrequency,
         logRetentionDays: Number(settings.logRetentionDays),
+        theme: settings.theme,
+        footer: settings.footer,
+        seo: {
+          metaTitle: settings.seo.metaTitle,
+          metaDescription: settings.seo.metaDescription,
+          keywords: settings.seo.keywords.split(',').map(s => s.trim()).filter(Boolean),
+        },
       }
       const res = await fetch('/api/admin/settings', {
         method: 'PUT',
@@ -196,6 +237,76 @@ export default function AdminSettingsPage() {
               checked={settings.campaignCreation}
               onCheckedChange={(checked) => handleSettingChange('campaignCreation', checked)}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Theme</CardTitle>
+          <CardDescription>Brand colors and mode</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-3 gap-4">
+          <div>
+            <Label>Primary Color</Label>
+            <Input value={settings.theme.primaryColor} onChange={(e)=> setSettings(p=>({...p, theme: {...p.theme, primaryColor: e.target.value}}))} />
+          </div>
+          <div>
+            <Label>Accent Color</Label>
+            <Input value={settings.theme.accentColor} onChange={(e)=> setSettings(p=>({...p, theme: {...p.theme, accentColor: e.target.value}}))} />
+          </div>
+          <div>
+            <Label>Mode (light/dark)</Label>
+            <Input value={settings.theme.mode} onChange={(e)=> setSettings(p=>({...p, theme: {...p.theme, mode: (e.target.value as any)}}))} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Footer Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Footer</CardTitle>
+          <CardDescription>Contact and social links</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-3 gap-4">
+          <div>
+            <Label>Contact Email</Label>
+            <Input value={settings.footer.contactEmail} onChange={(e)=> setSettings(p=>({...p, footer: {...p.footer, contactEmail: e.target.value}}))} />
+          </div>
+          <div>
+            <Label>Facebook</Label>
+            <Input value={settings.footer.socialLinks.facebook} onChange={(e)=> setSettings(p=>({...p, footer: {...p.footer, socialLinks: {...p.footer.socialLinks, facebook: e.target.value}}}))} />
+          </div>
+          <div>
+            <Label>Twitter/X</Label>
+            <Input value={settings.footer.socialLinks.twitter} onChange={(e)=> setSettings(p=>({...p, footer: {...p.footer, socialLinks: {...p.footer.socialLinks, twitter: e.target.value}}}))} />
+          </div>
+          <div>
+            <Label>Instagram</Label>
+            <Input value={settings.footer.socialLinks.instagram} onChange={(e)=> setSettings(p=>({...p, footer: {...p.footer, socialLinks: {...p.footer.socialLinks, instagram: e.target.value}}}))} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SEO Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>SEO</CardTitle>
+          <CardDescription>Meta tags for the site</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div>
+            <Label>Meta Title</Label>
+            <Input value={settings.seo.metaTitle} onChange={(e)=> setSettings(p=>({...p, seo: {...p.seo, metaTitle: e.target.value}}))} />
+          </div>
+          <div>
+            <Label>Meta Description</Label>
+            <Textarea value={settings.seo.metaDescription} onChange={(e)=> setSettings(p=>({...p, seo: {...p.seo, metaDescription: e.target.value}}))} rows={3} />
+          </div>
+          <div>
+            <Label>Keywords (comma-separated)</Label>
+            <Input value={settings.seo.keywords} onChange={(e)=> setSettings(p=>({...p, seo: {...p.seo, keywords: e.target.value}}))} />
           </div>
         </CardContent>
       </Card>

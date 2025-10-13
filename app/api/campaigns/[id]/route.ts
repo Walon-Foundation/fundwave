@@ -72,6 +72,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }, { status: 404 });
     }
 
+    // Auto-complete if end date has passed
+    try {
+      if (campaign && campaign.status !== 'completed' && new Date(campaign.campaignEndDate) < new Date()) {
+        await db.update(campaignTable).set({ status: 'completed' as any }).where(eq(campaignTable.id, id));
+        // reflect change locally for the response below
+        (campaign as any).status = 'completed';
+      }
+    } catch {}
+
     // Getting all related data
     const [updates, comments, payments, creator, creatorCampaigns] = await Promise.all([
       db.select({

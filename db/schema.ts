@@ -121,6 +121,7 @@ export const campaignTable = pgTable("campaigns", {
   impact: text("impact"),
   tags: text("tags").array().notNull(),
   campaignType: campaignTypeEnum("campaign_type").notNull(),
+  moderationNotes: text("moderation_notes"),
   status: campaignStatusEnum("status").default("active").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

@@ -425,10 +425,22 @@ export default function CampaignDetailPage() {
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Campaign ends on {formatDate(campaign.campaignEndDate)}
               </div>
+              {/* Mobile Donate button */}
+              <button
+                onClick={() => setShowDonationModal(true)}
+                className="btn-primary w-full py-3 text-base mt-4"
+                disabled={isCampaignCompleted}
+              >
+                {isCampaignCompleted
+                  ? isGoalReached
+                    ? "Goal Reached"
+                    : "Campaign Ended"
+                  : "Donate Now"}
+              </button>
             </div>
 
-            {/* Mobile Creator Info - Only shown on mobile */}
-            <div className="lg:hidden card mb-4">
+            {/* Mobile Creator Info - repositioned below details; hide here */}
+            <div className="hidden">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Campaign Creator</h3>
               <div className="flex items-center space-x-4">
                 <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
@@ -456,8 +468,8 @@ export default function CampaignDetailPage() {
               </div>
             </div>
 
-            {/* Mobile Recent Donors - Only shown on mobile */}
-            <div className="lg:hidden card mb-6">
+            {/* Mobile Recent Donors - repositioned below details; hide here */}
+            <div className="hidden">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Donors</h3>
               <div className="space-y-3">
                 {recentDonors.length > 0 ? (
@@ -705,6 +717,55 @@ export default function CampaignDetailPage() {
                             </div>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Repositioned Mobile Creator Info and Recent Donors below details */}
+                  <div className="lg:hidden space-y-4">
+                    {/* Mobile Creator Info */}
+                    <div className="card">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Campaign Creator</h3>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">
+                          {creator.name.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-900">{creator.name}</h4>
+                            {creator.verified && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Verified</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-600 mb-2">{creator.location}</p>
+                          <p className="text-sm text-slate-700">{creator.campaignsCreated} campaigns created</p>
+                          <div className="mt-2">
+                            <span className="text-xs text-slate-500">{formatCurrency(creator.totalRaised)} raised</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mobile Recent Donors */}
+                    <div className="card">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Donors</h3>
+                      <div className="space-y-3">
+                        {recentDonors.length > 0 ? (
+                          recentDonors.slice(0, 3).map((donor, index) => (
+                            <div key={index} className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Users className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-slate-900 truncate">{donor.name || "Anonymous"}</div>
+                                <div className="text-xs text-slate-500">{donor.time ? formatDateTime(donor.time) : "Recently"}</div>
+                              </div>
+                              <div className="text-sm font-semibold text-blue-600 flex-shrink-0">{formatCurrency(donor.amount)}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <EmptyState title="No recent donors yet" description="Be the first to support this campaign." />
+                        )}
                       </div>
                     </div>
                   </div>

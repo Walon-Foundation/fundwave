@@ -95,24 +95,18 @@ export default function ProfilePage() {
     
     try {
       const updateData = {
-        name: `${editForm.firstName + editForm.lastName}`,
+        name: `${editForm.firstName} ${editForm.lastName}`.trim(),
         location: editForm.location,
         bio:editForm.bio,
         phone:editForm.phone
       }
       
       await api.updateProfile(updateData)
-      const updatedProfile = await api.getProfile()
-      setData(prev => prev ? {
-        ...prev,
-        profile: {
-          ...prev.profile,
-          ...updatedProfile
-        }
-      } : null)
+      const updated = await api.getProfile()
+      setData(updated)
       setUpdateSuccess(true)
       setIsEditing(false)
-      window.location.reload()
+      setTimeout(() => setUpdateSuccess(false), 2000)
     } catch (err: any) {
       console.error("Error updating profile:", err)
       setUpdateError(err.message || "Failed to update profile")

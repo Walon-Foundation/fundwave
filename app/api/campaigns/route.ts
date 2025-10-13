@@ -4,7 +4,7 @@ import { createCampaign } from "@/validations/campaign";
 import { supabase } from "@/lib/supabase";
 import { db } from "@/db/drizzle";
 import { campaignTable, teamMemberTable, userTable, platformSettingsTable } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt, ne } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/nodeMailer";
 import { createAccount } from "@/lib/monime";
@@ -143,6 +143,16 @@ export async function POST(req:NextRequest){
 
 export async function GET(){
     try{
+        // First, auto-complete campaigns whose end date has passed
+        try {
+            await db.update(campaignTable)
+              .set({ status: 'completed' as any })
+              .where(and(
+                lt(campaignTable.campaignEndDate, new Date()),
+                ne(campaignTable.status, 'completed' as any)
+              ));
+        } catch {}
+
         const allCampaign = await db.select().from(campaignTable)
         if(allCampaign.length === 0){
             return NextResponse.json({
@@ -155,6 +165,7 @@ export async function GET(){
             data:allCampaign,
         }, { status:200})
     }catch(err){
+        console.log(err)
         return NextResponse.json({
             error:"internal server error",
         },{ status:500 })
