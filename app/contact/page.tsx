@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from "lucide-react"
+import Link from "next/link"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -106,8 +107,8 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-purple-600" />
+<div className="w-12 h-12 bg-azure-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                    <MapPin className="w-6 h-6 text-azure-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">Office</h3>
@@ -257,14 +258,14 @@ export default function ContactPage() {
                     className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
                   />
                   <label htmlFor="privacy" className="ml-2 text-sm text-slate-600">
-                    I agree to the{" "}
-                    <a href="/privacy" className="text-indigo-600 hover:text-indigo-800">
+I agree to the{" "}
+                    <Link href="/privacy" className="text-indigo-600 hover:text-indigo-800">
                       Privacy Policy
-                    </a>{" "}
+                    </Link>{" "}
                     and{" "}
-                    <a href="/terms" className="text-indigo-600 hover:text-indigo-800">
+                    <Link href="/terms" className="text-indigo-600 hover:text-indigo-800">
                       Terms of Service
-                    </a>
+                    </Link>
                   </label>
                 </div>
 
@@ -296,12 +297,12 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold mb-4">Need Immediate Help?</h2>
             <p className="text-lg mb-6 opacity-90">Check out our Help Center for instant answers to common questions</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+<Link
                 href="/help"
                 className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-slate-50 transition-colors"
               >
                 Visit Help Center
-              </a>
+              </Link>
               <button className="bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-800 transition-colors">
                 Start Live Chat
               </button>

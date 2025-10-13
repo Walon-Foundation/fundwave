@@ -264,11 +264,11 @@ export async function PATCH(req:NextRequest){
 
     await Promise.all([
       db.update(userTable).set({
-        name:data.name,
+        name: (data.name || '').trim(),
         bio:data.bio,
         district:data.location,
         phone:data.phone
-      }),
+      }).where(eq(userTable.clerkId, clerkId as string)),
       await sendEmail("account-updated", user.email, "Your Fundwave account has being updated", { name:user.name, changes:'Bio, name, location and phone where update', timestamp:Date.now()})
     ])
 

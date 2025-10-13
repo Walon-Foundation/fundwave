@@ -23,6 +23,7 @@ import { useUser } from "@clerk/nextjs"
 // import DashboardSetupWizard from "@/components/dashboard-setup-wizard"
 import type { Dashboard } from "@/types/api"
 import { api } from "@/lib/api/api"
+import { toast, Toaster } from "react-hot-toast"
 import CashoutModal from "@/components/cashout-modal"
 import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
@@ -39,6 +40,7 @@ export default function CreatorDashboard() {
     isOpen: false,
     campaign: null,
   })
+  const [tabLoading, setTabLoading] = useState(false)
 
   // Pagination states for each section
   const [campaignsPage, setCampaignsPage] = useState(1)
@@ -74,6 +76,13 @@ export default function CreatorDashboard() {
       localStorage.setItem("hasSeenDashboard", "true")
     }
   }, [user])
+
+  // Lightweight tab loading indicator for UX polish
+  useEffect(() => {
+    setTabLoading(true)
+    const t = setTimeout(() => setTabLoading(false), 250)
+    return () => clearTimeout(t)
+  }, [activeTab])
 
   // Calculate pagination values
   const campaignsTotalPages = data ? Math.ceil(data?.campaigns?.length / campaignsPerPage) : 1
@@ -140,7 +149,39 @@ export default function CreatorDashboard() {
   }
 
   const handleCashout = (campaign: any) => {
+    toast.success("Opening cashout…")
     setCashoutModal({ isOpen: true, campaign })
+  }
+
+  // Notifications: mark read helpers
+  const markAllRead = async () => {
+    try {
+      const res = await fetch('/api/dashboard/notifications', { method: 'POST' })
+      const j = await res.json()
+      if (j?.ok) {
+        setData((prev) => prev ? ({ ...prev, notifications: (prev.notifications || []).map(n => ({ ...n, read: true })) }) as any : prev)
+        toast.success(`Marked ${j.data?.updatedCount ?? 0} as read`)
+      } else {
+        toast.error('Failed to mark all as read')
+      }
+    } catch {
+      toast.error('Failed to mark all as read')
+    }
+  }
+
+  const markOneRead = async (id: string) => {
+    try {
+      const res = await fetch('/api/dashboard/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+      const j = await res.json()
+      if (j?.ok) {
+        setData((prev) => prev ? ({ ...prev, notifications: (prev.notifications || []).map(n => n.id === id ? { ...n, read: true } : n) }) as any : prev)
+        toast.success('Marked as read')
+      } else {
+        toast.error('Failed to mark as read')
+      }
+    } catch {
+      toast.error('Failed to mark as read')
+    }
   }
 
   // Pagination component
@@ -184,6 +225,9 @@ className={`px-3 py-1 rounded-lg ${1 === currentPage ? "bg-blue-600 text-white" 
             {startPage > 2 && <span className="px-1 text-slate-400">...</span>}
           </>
         )}
+
+        {/* Toaster for unified feedback */}
+        <Toaster position="top-center" toastOptions={{ duration: 2500 }} />
 
         {pageNumbers.map((number) => (
           <button
@@ -324,7 +368,13 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
                     Page {activityPage} of {activityTotalPages}
                   </span>
                 </div>
-                {currentActivity?.length > 0 ? (
+                {tabLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-12 bg-slate-100 rounded-md animate-pulse" />
+                    ))}
+                  </div>
+                ) : currentActivity?.length > 0 ? (
                   <>
                     <div className="space-y-4">
                       {currentActivity?.map((notification) => (
@@ -419,7 +469,13 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
 
         {activeTab === "campaigns" && (
           <div>
-            {data?.campaigns?.length > 0 ? (
+            {tabLoading ? (
+              <div className="space-y-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-20 bg-slate-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : data?.campaigns?.length > 0 ? (
               <div className="card campaigns-table">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                   <div>
@@ -793,7 +849,7 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button className="text-sm text-indigo-600 hover:text-indigo-800 px-3 py-1 border border-indigo-200 rounded-md">
+                <button onClick={markAllRead} className="text-sm text-indigo-600 hover:text-indigo-800 px-3 py-1 border border-indigo-200 rounded-md">
                   Mark all as read
                 </button>
               </div>
@@ -831,7 +887,12 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
                             </p>
                           </div>
                         </div>
-                        {!notification.read && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />}
+                        {!notification.read && (
+                          <div className="flex items-center gap-2 ml-3">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                            <button onClick={() => markOneRead(notification.id)} className="text-xs text-blue-700 hover:underline">Mark read</button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

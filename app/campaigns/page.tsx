@@ -193,7 +193,7 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-4 sm:py-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8 text-center px-2">
@@ -317,6 +317,7 @@ export default function CampaignsPage() {
 
                 <div className="flex items-center gap-2">
                   <Button
+                    type="button"
                     variant={viewMode === "grid" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
@@ -325,6 +326,7 @@ export default function CampaignsPage() {
                     <Grid className="w-4 h-4" />
                   </Button>
                   <Button
+                    type="button"
                     variant={viewMode === "list" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("list")}
@@ -345,7 +347,7 @@ export default function CampaignsPage() {
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mr-2" />
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Featured Campaigns</h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {featuredCampaigns.map((campaign, index) => (
                 <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                   <CampaignCard campaign={campaign} featured />
@@ -370,8 +372,8 @@ export default function CampaignsPage() {
               </div>
             )}
             <div
-              className={`grid gap-4 sm:gap-6 lg:gap-8 ${
-                viewMode === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-4xl mx-auto"
+              className={`grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 ${
+                viewMode === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "max-w-4xl mx-auto"
               }`}
             >
               {regularCampaigns.map((campaign, index) => (

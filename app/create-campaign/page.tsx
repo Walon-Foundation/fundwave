@@ -53,6 +53,8 @@ export default function CreateCampaignPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const [saveStamp, setSaveStamp] = useState<string>("")
+  const [showPreview, setShowPreview] = useState(false)
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -69,7 +71,42 @@ export default function CreateCampaignPage() {
       } catch {}
     }
     loadSettings()
+    // Load draft from localStorage
+    try {
+      const raw = localStorage.getItem('createCampaignDraft')
+      const stepRaw = localStorage.getItem('createCampaignStep')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        // Avoid overwriting if empty
+        if (parsed && typeof parsed === 'object') {
+          setFormData((prev) => ({
+            ...prev,
+            ...parsed,
+            // Do not restore File object
+            image: null,
+            imagePreview: parsed.imagePreview || "",
+          }))
+        }
+      }
+      if (stepRaw) {
+        const stepNum = Number(stepRaw)
+        if (!Number.isNaN(stepNum) && stepNum >= 1 && stepNum <= steps.length) setCurrentStep(stepNum)
+      }
+    } catch {}
   }, [])
+
+  // Debounced autosave to localStorage
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const payload = { ...formData, image: undefined } // avoid File in storage
+        localStorage.setItem('createCampaignDraft', JSON.stringify(payload))
+        localStorage.setItem('createCampaignStep', String(currentStep))
+        setSaveStamp(new Date().toLocaleTimeString())
+      } catch {}
+    }, 500)
+    return () => clearTimeout(t)
+  }, [formData, currentStep])
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {}
@@ -245,6 +282,9 @@ export default function CreateCampaignPage() {
           <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
             Tell your story and start raising funds for your cause
           </p>
+          {saveStamp && (
+            <p className="text-xs text-slate-500 mt-2">Draft saved at {saveStamp}</p>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -706,6 +746,14 @@ export default function CreateCampaignPage() {
             <Button type="button" variant="outline" onClick={() => window.history.back()} className="w-full sm:w-auto">
               Cancel
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { localStorage.removeItem('createCampaignDraft'); localStorage.removeItem('createCampaignStep'); setSaveStamp("") }}
+              className="w-full sm:w-auto"
+            >
+              Clear Draft
+            </Button>
 
             {currentStep < steps.length ? (
               <Button
@@ -716,18 +764,79 @@ export default function CreateCampaignPage() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 w-full sm:w-auto"
-              >
-                {isSubmitting ? "Creating Campaign..." : "Create Campaign"}
-                <Check className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPreview(true)}
+                  className="w-full sm:w-auto"
+                >
+                  Preview
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 w-full sm:w-auto"
+                >
+                  {isSubmitting ? "Creating Campaign..." : "Create Campaign"}
+                  <Check className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
       </div>
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Campaign Preview</h3>
+              <button onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* Image */}
+              <div className="bg-slate-50 rounded-lg border p-3">
+                {formData.imagePreview ? (
+                  <Image src={formData.imagePreview || "/placeholder.svg"} alt="Preview" width={800} height={450} className="rounded-md w-full h-auto object-contain" />
+                ) : (
+                  <div className="text-center text-slate-500 py-10">No image selected</div>
+                )}
+              </div>
+              {/* Content */}
+              <div className="space-y-2">
+                <h4 className="text-xl font-bold text-slate-900">{formData.title || "Untitled Campaign"}</h4>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  {formData.category && <Badge className="bg-blue-100 text-blue-800 border-blue-200">{formData.category}</Badge>}
+                  <span className="text-slate-600">Goal: {formData.fundingGoal ? Number(formData.fundingGoal).toLocaleString() : 0} SLL</span>
+                  {formData.campaignEndDate && (
+                    <span className="text-slate-600">Ends: {new Date(formData.campaignEndDate).toLocaleDateString()}</span>
+                  )}
+                  {formData.location && <span className="text-slate-600">Location: {formData.location}</span>}
+                </div>
+                {formData.shortDescription && (
+                  <p className="text-slate-700 bg-slate-50 border rounded-md p-3">{formData.shortDescription}</p>
+                )}
+                {formData.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((t, i) => (
+                      <Badge key={`${t}-${i}`} className="bg-blue-50 text-blue-700 border-blue-200">{t}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowPreview(false)}>Close</Button>
+                <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-gradient-to-r from-green-600 to-emerald-600">
+                  {isSubmitting ? "Creating..." : "Publish"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Toaster
       position="top-center"
       toastOptions={{

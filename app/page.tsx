@@ -27,6 +27,8 @@ import { api } from "@/lib/api/api"
 
 export default function HomePage() {
   const [data, setData] = useState<Campaign[]>([])
+  const [site, setSite] = useState<any>(null)
+  const [home, setHome] = useState<any>(null)
   const [statsData, setStatsData] = useState<{
     successfulCampaigns: number
     raised: number
@@ -35,12 +37,22 @@ export default function HomePage() {
   } | null>(null)
 
   useEffect(() => {
-    const getCampaign = async () => {
-      const data = await api.getCampaigns()
-      setData(data)
+    const load = async () => {
+      try {
+        const [siteRes, homeRes, featRes] = await Promise.all([
+          fetch('/api/public/site-settings', { cache: 'no-store' }),
+          fetch('/api/public/home-sections', { cache: 'no-store' }),
+          fetch('/api/public/featured-campaigns?limit=6', { cache: 'no-store' }),
+        ])
+        const siteJson = await siteRes.json();
+        const homeJson = await homeRes.json();
+        const featJson = await featRes.json();
+        if (siteJson?.ok) setSite(siteJson.data)
+        if (homeJson?.ok) setHome(homeJson.data)
+        if (featJson?.ok) setData(featJson.data)
+      } catch {}
     }
-
-    getCampaign()
+    load()
   }, [])
 
   useEffect(() => {
@@ -56,32 +68,31 @@ export default function HomePage() {
     getStats()
   }, [])
 
-  const howItWorksSteps = [
-    {
-      icon: Target,
-      title: "Create Your Campaign",
-      description: "Set up your fundraising campaign with compelling photos, your story, and funding goal in minutes",
-      color: "from-azure-500 to-ocean-500",
-    },
-    {
-      icon: Users,
-      title: "Share & Promote",
-      description: "Share your campaign across social networks, WhatsApp, and with your community to maximize reach",
-      color: "from-ocean-500 to-teal-500",
-    },
-    {
-      icon: TrendingUp,
-      title: "Receive Donations",
-      description: "Collect donations seamlessly through mobile money, bank transfers, and international payments",
-      color: "from-teal-500 to-azure-500",
-    },
-    {
-      icon: Shield,
-      title: "Withdraw Funds",
-      description: "Access your funds securely after KYC verification with transparent tracking throughout",
-      color: "from-azure-600 to-ocean-600",
-    },
+  const defaultSteps = [
+    { icon: Target, title: 'Create Your Campaign', description: 'Set up your fundraising campaign with compelling photos, your story, and funding goal in minutes', color: 'from-azure-500 to-ocean-500' },
+    { icon: Users, title: 'Share & Promote', description: 'Share your campaign across social networks, WhatsApp, and with your community to maximize reach', color: 'from-ocean-500 to-teal-500' },
+    { icon: TrendingUp, title: 'Receive Donations', description: 'Collect donations seamlessly through mobile money, bank transfers, and international payments', color: 'from-teal-500 to-azure-500' },
+    { icon: Shield, title: 'Withdraw Funds', description: 'Access your funds securely after KYC verification with transparent tracking throughout', color: 'from-azure-600 to-ocean-600' },
   ]
+
+  // map simple string icons from admin to lucide components
+  const iconMap: Record<string, any> = {
+    bolt: Zap,
+    users: Users,
+    heart: Heart,
+    target: Target,
+    shield: Shield,
+    trending: TrendingUp,
+  }
+
+  const steps = Array.isArray(home?.howItWorks) && home.howItWorks.length
+    ? home.howItWorks.map((s: any) => ({
+        icon: iconMap[String(s.icon || '').toLowerCase()] || Target,
+        title: s.title || '',
+        description: s.description || '',
+        color: 'from-azure-500 to-ocean-500',
+      }))
+    : defaultSteps
 
   const numberFmt = new Intl.NumberFormat(undefined)
   const currencyFmt = new Intl.NumberFormat(undefined, { style: "currency", currency: "SLE", maximumFractionDigits: 0 })
@@ -161,8 +172,8 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Hero Section (dynamic) */}
       <section className="relative gradient-bg text-white overflow-hidden min-h-[90vh] flex items-center">
         {/* Background Elements */}
         <div className="absolute inset-0 bg-[url('/pattern.svg')] bg-[length:100px_100px] opacity-10"></div>
@@ -181,25 +192,26 @@ export default function HomePage() {
               </Badge>
 
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                Fund Your Dreams,
-                <br />
-                <span className="bg-gradient-to-r from-ocean-200 to-azure-200 bg-clip-text text-transparent">
-                  Transform Lives
-                </span>
+                {site?.hero?.title || (
+                  <>
+                    Fund Your Dreams,
+                    <br />
+                    <span className="bg-gradient-to-r from-ocean-200 to-azure-200 bg-clip-text text-transparent">Transform Lives</span>
+                  </>
+                )}
               </h1>
 
               <p className="text-xl md:text-2xl mb-8 text-ocean-100 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                The most trusted crowdfunding platform in Sierra Leone. From education to healthcare, community
-                development to personal goals - we make funding accessible to everyone.
+                {site?.hero?.subtitle || 'The most trusted crowdfunding platform in Sierra Leone. From education to healthcare, community development to personal goals - we make funding accessible to everyone.'}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <Link href="/create-campaign">
+                <Link href={site?.hero?.ctaLink || "/create-campaign"}>
                   <Button
                     size="lg"
                     className="bg-white text-ocean-700 hover:bg-ocean-50 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center"
                   >
-                    Start Your Campaign
+                    {site?.hero?.ctaText || 'Start Your Campaign'}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
@@ -297,9 +309,9 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {data?.slice(0,3).map((campaign, index) => (
-              <div key={campaign.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div key={campaign.id} className="animate-fade-in w-full" style={{ animationDelay: `${index * 0.1}s` }}>
                 <CampaignCard campaign={campaign} featured={index < 2} />
               </div>
             ))}
@@ -336,7 +348,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorksSteps.map((step, index) => (
+            {steps.map((step: any, index: number) => (
               <div
                 key={index}
                 className="relative bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 group"
@@ -357,7 +369,7 @@ export default function HomePage() {
                 <p className="text-slate-600 text-center leading-relaxed">{step.description}</p>
 
                 {/* Arrow for desktop */}
-                {index < howItWorksSteps.length - 1 && (
+                {index < steps.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                     <ChevronRight className="w-6 h-6 text-ocean-300" />
                   </div>
@@ -399,7 +411,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Content */}
-            <div className="relative">
+            <div className="relative overflow-hidden">
               <div className="bg-gradient-to-br from-ocean-50 to-azure-50 rounded-3xl p-8 border border-ocean-100">
                 <div className="aspect-w-16 aspect-h-12 bg-white rounded-2xl overflow-hidden shadow-inner">
                   <div className="w-full h-full flex items-center justify-center text-slate-400">

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
 import { campaignTable, userTable } from "@/db/schema";
-import { eq, desc, ilike, or, count, and, type SQL } from "drizzle-orm";
+import { eq, desc, asc, ilike, or, count, and, gte, lte, lt, type SQL, sql } from "drizzle-orm";
 import { logEvent } from "@/lib/logging";
 
 export async function GET(request: NextRequest) {
@@ -24,31 +24,39 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(url.searchParams.get("limit") || "10");
     const search = url.searchParams.get("search") || "";
     const status = url.searchParams.get("status") || "";
+    const type = url.searchParams.get("type") || ""; // business|project|personal|community
+    const category = url.searchParams.get("category") || ""; // substring
+    const createdFrom = url.searchParams.get("createdFrom") || "";
+    const createdTo = url.searchParams.get("createdTo") || "";
+    const endingSoon = url.searchParams.get("endingSoon") || ""; // "1" truthy
+    const minProgress = parseFloat(url.searchParams.get("minProgress") || "0");
+    const sort = url.searchParams.get("sort") || "createdAt"; // createdAt|endDate|raised|progress
+    const order = url.searchParams.get("order") || "desc"; // asc|desc
     const offset = (page - 1) * limit;
 
     // Build query conditions
-    let whereCondition: SQL<unknown> | undefined;
-    
-    if (search && status && status !== "all") {
-      whereCondition = and(
-        or(
-          ilike(campaignTable.title, `%${search}%`),
-          ilike(campaignTable.creatorName, `%${search}%`),
-          ilike(campaignTable.category, `%${search}%`)
-        ),
-        eq(campaignTable.status, status as any)
+    const conditions: SQL<unknown>[] = [];
+    if (search) {
+      const q = `%${search}%`;
+      conditions.push(
+        sql`${campaignTable.title} ILIKE ${q} OR ${campaignTable.creatorName} ILIKE ${q} OR ${campaignTable.category} ILIKE ${q}`
       );
-    } else if (search) {
-      whereCondition = or(
-        ilike(campaignTable.title, `%${search}%`),
-        ilike(campaignTable.creatorName, `%${search}%`),
-        ilike(campaignTable.category, `%${search}%`)
-      );
-    } else if (status && status !== "all") {
-      whereCondition = eq(campaignTable.status, status as any);
     }
+    if (status && status !== "all") conditions.push(eq(campaignTable.status, status as any));
+    if (type && type !== "all") conditions.push(eq(campaignTable.campaignType, type as any));
+    if (category) conditions.push(ilike(campaignTable.category, `%${category}%`));
+    if (createdFrom) conditions.push(gte(campaignTable.createdAt, new Date(createdFrom)));
+    if (createdTo) conditions.push(lte(campaignTable.createdAt, new Date(createdTo)));
+    if (endingSoon === "1") {
+      const soon = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      conditions.push(lte(campaignTable.campaignEndDate, soon));
+    }
+    if (!Number.isNaN(minProgress) && minProgress > 0) {
+      conditions.push(sql`(${campaignTable.amountReceived} / NULLIF(${campaignTable.fundingGoal}, 0)) >= ${minProgress / 100}`);
+    }
+    const whereCondition = conditions.length ? and(...conditions) : undefined;
 
-    const campaigns = await db
+    const baseSelect = db
       .select({
         id: campaignTable.id,
         title: campaignTable.title,
@@ -61,21 +69,32 @@ export async function GET(request: NextRequest) {
         category: campaignTable.category,
         image: campaignTable.image,
         shortDescription: campaignTable.shortDescription,
+        moderationNotes: campaignTable.moderationNotes,
         status: campaignTable.status,
         createdAt: campaignTable.createdAt,
         updatedAt: campaignTable.updatedAt,
       })
       .from(campaignTable)
-      .where(whereCondition)
-      .orderBy(desc(campaignTable.createdAt))
+    const selectQB = whereCondition ? baseSelect.where(whereCondition) : baseSelect
+    const campaigns = await selectQB
+      .orderBy(
+        (() => {
+          if (sort === 'endDate') return order === 'asc' ? asc(campaignTable.campaignEndDate) : desc(campaignTable.campaignEndDate)
+          if (sort === 'raised') return order === 'asc' ? asc(campaignTable.amountReceived) : desc(campaignTable.amountReceived)
+          if (sort === 'progress') {
+            const progressExpr = sql`(${campaignTable.amountReceived} / NULLIF(${campaignTable.fundingGoal}, 0))`;
+            return order === 'asc' ? asc(progressExpr) : desc(progressExpr)
+          }
+          return order === 'asc' ? asc(campaignTable.createdAt) : desc(campaignTable.createdAt)
+        })()
+      )
       .limit(limit)
       .offset(offset);
 
     // Get total count for pagination
-    const [{ count: total }] = await db
-      .select({ count: count() })
-      .from(campaignTable)
-      .where(whereCondition);
+    const baseCount = db.select({ count: count() }).from(campaignTable)
+    const countQB = whereCondition ? baseCount.where(whereCondition) : baseCount
+    const [{ count: total }] = await countQB;
 
     return NextResponse.json({
       ok: true,
@@ -115,7 +134,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
     const ua = request.headers.get('user-agent') || '';
-    const { campaignIdToUpdate, status, action } = body as { campaignIdToUpdate?: string; status?: string; action?: string };
+    const { campaignIdToUpdate, status, action, moderationNotes } = body as { campaignIdToUpdate?: string; status?: string; action?: string; moderationNotes?: string };
 
     if (!campaignIdToUpdate) {
       return NextResponse.json(
