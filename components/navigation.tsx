@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useUser, useClerk } from "@clerk/nextjs"
 import {
@@ -31,6 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Skeleton } from "./ui/skeleton"
 import { api } from "@/lib/api/api"
+import logo from "@/assets/logo.svg"
 import { CombinedUserData } from "@/types/api"
 
 // Define the notification type based on the API response (logTable schema)
@@ -107,18 +109,18 @@ export default function Navigation() {
           <div className="flex justify-between items-center h-16">
             <Link
               href="/"
-              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 rounded-lg p-2 transition-all hover:scale-[1.02] group"
+              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 rounded-lg p-1 sm:p-1.5 md:p-2 transition-all hover:scale-[1.02] group"
               aria-label="FundWave homepage"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-ocean-500 via-azure-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-ocean-600 via-azure-600 to-teal-600 bg-clip-text text-transparent">
-                  FundWave<span className="text-ocean-400 text-lg ml-0.5">SL</span>
-                </div>
-                <div className="text-xs text-gray-500 -mt-1 font-medium">Sierra Leone&apos;s Platform</div>
-              </div>
+              <Image
+                src={logo}
+                alt="FundWaveSL"
+                width={160}
+                height={36}
+                sizes="(max-width: 640px) 100px, (max-width: 1024px) 120px, 140px"
+                className="h-5 sm:h-6 md:h-7 w-auto"
+                priority
+              />
             </Link>
 
             <div className="hidden md:flex items-center space-x-1">

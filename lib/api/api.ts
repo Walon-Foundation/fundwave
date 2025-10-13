@@ -6,7 +6,8 @@ export class API {
 
     constructor(){
         this.client = axios.create({
-            baseURL:process.env.NEXT_PUBLIC_API_URL,
+            // Default to Next.js internal API if no public API URL is provided
+            baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
             withCredentials:true,
         })
 

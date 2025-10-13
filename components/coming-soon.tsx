@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -41,11 +42,11 @@ export default function ComingSoon({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-6">
+<div className="min-h-screen bg-gradient-to-br from-azure-50 via-ocean-50 to-teal-50 flex items-center justify-center p-6">
       <div className="w-full max-w-4xl mx-auto space-y-12">
         <div className="text-center space-y-8">
           <div className="relative inline-flex">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+<div className="w-20 h-20 bg-gradient-to-br from-ocean-600 to-azure-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Rocket className="w-10 h-10 text-white" />
             </div>
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce">
@@ -59,7 +60,7 @@ export default function ComingSoon({
           </Badge>
 
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-ocean-600 via-azure-600 to-teal-600 bg-clip-text text-transparent leading-tight">
               {title}
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">{description}</p>
@@ -75,7 +76,7 @@ export default function ComingSoon({
           <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+<div className="w-12 h-12 bg-gradient-to-br from-ocean-600 to-azure-600 rounded-xl flex items-center justify-center">
                   <Heart className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">What&apos;s Coming</h3>
@@ -94,7 +95,7 @@ export default function ComingSoon({
           <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+<div className="w-12 h-12 bg-gradient-to-br from-azure-600 to-teal-600 rounded-xl flex items-center justify-center">
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Why Wait?</h3>
@@ -119,7 +120,7 @@ export default function ComingSoon({
               {!isSubscribed ? (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
+<div className="w-16 h-16 mx-auto bg-gradient-to-br from-ocean-600 to-azure-600 rounded-2xl flex items-center justify-center">
                       <Bell className="w-8 h-8 text-white" />
                     </div>
                     <div className="space-y-2">
@@ -144,7 +145,7 @@ export default function ComingSoon({
                       <Button
                         type="submit"
                         disabled={isLoading}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 whitespace-nowrap"
+className="bg-gradient-to-r from-ocean-600 to-azure-600 hover:from-ocean-700 hover:to-azure-700 px-6 whitespace-nowrap"
                       >
                         {isLoading ? (
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -175,10 +176,10 @@ export default function ComingSoon({
 
         <div className="text-center">
           <p className="text-gray-500">
-            Questions?{" "}
-            <a href="/contact" className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-2">
+Questions?{" "}
+            <Link href="/contact" className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-2">
               Contact our support team
-            </a>
+            </Link>
           </p>
         </div>
       </div>

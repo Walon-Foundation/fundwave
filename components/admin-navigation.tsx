@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useUser, useClerk } from "@clerk/nextjs"
 import {
@@ -28,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import logo from "@/assets/logo.svg"
 
 export default function AdminNavigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -71,18 +73,18 @@ export default function AdminNavigation() {
             {/* Admin Logo */}
             <Link
               href="/admin"
-              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded-lg p-2 transition-all hover:scale-[1.02] group"
+              className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded-lg p-1 sm:p-1.5 md:p-2 transition-all hover:scale-[1.02] group"
               aria-label="Admin Dashboard"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-red-600 via-red-500 to-orange-600 bg-clip-text text-transparent">
-                  FundWave<span className="text-red-400 text-lg ml-0.5">Admin</span>
-                </div>
-                <div className="text-xs text-gray-500 -mt-1 font-medium">Platform Management</div>
-              </div>
+              <Image
+                src={logo}
+                alt="FundWaveSL"
+                width={160}
+                height={36}
+                sizes="(max-width: 640px) 100px, (max-width: 1024px) 120px, 140px"
+                className="h-5 sm:h-6 md:h-7 w-auto"
+                priority
+              />
             </Link>
 
             {/* Admin Navigation Links */}

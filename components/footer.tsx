@@ -1,7 +1,9 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Heart, Github } from "lucide-react"
+import Image from "next/image"
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Github } from "lucide-react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import logo from "@/assets/logo.svg"
 
 const footerSections = [
   {
@@ -47,14 +49,16 @@ export default function Footer() {
           {/* Brand & Newsletter - spans 2 columns on desktop */}
           <div className="lg:col-span-2 space-y-6">
             {/* Brand */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-2xl font-bold">FundWave</span>
-                <span className="text-lg text-cyan-300 font-medium">SL</span>
-              </div>
+            <div className="flex items-center">
+              <Image
+                src={logo}
+                alt="FundWaveSL"
+                width={180}
+                height={40}
+                sizes="(max-width: 640px) 140px, (max-width: 1024px) 160px, 180px"
+                className="h-7 sm:h-8 md:h-9 w-auto"
+                priority
+              />
             </div>
             
             <p className="text-slate-300 text-lg leading-relaxed">

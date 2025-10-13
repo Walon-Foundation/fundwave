@@ -33,6 +33,8 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
   const isCampaignEnded = daysLeft === 0
   const isGoalReached = campaign.amountReceived >= campaign.fundingGoal
   const isCampaignCompleted = isCampaignEnded || isGoalReached
+  const displayStatus = isCampaignCompleted ? "completed" : campaign.status
+  const showFeatured = featured && !isCampaignCompleted
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -61,9 +63,9 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
 
   if (viewMode === "list") {
     return (
-      <Link href={`/campaigns/${campaign.id}`} className="block">
+      <Link href={`/campaigns/${campaign.id}`} className="block w-full">
         <Card
-          className={`group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm cursor-pointer hover:scale-[1.02] ${
+          className={`group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm cursor-pointer sm:hover:scale-[1.02] w-full ${
             featured ? "ring-2 ring-blue-200 shadow-lg" : ""
           }`}
         >
@@ -75,16 +77,16 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
                 height={300}
                 width={200}
                 sizes="(max-width: 640px) 100vw, 320px"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-300"
               />
-              {featured && (
+              {showFeatured && (
                 <Badge className="absolute top-3 left-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white border-0 shadow-lg">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Featured
                 </Badge>
               )}
-              <Badge className={`absolute top-3 right-3 shadow-sm ${getStatusColor(campaign.status)}`}>
-                {campaign.status}
+              <Badge className={`absolute top-3 right-3 shadow-sm ${getStatusColor(displayStatus)}`}>
+                {displayStatus}
               </Badge>
             </div>
 
@@ -146,9 +148,9 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
   }
 
   return (
-    <Link href={`/campaigns/${campaign.id}`} className="block">
+    <Link href={`/campaigns/${campaign.id}`} className="block w-full">
       <Card
-        className={`group hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden cursor-pointer hover:scale-[1.02] hover:-translate-y-1 ${
+        className={`group hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden cursor-pointer sm:hover:scale-[1.02] sm:hover:-translate-y-1 max-w-full w-full ${
           featured ? "ring-2 ring-blue-200 shadow-lg" : ""
         }`}
       >
@@ -159,13 +161,13 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             height={300}
             width={800}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-300"
+            className="w-full h-48 sm:h-56 object-cover sm:group-hover:scale-110 transition-transform duration-300"
           />
 
           {/* Overlay badges */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
             <div className="flex flex-col gap-2">
-              {featured && (
+              {showFeatured && (
                 <Badge className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white border-0 w-fit shadow-lg">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Featured
@@ -177,7 +179,7 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
             </div>
 
             <div className="flex flex-col gap-2 items-end">
-              <Badge className={`${getStatusColor(campaign.status)} w-fit shadow-sm`}>{campaign.status}</Badge>
+              <Badge className={`${getStatusColor(displayStatus)} w-fit shadow-sm`}>{displayStatus}</Badge>
             </div>
           </div>
 
@@ -219,10 +221,10 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 break-words">
                 {campaign.title}
               </h3>
-              <p className="text-slate-600 text-sm sm:text-base line-clamp-3">{campaign.shortDescription}</p>
+              <p className="text-slate-600 text-sm sm:text-base line-clamp-3 break-words">{campaign.shortDescription}</p>
             </div>
 
             {/* Tags */}
@@ -272,11 +274,11 @@ export default function CampaignCard({ campaign, featured = false, viewMode = "g
                     {campaign.creatorName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{campaign.creatorName}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate max-w-[12rem] sm:max-w-[16rem]">{campaign.creatorName}</p>
                   <div className="flex items-center gap-1 text-xs text-slate-500">
                     <MapPin className="w-3 h-3" />
-                    <span>{campaign.location}</span>
+                    <span className="truncate max-w-[10rem] sm:max-w-[14rem]">{campaign.location}</span>
                   </div>
                 </div>
               </div>
