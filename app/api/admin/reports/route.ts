@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
-import { reportTable } from "@/db/schema";
-import { eq, desc, count, and, type SQL } from "drizzle-orm";
+import { reportTable, campaignTable, userTable } from "@/db/schema";
+import { eq, desc, count, and, inArray, type SQL } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,6 +47,24 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
+    // Enrich with campaign and reporter details
+    const campaignIds = reports.filter((r:any)=>r.type==='campaign').map((r:any)=>r.targetId)
+    const reporterIds = reports.map((r:any)=>r.reporterId).filter(Boolean)
+
+    const [campaigns, reporters] = await Promise.all([
+      campaignIds.length ? db.select({ id: campaignTable.id, title: campaignTable.title, creatorId: campaignTable.creatorId, creatorName: campaignTable.creatorName }).from(campaignTable).where(inArray(campaignTable.id, campaignIds)) : Promise.resolve([]),
+      reporterIds.length ? db.select({ id: userTable.id, name: userTable.name, email: userTable.email }).from(userTable).where(inArray(userTable.id, reporterIds as string[])) : Promise.resolve([]),
+    ])
+
+    const campMap = new Map(campaigns.map((c:any)=>[c.id, c]))
+    const repMap = new Map(reporters.map((u:any)=>[u.id, u]))
+
+    const enriched = reports.map((r:any)=> ({
+      ...r,
+      campaign: r.type==='campaign' ? campMap.get(r.targetId) || null : null,
+      reporter: r.reporterId ? (repMap.get(r.reporterId) || { id: r.reporterId, name: r.reporterName }) : { name: r.reporterName },
+    }))
+
     // Get total count for pagination
     const [{ count: total }] = await db
       .select({ count: count() })
@@ -56,7 +74,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       data: {
-        reports,
+        reports: enriched,
         pagination: {
           page,
           limit,

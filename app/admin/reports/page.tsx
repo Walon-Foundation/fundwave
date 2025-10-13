@@ -22,6 +22,9 @@ interface Report {
   priority: "low" | "medium" | "high";
   createdAt: string;
   updatedAt: string;
+  // Enriched fields from API
+  campaign?: { id: string; title: string; creatorId: string; creatorName: string } | null;
+  reporter?: { id?: string; name?: string; email?: string } | null;
 }
 
 interface ReportsResponse {
@@ -204,6 +207,13 @@ export default function AdminReportsPage() {
                         <h3 className="font-semibold">
                           {report.type === 'campaign' ? 'Campaign Report' : 'User Report'}: {report.targetTitle}
                         </h3>
+                        <div className="text-sm text-neutral-600">
+                          {report.type === 'campaign' && report.campaign ? (
+                            <>
+                              Creator: <span className="font-medium">{report.campaign.creatorName}</span>
+                            </>
+                          ) : null}
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
                           {getStatusBadge(report.status)}
                           {getPriorityBadge(report.priority)}
@@ -244,7 +254,10 @@ export default function AdminReportsPage() {
                   
                   <div className="flex items-center justify-between text-sm text-neutral-600 mb-3">
                     <div>
-                      Reported by: <span className="font-medium">{report.reporterName}</span>
+                      Reported by: <span className="font-medium">{report.reporter?.name || report.reporterName}</span>
+                      {report.reporter?.email && (
+                        <span className="text-neutral-500 ml-2">({report.reporter.email})</span>
+                      )}
                     </div>
                     <div>
                       {new Date(report.createdAt).toLocaleDateString()} at {new Date(report.createdAt).toLocaleTimeString()}
