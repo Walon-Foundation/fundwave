@@ -883,14 +883,72 @@ className={`px-3 py-1 rounded-lg ${totalPages === currentPage ? "bg-blue-600 tex
                 </div>
 
                 {selectedCampaignData ? (
-                  <div className="card text-center py-12">
-                    <h3 className="text-xl font-semibold text-slate-900 mb-2">Analytics Coming Soon</h3>
-                    <p className="text-slate-600 mb-6">
-                      We&apos;re working on detailed analytics for your campaign: {selectedCampaignData.name}
-                    </p>
-                    <div className="flex justify-center gap-4">
-                      <button className="btn-outline">Learn More</button>
-                      <button className="btn-primary">Get Notified</button>
+                  <div className="space-y-6">
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="card p-4">
+                        <div className="text-slate-500 text-sm">Views</div>
+                        <div className="text-2xl font-semibold text-slate-900">{Number((selectedCampaignData as any).totalViews ?? 0)}</div>
+                      </div>
+                      <div className="card p-4">
+                        <div className="text-slate-500 text-sm">Donors</div>
+                        <div className="text-2xl font-semibold text-slate-900">{Number((selectedCampaignData as any).totalDonors ?? 0)}</div>
+                      </div>
+                      <div className="card p-4">
+                        <div className="text-slate-500 text-sm">Comments</div>
+                        <div className="text-2xl font-semibold text-slate-900">{Number((selectedCampaignData as any).totalComments ?? 0)}</div>
+                      </div>
+                      <div className="card p-4">
+                        <div className="text-slate-500 text-sm">Raised</div>
+                        <div className="text-2xl font-semibold text-slate-900">{formatCurrency(Number((selectedCampaignData as any).donated ?? 0))}</div>
+                      </div>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="card p-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-slate-600">Progress toward goal</span>
+                        <span className="text-slate-800 font-medium">
+                          {formatCurrency(Number((selectedCampaignData as any).donated ?? 0))} of {formatCurrency(Number((selectedCampaignData as any).amountNeeded ?? 0))}
+                        </span>
+                      </div>
+                      {(() => {
+                        const raised = Number((selectedCampaignData as any).donated ?? 0)
+                        const goal = Number((selectedCampaignData as any).amountNeeded ?? 0)
+                        const pct = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0
+                        return (
+                          <div className="w-full bg-slate-200 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        )
+                      })()}
+                    </div>
+
+                    {/* Mini chart */}
+                    <div className="card p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-slate-900">Campaign Performance</h3>
+                        <span className="text-sm text-slate-500">{selectedCampaignData.name}</span>
+                      </div>
+                      <div className="w-full h-72">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={[{
+                            name: (selectedCampaignData as any).name,
+                            views: Number((selectedCampaignData as any).totalViews ?? 0),
+                            donors: Number((selectedCampaignData as any).totalDonors ?? 0),
+                            comments: Number((selectedCampaignData as any).totalComments ?? 0),
+                          }]} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" tick={{ fontSize: 12 }} hide={true} />
+                            <YAxis tick={{ fontSize: 12 }} />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="views" name="Views" fill="#0ea5e9" />
+                            <Bar dataKey="donors" name="Donors" fill="#14b8a6" />
+                            <Bar dataKey="comments" name="Comments" fill="#0284c7" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
                 ) : (
