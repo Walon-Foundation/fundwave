@@ -14,7 +14,7 @@ const eslintConfig = [
   ...compat.config({
     extends:['next'],
     rules:{
-      '@typescript-eslint/no-explict-any':'off',
+      '@typescript-eslint/no-explicit-any':'off',
       '@typescript-eslint/no-unused-vars':'off'
     }
   }),
