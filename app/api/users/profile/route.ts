@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle";
 import { campaignTable, paymentTable, userTable } from "@/db/schema";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { countDistinct, eq, sum } from "drizzle-orm";
+import { and, countDistinct, eq, sum } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { CombinedUserData, UserCampaign, UserDonation } from "@/types/api";
 import { sendEmail } from "@/lib/nodeMailer";
@@ -56,11 +56,11 @@ export async function GET() {
       db
         .select({ totalRaised: sum(campaignTable.amountReceived) })
         .from(campaignTable)
-        .where(eq(campaignTable.creatorId, user.id)),
+        .where(and(eq(campaignTable.creatorId, user.id), eq(campaignTable.isDeleted, false))),
       db
         .select({ campaignsStarted: countDistinct(campaignTable.id) })
         .from(campaignTable)
-        .where(eq(campaignTable.creatorId, user.id)),
+        .where(and(eq(campaignTable.creatorId, user.id), eq(campaignTable.isDeleted, false))),
       db
         .select({ donationsMade: countDistinct(paymentTable.id) })
         .from(paymentTable)
@@ -78,7 +78,7 @@ export async function GET() {
           endDate: campaignTable.campaignEndDate,
         })
         .from(campaignTable)
-        .where(eq(campaignTable.creatorId, user.id)),
+        .where(and(eq(campaignTable.creatorId, user.id), eq(campaignTable.isDeleted, false))),
 
       // Donations
       db

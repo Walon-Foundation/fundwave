@@ -11,7 +11,7 @@ export default function AdminModerationPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDeletedOnly, setShowDeletedOnly] = useState(false);
+  const [showDeletedOnly, setShowDeletedOnly] = useState(true);
 
   const load = async () => {
     setLoading(true);

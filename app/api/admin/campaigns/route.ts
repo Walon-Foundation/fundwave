@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
         status: campaignTable.status,
         createdAt: campaignTable.createdAt,
         updatedAt: campaignTable.updatedAt,
+        isDeleted: campaignTable.isDeleted,
       })
       .from(campaignTable)
     const selectQB = whereCondition ? baseSelect.where(whereCondition) : baseSelect
@@ -166,7 +167,7 @@ export async function PATCH(request: NextRequest) {
       try {
         if (creatorEmail) {
           const { sendEmail } = await import('@/lib/nodeMailer');
-          await sendEmail('campaign-deleted' as any, creatorEmail, 'Your campaign was deleted by an administrator', { name: creatorName || 'User' } as any);
+          await sendEmail('campaign-deleted-by-admin' as any, creatorEmail, 'Your campaign was removed by an administrator', { name: creatorName || 'User', campaign: cam?.title || '' } as any);
         }
       } catch {}
 
@@ -190,8 +191,25 @@ export async function PATCH(request: NextRequest) {
     }
 
 if (action === 'restore') {
+      // Fetch creator email and title
+      const [camInfo] = await db.select({ creatorId: campaignTable.creatorId, title: campaignTable.title }).from(campaignTable).where(eq(campaignTable.id, campaignIdToUpdate)).limit(1);
+      let creatorEmail: string | undefined; let creatorName: string | undefined;
+      if (camInfo?.creatorId) {
+        const [u] = await db.select({ email: userTable.email, name: userTable.name }).from(userTable).where(eq(userTable.id, camInfo.creatorId)).limit(1);
+        creatorEmail = u?.email; creatorName = u?.name;
+      }
+
       const restored = await db.update(campaignTable).set({ isDeleted: false, updatedAt: new Date() }).where(eq(campaignTable.id, campaignIdToUpdate)).returning();
       if (!restored.length) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+
+      // Send restored email (best-effort)
+      try {
+        if (creatorEmail) {
+          const { sendEmail } = await import('@/lib/nodeMailer');
+          await sendEmail('campaign-restored' as any, creatorEmail, 'Your campaign has been restored', { name: creatorName || 'User', campaign: camInfo?.title || '' } as any);
+        }
+      } catch {}
+
       await logEvent({ level: 'info', category: 'admin:campaign:restore', user: userId, details: `Restored campaign ${campaignIdToUpdate}` , ipAddress: ip, userAgent: ua, metaData: { campaignId: campaignIdToUpdate }});
       return NextResponse.json({ ok: true, data: { message: 'Campaign restored', campaign: restored[0] } });
     }

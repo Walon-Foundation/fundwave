@@ -50,6 +50,7 @@ export default function AdminNavigation() {
     { name: "Dashboard", href: "/admin", icon: <LayoutDashboard className="w-4 h-4" /> },
     { name: "Users", href: "/admin/users", icon: <Users className="w-4 h-4" /> },
     { name: "Campaigns", href: "/admin/campaigns", icon: <Target className="w-4 h-4" /> },
+    { name: "Moderation", href: "/admin/moderation", icon: <Shield className="w-4 h-4" /> },
     { name: "Reports", href: "/admin/reports", icon: <AlertTriangle className="w-4 h-4" /> },
     { name: "Settings", href: "/admin/settings", icon: <Settings className="w-4 h-4" /> },
   ]
