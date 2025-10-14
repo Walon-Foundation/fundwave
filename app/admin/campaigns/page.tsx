@@ -69,6 +69,8 @@ export default function AdminCampaignsPage() {
         limit: "10",
         search,
         status: statusFilter,
+        deletedOnly: showDeletedOnly ? "1" : "0",
+        activeOnly: showActiveOnly ? "1" : "0",
       });
       
       const response = await fetch(`/api/admin/campaigns?${params}`);
@@ -191,7 +193,7 @@ export default function AdminCampaignsPage() {
   useEffect(() => {
     fetchCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, search, statusFilter]);
+  }, [currentPage, search, statusFilter, showDeletedOnly, showActiveOnly]);
 
   // Derived filtered + sorted list (client-side extra filters)
   const filteredCampaigns = useMemo(() => {
@@ -217,7 +219,7 @@ export default function AdminCampaignsPage() {
       return 0;
     });
     return list;
-  }, [campaigns, typeFilter, categoryFilter, createdFrom, createdTo, endingSoonOnly, minProgress, sortKey, sortDir]);
+  }, [campaigns, typeFilter, categoryFilter, createdFrom, createdTo, endingSoonOnly, minProgress, sortKey, sortDir, showDeletedOnly, showActiveOnly]);
 
   // CSV export of current filtered list
   const exportCsv = () => {
