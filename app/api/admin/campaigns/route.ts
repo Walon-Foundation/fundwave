@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
     const minProgress = parseFloat(url.searchParams.get("minProgress") || "0");
     const sort = url.searchParams.get("sort") || "createdAt"; // createdAt|endDate|raised|progress
     const order = url.searchParams.get("order") || "desc"; // asc|desc
+    const showDeletedOnly = url.searchParams.get("deletedOnly") === "1";
+    const showActiveOnly = url.searchParams.get("activeOnly") === "1";
     const offset = (page - 1) * limit;
 
     // Build query conditions
@@ -55,6 +57,8 @@ export async function GET(request: NextRequest) {
     if (!Number.isNaN(minProgress) && minProgress > 0) {
       conditions.push(sql`(${campaignTable.amountReceived} / NULLIF(${campaignTable.fundingGoal}, 0)) >= ${minProgress / 100}`);
     }
+    if (showDeletedOnly) conditions.push(eq(campaignTable.isDeleted, true));
+    else if (showActiveOnly) conditions.push(eq(campaignTable.isDeleted, false));
     const whereCondition = conditions.length ? and(...conditions) : undefined;
 
     const baseSelect = db

@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle"
 import { campaignTable, commentTable, notificationTable, paymentTable, userTable, campaignViewTable } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
-import { and, eq, inArray, sum, countDistinct, desc } from "drizzle-orm"
+import { and, eq, inArray, sum, countDistinct, desc, or } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -104,11 +104,11 @@ export async function GET() {
           .from(campaignTable)
           .where(inArray(campaignTable.id, campaignIds)),
 
-        // Notifications (recent activities)
+        // Notifications (recent activities) - include both campaign-related and user-targeted
         db
-          .select()
+          .select({ id: notificationTable.id, title: notificationTable.title, type: notificationTable.type, campaignId: notificationTable.campaignId, userId: notificationTable.userId, read: notificationTable.read, createdAt: notificationTable.createdAt })
           .from(notificationTable)
-          .where(inArray(notificationTable.campaignId, campaignIds))
+          .where(or(inArray(notificationTable.campaignId, campaignIds), eq(notificationTable.userId, userId)))
           .orderBy(desc(notificationTable.createdAt))
           .limit(10),
       ])
